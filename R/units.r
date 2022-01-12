@@ -1,0 +1,182 @@
+
+
+#' Create units
+#'
+#' @param d            A data.frame
+#' @param id      A column with a unique ID
+#' @param text    A character vector with column names to use as text fields, or the output of \code{\link{text_fields}}
+#'                for more customization options
+#' @param meta    A character vector with column names to use as meta fields
+#' @param variables A character vector with column names to use as unit variables
+#'
+#' @return A list of units, to be used inside \code{\link{create_codebook}}
+#' @export
+#'
+#' @examples
+#' d = data.frame(id=c(1,2), title = c('title 1', 'title 2'), text=c('text 1','text 2'),
+#' pre=c('<','<'), post=c('>','>'), date=c('2010','2020'), topic=c('a','b'))
+#'
+#' ## simple units
+#' create_units(d, id='id', text=c('title','text'), meta='date', variable='topic')
+#'
+#' ## using text_fields() for more options
+#' create_units(d, 'id',
+#'              text_fields(text_field('title'),
+#'                          text_field('text', context_before='pre', context_after='post'))
+#' )
+create_units <- function(d, id, text, meta=NULL, variables=NULL) {
+  # l = as.list(d)
+  # text_cols = 'text'
+  #di = match(id, colnames(d))
+  #ti = match(text, colnames(d))
+  #if (!is.null(meta)) mi = match(meta, colnames(d))
+  #vi = match(variable, colnames(d))
+
+  units = vector('list', nrow(d))
+  for (i in 1:nrow(d)) {
+    rowdict = as.list(d[i,])
+    document_id = rowdict[[id]]
+    text_fields = create_text_fields(rowdict, text)
+    #meta_fields = create_text_fields(rowdict, text_cols)
+    #variables = create_variables(rowdict, variable_cols)
+    units[[i]] = list(document_id=document_id, text_fields=text_fields)
+  }
+
+  structure(units, class=c('codebookUnits', 'class'))
+}
+
+create_text_fields <- function(rowdict, text_cols) {
+  lapply(seq_along(text_cols), function(i) {
+    ## if text_cols is a smple character vector
+    if (methods::is(text_cols, 'character')) return(list(field=text_cols[i], value=rowdict[[text_cols[i]]]))
+
+    ## if text_cols was created with text_fields()
+    if (methods::is(text_cols, 'textFields')) {
+      tf = text_cols[[i]]
+
+      if (is.null(tf$sep)) tf$sep=c('', '')
+      if (length(tf$sep) == 1) tf$sep = c(tf$sep,tf$sep)
+
+      text = if (is.null(tf$coding_unit)) '' else tf$coding_unit
+      text_field = list(field=tf$field, value=text, bold=tf$bold, italic=tf$italic, size=tf$size, justify=tf$justify, paragraphs=tf$paragraphs)
+      if (!is.null(tf$label)) text_field$label = tf$label
+      if (!is.null(tf$context_before)) text_field$context_before = paste0(rowdict[[tf$context_before]], tf$sep[1])
+      if (!is.null(tf$context_after)) text_field$context_after = paste0(tf$sep[2], rowdict[[tf$context_after]])
+      return(text_field)
+    }
+  })
+}
+
+
+
+#' Helper function for text_field customization in \code{\link{create_units}}
+#'
+#' @param ... unnamed arguments, each one a text_field. Can either be a character like "title" or "text",
+#'            or a more detailed text_field created with the \code{\link{text_field}} function.
+#'
+#' @return A textFields object, that can be passed to the "text" argument in \code{\link{create_units}}
+#' @export
+#'
+#' @examples
+#' d = data.frame(id=c(1,2), title = c('title 1', 'title 2'), text=c('text 1','text 2'),
+#' pre=c('<','<'), post=c('>','>'), date=c('2010','2020'), topic=c('a','b'))
+#'
+#' ## simple units
+#' create_units(d, id='id', text=c('title','text'), meta='date', variable='topic')
+#'
+#' ## using text_fields() for more options
+#' create_units(d, 'id',
+#'              text_fields(text_field('title'),
+#'                          text_field('text', context_before='pre', context_after='post'))
+#' )
+text_fields <- function(...) {
+  l = list(...)
+  l = lapply(l, function(x) {
+    if (methods::is(x, 'character')) x = text_field(x)
+    x
+  })
+  names = sapply(l, function(x) x$coding_unit)
+  if (anyDuplicated(names)) stop('Text fields need to use unique columns for setting the coding_unit')
+  structure(l, class=c('textFields', 'list'))
+}
+
+#' Create a detailed text_field for \code{\link{create_units}}
+#'
+#' This function can be used inside the \code{\link{create_units}} function for more
+#' customization options for text fields.
+#'
+#' @param coding_unit The name of a "character" column in the "data" argument in \code{\link{create_units}} that contains coding unit text.
+#'                    Note that this can also be empty if the current text field is only context (before or after the coding unit).
+#'                    For example, the data.frame could be a keyword in context listing with the columns "pre", "keyword" and "post" (see for instance quanteda's kwic function).
+#'                   These could then be set to the "context_before", "coding_unit" and "context_after" arguments, respectively.
+#' @param context_before The text can have a context before and after the coding unit. This context will be shown to coders in grey,
+#'                   and they cannot annotate it (in annotate mode). The context_before argument can be the name of a "character" column. If specified,
+#'                   the value of this column will be included in the current text_field as context. NOTE that if a text_field has a context_before, all text_fields before it
+#'                   will automatically also be considered as context. (i.e. context can only occur before of after the coding unit, not within it)
+#' @param context_after See context_before.
+#' @param sep        A character string to separate the coding_unit from the context_before and context_after. Can also be a vector of length 2 for
+#'                   different separators before and after.
+#' @param label      A character value to label the text field. Coders will then see this label where this field starts.
+#' @param bold       If TRUE, make the text field bold
+#' @param italic     If TRUE, make the text field bold
+#' @param size       A scaling value for the text size. default is 1. A value of 2 would be twice the size. A value of 0.5 half the size.
+#' @param justify    If TRUE (default) justify the text
+#' @param paragraphs If TRUE (default) show line breaks
+#' @param offset     If the text is a part of a bigger text, you can include the offset for the character position where it starts. This can
+#'                   be relevant for connecting annotations at specific character positions between the full text and this text_field.
+#'
+#' @return Nothing. Should only be used inside of the \code{\link{create_units}} function
+#' @export
+#'
+#' @examples
+text_field <- function(coding_unit=NULL, context_before=NULL, context_after=NULL, sep=' ', label=NULL, bold=F, italic=F, size=1, justify=T, paragraphs=T, offset=0) {
+  if (is.null(coding_unit)) {
+    if (is.null(context_before) && is.null(context_after)) stop('at least one of coding_unit, context_before or context_after needs to be specified')
+    if (!is.null(context_before) && !is.null(context_after)) stop('If no coding_unit is specified, you can only use context_before OR context_after (otherwise there wouldnt be a coding_unit at all)')
+  }
+  field = coding_unit
+  if (is.null(field)) field = context_before
+  if (is.null(field)) field = context_after
+  l = as.list(environment())
+  l$field = field
+  l
+}
+
+#' S3 print method for textFields objects
+#'
+#' @param x an textFields object, created with \link{variable}
+#' @param ... not used
+#'
+#' @method print textFields
+#' @examples
+#' @export
+print.textFields <- function(x, ...){
+  for (l in x) {
+    cat(l$field, '\n')
+    for (arg in names(l)) {
+      if (arg == 'field') next
+      if (is.null(l[[arg]])) next
+      if (l[[arg]] == F) next
+      cat(arg, ':\t', l[[arg]], '\n')
+    }
+    cat('\n')
+  }
+}
+
+#' S3 print method for codebookUnits objects
+#'
+#' @param x an codebookUnits object, created with \link{variable}
+#' @param ... not used
+#'
+#' @method print codebookUnits
+#' @examples
+#' @export
+print.codebookUnits <- function(x, ...){
+  cat('List of', length(x), 'units\n\nExample (only first unit):\n\n')
+  print(jsonlite::toJSON(x[1], pretty=T, auto_unbox = T))
+}
+
+
+
+
+

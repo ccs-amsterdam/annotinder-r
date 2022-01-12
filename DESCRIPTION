@@ -1,0 +1,14 @@
+Package: ccsAnnotator
+Type: Package
+Title: A tool for manually annotating texts
+Version: 0.1.0
+Author: Kasper Welbers
+Maintainer: Kasper Welbers <kasperwelbers@gmail.com>
+Description: Create codingjobs for the CCS Annotator, interact with
+    the AmCAT annotator backend, or host a server to do live annotations.
+Imports:
+    data.table,
+    methods
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
