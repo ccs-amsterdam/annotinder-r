@@ -4,9 +4,9 @@
 #' @param instruction  A brief (think 1 or 2 sentences) instruction to the coder.
 #' @param codes        The codes that the coder can choose from. Can be a character vector.
 #'                     For more detailed settings (custom colors, nesting) use the \code{\link{codes}}
-#' @param selection    The method for selecting codes. Can be "buttons", "dropdown" or "dropdown_with_recent".
-#'                     "buttons" shows all codes as a button, "dropdown" gives a dropdown menu with a search bar, and
-#'                     "dropdown_with_recent" gives the dropdown with in addition buttons for recently used codes
+#' @param selection    The method for selecting codes. Can be "buttons" or "dropdown".
+#'                     "buttons" shows all codes as a button, "dropdown" gives a dropdown menu with a search bar,
+#'                     with in addition buttons for recently used codes
 #' @param onlyEdit     If TRUE, coders can only edit existing annotations. !! Note that this requires \code{\link{create_codebook}} to have
 #'                     have imported annotations for this variable.
 #' @param multiple     If TRUE, coder can select multiple codes for a selected piece of text before closing the popup. Note that they can always select
@@ -18,16 +18,21 @@
 #' @examples
 #' # simple variable with simple codes
 #' codebook_variable("topic", "Assign topics to words",
-#'                   codes = c("Economy","War","Health"))
+#'    codes = c("Economy","War","Health"))
+#'
+#' # quick hand for setting colors
+#' codebook_variable("topic", "Assign topics to words",
+#'    codes = c(Economy = 'blue', War = 'red', Health = 'green'))
 #'
 #' # using codes and code functions for detailed codes
-#' codebook_variable("sentiment", "Assign sentiment to words",
+#' x = codebook_variable("sentiment", "Assign sentiment to words",
 #' codes(
 #'   code('negative', color='red'),
 #'   code('neutral', color='grey'),
 #'   code('positive', color='green')
 #'   )
 #' )
+#'
 #'
 #' # get codes from a data.frame
 #' codes_df = data.frame(code  = c("negative","neutral","positive"),
@@ -36,22 +41,32 @@
 codebook_variable <- function(name, instruction, codes, selection='buttons', onlyEdit=F, multiple=F) {
   l = as.list(environment())
   l[!sapply(l, is.null)]
+  for (key in names(l)) {
+    if (key == 'codes') next
+    if (key == 'selection') {
+      if (selection == 'button') {
+        l[['searchBox']] = jsonlite::unbox(FALSE)
+        l[['buttonMode']] = jsonlite::unbox('all')
+      }
+      if (selection == 'dropdown') {
+        l[['searchBox']] = jsonlite::unbox(TRUE)
+        l[['buttonMode']] = jsonlite::unbox('recent')
+      }
+      next
+    }
+    l[[key]] = jsonlite::unbox(l[[key]])
+  }
 
-  if (methods::is(l$codes, 'character')) l$codes = data.frame(code = l$codes)
+  if (methods::is(l$codes, 'character')) {
+    if (!is.null(names(l$codes))) {
+      l$codes = data.frame(code = names(l$codes), color=l$codes)
+    } else l$codes = data.frame(code = l$codes)
+  }
   if (!methods::is(l$codes, 'data.frame')) stop('The codes argument has to be a character vector, data.frame, or created with the codes() function')
   if (is.null(l$codes$code)) stop('The data.frame passed to the codes argument needs to have a column named "code"')
   structure(l, class=c('codebookVariable', 'list'))
 }
 
-create_codebook(
-  mode = 'annotate',
-  codebook_variable("sentiment", "Select sentiment words and assign their polarity",
-                    codes(
-                      code('negative', color='red'),
-                      code('neutral', color='grey'),
-                      code('positive', color='green')
-                    ))
-)
 
 
 #' S3 print method for codebookVariable objects

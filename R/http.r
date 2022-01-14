@@ -24,6 +24,8 @@ request_token <- function(conn, passwd) {
 #'
 #' @export
 request <- function(branch=NULL, param=list(), json_data=NULL, post=FALSE, post_options=list(), read=T, conn = conn_from_env(), ...) {
+  if (is.null(conn)) stop('Not connected to an annotator backend. See backend_connect()')
+
   param = arrange_url_arguments(param, ...)
   url = paste(conn$host, paste(branch, collapse='/'), sep='/')
 
@@ -39,7 +41,6 @@ request <- function(branch=NULL, param=list(), json_data=NULL, post=FALSE, post_
 
 get_headers <- function(conn, param=list()) {
   if (!is.null(conn$token)) param[['Authorization']] = paste("Bearer", conn$token)
-  print(param)
   do.call(httr::add_headers, args = param)
 }
 
@@ -82,8 +83,6 @@ error_handling <- function(res, only_2xx) {
   if (code_class != 2 && only_2xx){
     res_msg = parse_response(res)
 
-    print(res_msg)
-
     res_msg_json = jsonlite::toJSON(res_msg)
     fn = tempfile()
     write(res_msg_json, file=fn)
@@ -106,5 +105,6 @@ error_handling <- function(res, only_2xx) {
 #' @export
 backend_error <- function() {
   fn = Sys.getenv('BACKEND_ERROR')
-  jsonlite::fromJSON(fn)
+  json = jsonlite::fromJSON(fn)
+  cat(json)
 }

@@ -2,22 +2,26 @@
 
 #' Create units
 #'
-#' @param d            A data.frame
+#' @param d       A data.frame
 #' @param id      A column with a unique ID
 #' @param text    A character vector with column names to use as text fields, or the output of \code{\link{text_fields}}
 #'                for more customization options
-#' @param meta    A character vector with column names to use as meta fields
+#' @param meta    A character vector with column names to show as a table of meta data above the units.
 #' @param variables A character vector with column names to use as unit variables
 #'
 #' @return A list of units, to be used inside \code{\link{create_codebook}}
 #' @export
 #'
 #' @examples
-#' d = data.frame(id=c(1,2), title = c('title 1', 'title 2'), text=c('text 1','text 2'),
-#' pre=c('<','<'), post=c('>','>'), date=c('2010','2020'), topic=c('a','b'))
+#' d = data.frame(id=c(1,2),
+#'                title = c('title 1', 'title 2'),
+#'                text=c('text 1','text 2'),
+#'                pre=c('<','<'), post=c('>','>'),
+#'                date=c('2010','2020'),
+#'                topic=c('a','b'))
 #'
 #' ## simple units
-#' create_units(d, id='id', text=c('title','text'), meta='date', variable='topic')
+#' create_units(d, id='id', text=c('title','text'), meta='date', variables='topic')
 #'
 #' ## using text_fields() for more options
 #' create_units(d, 'id',
@@ -25,30 +29,26 @@
 #'                          text_field('text', context_before='pre', context_after='post'))
 #' )
 create_units <- function(d, id, text, meta=NULL, variables=NULL) {
-  # l = as.list(d)
-  # text_cols = 'text'
-  #di = match(id, colnames(d))
-  #ti = match(text, colnames(d))
-  #if (!is.null(meta)) mi = match(meta, colnames(d))
-  #vi = match(variable, colnames(d))
-
   units = vector('list', nrow(d))
   for (i in 1:nrow(d)) {
     rowdict = as.list(d[i,])
     document_id = rowdict[[id]]
     text_fields = create_text_fields(rowdict, text)
-    #meta_fields = create_text_fields(rowdict, text_cols)
-    #variables = create_variables(rowdict, variable_cols)
-    units[[i]] = list(document_id=document_id, text_fields=text_fields)
+    meta_fields = create_text_fields(rowdict, meta)
+    variables = create_variables(rowdict, variables)
+    units[[i]] = list(unit = list(document_id=document_id,
+                                  text_fields=text_fields,
+                                  meta_fields=meta_fields,
+                                  variables=variables))
   }
 
-  structure(units, class=c('codebookUnits', 'class'))
+  structure(units, class=c('codingjobUnits', 'list'))
 }
 
 create_text_fields <- function(rowdict, text_cols) {
   lapply(seq_along(text_cols), function(i) {
     ## if text_cols is a smple character vector
-    if (methods::is(text_cols, 'character')) return(list(field=text_cols[i], value=rowdict[[text_cols[i]]]))
+    if (methods::is(text_cols, 'character')) return(list(field=jsonlite::unbox(text_cols[i]), value=jsonlite::unbox(rowdict[[text_cols[i]]])))
 
     ## if text_cols was created with text_fields()
     if (methods::is(text_cols, 'textFields')) {
@@ -62,11 +62,26 @@ create_text_fields <- function(rowdict, text_cols) {
       if (!is.null(tf$label)) text_field$label = tf$label
       if (!is.null(tf$context_before)) text_field$context_before = paste0(rowdict[[tf$context_before]], tf$sep[1])
       if (!is.null(tf$context_after)) text_field$context_after = paste0(tf$sep[2], rowdict[[tf$context_after]])
-      return(text_field)
+      return(lapply(text_field, jsonlite::unbox))
     }
   })
 }
 
+
+create_meta_fields <- function(rowdict, meta_cols) {
+  lapply(seq_along(text_cols), function(i) {
+    if (methods::is(text_cols, 'character')) return(list(field=text_cols[i], value=rowdict[[text_cols[i]]]))
+    NULL
+  })
+}
+
+create_variables <- function(rowdict, variable_cols) {
+  l = list()
+  for (vc in variable_cols) {
+    l[[vc]] = jsonlite::unbox(rowdict[[vc]])
+  }
+  l
+}
 
 
 #' Helper function for text_field customization in \code{\link{create_units}}
@@ -163,20 +178,15 @@ print.textFields <- function(x, ...){
   }
 }
 
-#' S3 print method for codebookUnits objects
+#' S3 print method for codingjobUnits objects
 #'
-#' @param x an codebookUnits object, created with \link{variable}
+#' @param x an codingjobUnits object, created with \link{variable}
 #' @param ... not used
 #'
-#' @method print codebookUnits
+#' @method print codingjobUnits
 #' @examples
 #' @export
-print.codebookUnits <- function(x, ...){
+print.codingjobUnits <- function(x, ...){
   cat('List of', length(x), 'units\n\nExample (only first unit):\n\n')
-  print(jsonlite::toJSON(x[1], pretty=T, auto_unbox = T))
+  print(jsonlite::toJSON(x[[1]], pretty=T))
 }
-
-
-
-
-

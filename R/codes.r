@@ -73,8 +73,8 @@ map_codes <- function(codes, parent=NULL) {
 
       for (name in names(code)) {
         if (name == 'children') next
-        if (!name %in% colnames(df)) df[[name]] = NA
-        df[[name]][i] = code[[name]]
+        if (!name %in% colnames(df)) df[[name]] = jsonlite::unbox(NA)
+        df[[name]][i] = jsonlite::unbox(code[[name]])
       }
       if (!is.null(code$children)) {
         children[['']] = map_codes(code$children, parent=code$code)

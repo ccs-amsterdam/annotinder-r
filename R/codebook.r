@@ -1,6 +1,21 @@
 
+#' Create a codebook for the CCS Annotator
+#'
+#' @param mode The type of annotation task. Currently supports "annotate" and "questions"
+#' @param ...  Questions for "questions" mode or Variables for "annotate" mode. See \code{\link{codebook_variable}}
+#'
+#' @return A codebook object
+#' @export
+#'
+#' @examples
+#' create_codebook('annotate',
+#' codebook_variable("sentiment", "Assign sentiment to words", codes(
+#'   code('negative', color='red'),
+#'   code('neutral', color='grey'),
+#'   code('positive', color='green')
+#' )))
 create_codebook <- function(mode = c('annotate','questions'), ...) {
-  mode = match.arg(mode)
+  mode = jsonlite::unbox(match.arg(mode))
   l = list(...)
 
   has_variables = any(sapply(l, methods::is, 'codebookVariable'))
@@ -15,16 +30,22 @@ create_codebook <- function(mode = c('annotate','questions'), ...) {
     if (!has_questions) stop('A codebook with "question" mode requires questions. See codebook_questions()')
   }
 
-  cb = list(type = mode, variables = l)
+  l = lapply(l, function(x) {
+    x$codes = codes_df_to_list(x$codes)
+    x
+  })
+
+  if (mode == 'annotate') cb = list(type = mode, variables = l)
+  if (mode == 'questions') cb = list(type = mode, questions = l)
   structure(cb, class=c('codebook', 'list'))
 }
 
-
-create_codebook(
-  mode = 'annotate',
-  codebook_variable("topic", "Assign topics to words",
-                     codes = c("Economy","War","Health"))
-)
+codes_df_to_list <- function(codes_df) {
+  apply(codes_df, 1, function(x) {
+    codes_l = as.list(x)
+    lapply(codes_l, jsonlite::unbox)
+  })
+}
 
 
 #' S3 print method for codebook objects
