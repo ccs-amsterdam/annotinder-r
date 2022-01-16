@@ -22,7 +22,6 @@ create_codebook <- function(mode = c('annotate','questions'), ...) {
   has_questions = any(sapply(l, methods::is, 'codebookQuestion'))
 
   if (mode == 'annotate') {
-    if (!has_variables) stop('A codebook with "annotate" mode requires variables. See codebook_variables()')
     if (has_questions) stop('A codebook with "annotate" mode should not have questions, but variables. See codebook_variables')
   }
   if (mode == 'questions') {

@@ -7,7 +7,12 @@ Maintainer: Kasper Welbers <kasperwelbers@gmail.com>
 Description: Create codingjobs for the CCS Annotator, interact with
     the AmCAT annotator backend, or host a server to do live annotations.
 Imports:
-    data.table,
+    jsonlite (>= 1.7.2),
+    httr (>= 1.4.2),
+    plumber (>= 1.1.0),
+    dplyr (>= 1.0.7),
+    DBI (>= 1.1.1),
+    RSQLite (>= 2.2.9),
     methods
 License: MIT + file LICENSE
 Encoding: UTF-8

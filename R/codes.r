@@ -58,6 +58,7 @@ code <- function(code, ..., color=NULL) {
 
 map_codes <- function(codes, parent=NULL) {
   df = data.frame(code = vector('character', length(codes)))
+  print(names(codes))
   if (!is.null(parent) & nrow(df) > 0) df$parent = parent
 
   children = list()

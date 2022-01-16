@@ -30,7 +30,7 @@ request <- function(branch=NULL, param=list(), json_data=NULL, post=FALSE, post_
   url = paste(conn$host, paste(branch, collapse='/'), sep='/')
 
   if (!post) {
-    res = httr::GET(url, get_headers(conn, param))
+    res = httr::GET(url, get_headers(conn), query=param)
   } else {
     if (is.null(json_data)) json_data = jsonlite::toJSON(param, auto_unbox=T)
     res = httr::POST(url, body = json_data, httr::content_type_json(), httr::accept_json(), get_headers(conn))
@@ -71,7 +71,7 @@ parse_response <- function(res) {
   ct = res$headers$`content-type`
   if (is.null(ct)) return(NULL)
   if (grepl('application/x-r-rda', ct)) return(load_rda(res$content))
-  if (grepl('application/json', ct)) return(jsonlite::fromJSON(rawToChar(res$content)))
+  if (grepl('application/json', ct)) return(jsonlite::fromJSON(rawToChar(res$content), simplifyVector=F))
   return(rawToChar(res$content))
 }
 

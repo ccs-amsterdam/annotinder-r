@@ -3,40 +3,58 @@
 #' Create units
 #'
 #' @param d       A data.frame
-#' @param id      A column with a unique ID
 #' @param text    A character vector with column names to use as text fields, or the output of \code{\link{text_fields}}
-#'                for more customization options
+#'                for more customization options. text_field an also be passed as unnamed arguments (see ...)
 #' @param meta    A character vector with column names to show as a table of meta data above the units.
 #' @param variables A character vector with column names to use as unit variables
+#' @param ...     Optionally, pass text_fields as (unnamed) arguments. If used, the text argument is ignored
+#'
 #'
 #' @return A list of units, to be used inside \code{\link{create_codebook}}
 #' @export
 #'
 #' @examples
-#' d = data.frame(id=c(1,2),
-#'                title = c('title 1', 'title 2'),
+#' d = data.frame(title = c('title 1', 'title 2'),
 #'                text=c('text 1','text 2'),
 #'                pre=c('<','<'), post=c('>','>'),
 #'                date=c('2010','2020'),
 #'                topic=c('a','b'))
 #'
 #' ## simple units
-#' create_units(d, id='id', text=c('title','text'), meta='date', variables='topic')
+#' create_units(d, text=c('title','text'), meta='date', variables='topic')
 #'
 #' ## using text_fields() for more options
-#' create_units(d, 'id',
-#'              text_fields(text_field('title'),
-#'                          text_field('text', context_before='pre', context_after='post'))
-#' )
-create_units <- function(d, id, text, meta=NULL, variables=NULL) {
+#' create_units(d, text_fields(
+#'    text_field('title'),
+#'    text_field('text', context_before='pre', context_after='post')
+#' ))
+create_units <- function(d, ..., text=NULL, meta=NULL, variables=NULL) {
+  l = text_fields(...)
+  if (length(l) > 0) text = l
+  if (is.null(l)) stop('either text argument or ... argument needs to be given')
+
+  ## TODO: implement some checks here
+
+  ## create_units just bundles the arguments. The actual transformation to the required json
+  ## happens when calling create_job
+  cub = list(df = dplyr::as_tibble(d), text=text, meta=meta, variables=variables)
+  structure(cub, class = c('createUnitsBundle', 'list'))
+}
+
+
+
+
+prepare_units <- function(createUnitsBundle) {
+  d = createUnitsBundle$df
   units = vector('list', nrow(d))
   for (i in 1:nrow(d)) {
     rowdict = as.list(d[i,])
-    document_id = rowdict[[id]]
-    text_fields = create_text_fields(rowdict, text)
-    meta_fields = create_text_fields(rowdict, meta)
-    variables = create_variables(rowdict, variables)
-    units[[i]] = list(unit = list(document_id=document_id,
+    text_fields = create_text_fields(rowdict, createUnitsBundle$text)
+    meta_fields = create_text_fields(rowdict, createUnitsBundle$meta)
+    variables = create_variables(rowdict, createUnitsBundle$variables)
+
+    ## to do: add "gold". Then when creating coding job check if gold answers match with questions
+    units[[i]] = list(unit = list(document_id=i,
                                   text_fields=text_fields,
                                   meta_fields=meta_fields,
                                   variables=variables))
@@ -47,7 +65,7 @@ create_units <- function(d, id, text, meta=NULL, variables=NULL) {
 
 create_text_fields <- function(rowdict, text_cols) {
   lapply(seq_along(text_cols), function(i) {
-    ## if text_cols is a smple character vector
+    ## if text_cols is a simple character vector
     if (methods::is(text_cols, 'character')) return(list(field=jsonlite::unbox(text_cols[i]), value=jsonlite::unbox(rowdict[[text_cols[i]]])))
 
     ## if text_cols was created with text_fields()
@@ -58,7 +76,7 @@ create_text_fields <- function(rowdict, text_cols) {
       if (length(tf$sep) == 1) tf$sep = c(tf$sep,tf$sep)
 
       text = if (is.null(tf$coding_unit)) '' else tf$coding_unit
-      text_field = list(field=tf$field, value=text, bold=tf$bold, italic=tf$italic, size=tf$size, justify=tf$justify, paragraphs=tf$paragraphs)
+      text_field = list(name=tf$field, value=text, bold=tf$bold, italic=tf$italic, size=tf$size, justify=tf$justify, paragraphs=tf$paragraphs)
       if (!is.null(tf$label)) text_field$label = tf$label
       if (!is.null(tf$context_before)) text_field$context_before = paste0(rowdict[[tf$context_before]], tf$sep[1])
       if (!is.null(tf$context_after)) text_field$context_after = paste0(tf$sep[2], rowdict[[tf$context_after]])
@@ -178,9 +196,10 @@ print.textFields <- function(x, ...){
   }
 }
 
+
 #' S3 print method for codingjobUnits objects
 #'
-#' @param x an codingjobUnits object, created with \link{variable}
+#' @param x an codingjobUnits object, created with \link{create_units}
 #' @param ... not used
 #'
 #' @method print codingjobUnits
@@ -188,5 +207,18 @@ print.textFields <- function(x, ...){
 #' @export
 print.codingjobUnits <- function(x, ...){
   cat('List of', length(x), 'units\n\nExample (only first unit):\n\n')
-  print(jsonlite::toJSON(x[[1]], pretty=T))
+  pretty_json = jsonlite::toJSON(x[[1]], pretty=T)
+  cat(pretty_json)
+}
+
+#' S3 print method for createUnitsBundle objects
+#'
+#' @param x an createUnitsBundle object, created with \link{create_units}
+#' @param ... not used
+#'
+#' @method print createUnitsBundle
+#' @examples
+#' @export
+print.createUnitsBundle <- function(x, ...){
+  cat(x)
 }

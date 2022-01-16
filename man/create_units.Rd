@@ -4,15 +4,15 @@
 \alias{create_units}
 \title{Create units}
 \usage{
-create_units(d, id, text, meta = NULL, variables = NULL)
+create_units(d, ..., text = NULL, meta = NULL, variables = NULL)
 }
 \arguments{
 \item{d}{A data.frame}
 
-\item{id}{A column with a unique ID}
+\item{...}{Optionally, pass text_fields as (unnamed) arguments. If used, the text argument is ignored}
 
 \item{text}{A character vector with column names to use as text fields, or the output of \code{\link{text_fields}}
-for more customization options}
+for more customization options. text_field an also be passed as unnamed arguments (see ...)}
 
 \item{meta}{A character vector with column names to show as a table of meta data above the units.}
 
@@ -25,19 +25,18 @@ A list of units, to be used inside \code{\link{create_codebook}}
 Create units
 }
 \examples{
-d = data.frame(id=c(1,2),
-               title = c('title 1', 'title 2'),
+d = data.frame(title = c('title 1', 'title 2'),
                text=c('text 1','text 2'),
                pre=c('<','<'), post=c('>','>'),
                date=c('2010','2020'),
                topic=c('a','b'))
 
 ## simple units
-create_units(d, id='id', text=c('title','text'), meta='date', variables='topic')
+create_units(d, text=c('title','text'), meta='date', variables='topic')
 
 ## using text_fields() for more options
-create_units(d, 'id',
-             text_fields(text_field('title'),
-                         text_field('text', context_before='pre', context_after='post'))
-)
+create_units(d, text_fields(
+   text_field('title'),
+   text_field('text', context_before='pre', context_after='post')
+))
 }

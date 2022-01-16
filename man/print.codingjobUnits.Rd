@@ -7,7 +7,7 @@
 \method{print}{codingjobUnits}(x, ...)
 }
 \arguments{
-\item{x}{an codingjobUnits object, created with \link{variable}}
+\item{x}{an codingjobUnits object, created with \link{create_units}}
 
 \item{...}{not used}
 }
