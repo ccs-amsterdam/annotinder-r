@@ -34,8 +34,8 @@ create_codebook <- function(mode = c('annotate','questions'), ...) {
     x
   })
 
-  if (mode == 'annotate') cb = list(type = mode, variables = l)
-  if (mode == 'questions') cb = list(type = mode, questions = l)
+  if (mode == 'annotate') cb = list(type = jsonlite::unbox(mode), variables = l)
+  if (mode == 'questions') cb = list(type = jsonlite::unbox(mode), questions = l)
   structure(cb, class=c('codebook', 'list'))
 }
 

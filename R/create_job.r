@@ -17,6 +17,7 @@ create_job <- function(title, units, codebook) {
   structure(cj_package, class=c('codingjob', 'list'))
 }
 
+## also create fast convenience options, like annotatinder
 
 
 

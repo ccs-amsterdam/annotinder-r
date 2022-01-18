@@ -1,5 +1,11 @@
-###
+## SET DB FILE
+## currently uses this weird workaround where the template is read, modified and then written to a temp
+## file to run from. Need to look into plumber whether there's also a way to call programatically
+db_file = "DB_FILE"
+token = NULL
+annotations = list()
 
+db = DBI::dbConnect(RSQLite::SQLite(), db_file)
 
 
 # Enable CORS Filtering
@@ -35,9 +41,9 @@ is_coded <- function(codingjob) {
 
 
 ### GET
-
 #*
 #* @param x ...
+#* @serializer unboxedJSON
 #* @get /login
 function(res, req) {
   headers = req$HEADERS
@@ -53,54 +59,42 @@ function(res, req) {
 
 #*
 #* @param x ...
+#* @serializer unboxedJSON
 #* @get /codingjob/<job_id>/codebook
 function(job_id) {
-  codingjob$codebook
+  db_read_codebook(db)
 }
 
 #*
 #* @param x ...
+#* @serializer unboxedJSON
 #* @get /codingjob/<job_id>/progress
 function(job_id) {
-  n_coded = sum(is_coded(codingjob))
-  l = list(n_coded = n_coded, n_total=length(codingjob$units),
-       seek_forwards=F, seek_backwards=T)
-  lapply(l, jsonlite::unbox)
+  db_get_progress(db)
 }
 
 #*
 #* @param x ...
+#* @serializer unboxedJSON
 #* @get /codingjob/<job_id>/unit
 function(res, req, job_id) {
   suppressWarnings({
     index = as.numeric(req$argsQuery[['index']])
   })
 
+  if (length(index) == 0) index = NA
+  unit = db_get_unit(db, index)
 
-  if (length(index) == 0 || is.na(index)) {
-    coded = is_coded(codingjob)
-    index = if (all(coded)) Inf else which(!coded)[1]
-  } else index = index + 1  # (index starts at 0)
-
-  if (index > length(codingjob$units)) {
+  if (is.null(unit)) {
     res$status = 404
     return(list(error = "no units left"))
   }
-
-  index = min(index, length(codingjob$units))
-  unit = codingjob$units[[index]]
-  unit$id = jsonlite::unbox(index)
-
-  if (index <= length(annotations) && !is.null(annotations[[index]])) {
-    unit$status = annotations[[index]]$status
-    unit$annotation = annotations[[index]]$annotation
-  }
-
   unit
 }
 
 #*
 #* @param x ...
+#* @serializer unboxedJSON
 #* @get /codingjob/<job_id>
 function(job_id) {
   list()
@@ -123,7 +117,6 @@ function(job_id) {
 function(req, job_id, unit_id) {
   body = req$argsBody
   unit_id = as.numeric(unit_id)
-  if (length(annotations) == 0) annotations <<- vector('list', length(codingjob$units))
-  annotations[[unit_id]] <<- body
+  db_insert_annotation(db, unit_id, body)
 }
 

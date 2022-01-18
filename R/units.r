@@ -41,9 +41,6 @@ create_units <- function(d, ..., text=NULL, meta=NULL, variables=NULL) {
   structure(cub, class = c('createUnitsBundle', 'list'))
 }
 
-
-
-
 prepare_units <- function(createUnitsBundle) {
   d = createUnitsBundle$df
   units = vector('list', nrow(d))
@@ -54,7 +51,7 @@ prepare_units <- function(createUnitsBundle) {
     variables = create_variables(rowdict, createUnitsBundle$variables)
 
     ## to do: add "gold". Then when creating coding job check if gold answers match with questions
-    units[[i]] = list(unit = list(document_id=i,
+    units[[i]] = list(unit = list(document_id=jsonlite::unbox(i),
                                   text_fields=text_fields,
                                   meta_fields=meta_fields,
                                   variables=variables))
@@ -66,7 +63,12 @@ prepare_units <- function(createUnitsBundle) {
 create_text_fields <- function(rowdict, text_cols) {
   lapply(seq_along(text_cols), function(i) {
     ## if text_cols is a simple character vector
-    if (methods::is(text_cols, 'character')) return(list(field=jsonlite::unbox(text_cols[i]), value=jsonlite::unbox(rowdict[[text_cols[i]]])))
+    if (methods::is(text_cols, 'character')) {
+      field = text_cols[i]
+      value = rowdict[[text_cols[i]]]
+
+      return(list(field=jsonlite::unbox(field), value=jsonlite::unbox(value)))
+    }
 
     ## if text_cols was created with text_fields()
     if (methods::is(text_cols, 'textFields')) {
@@ -75,7 +77,8 @@ create_text_fields <- function(rowdict, text_cols) {
       if (is.null(tf$sep)) tf$sep=c('', '')
       if (length(tf$sep) == 1) tf$sep = c(tf$sep,tf$sep)
 
-      text = if (is.null(tf$coding_unit)) '' else tf$coding_unit
+
+      text = if (is.null(tf$coding_unit)) '' else rowdict[[tf$coding_unit]]
       text_field = list(name=tf$field, value=text, bold=tf$bold, italic=tf$italic, size=tf$size, justify=tf$justify, paragraphs=tf$paragraphs)
       if (!is.null(tf$label)) text_field$label = tf$label
       if (!is.null(tf$context_before)) text_field$context_before = paste0(rowdict[[tf$context_before]], tf$sep[1])
@@ -132,6 +135,7 @@ text_fields <- function(...) {
   if (anyDuplicated(names)) stop('Text fields need to use unique columns for setting the coding_unit')
   structure(l, class=c('textFields', 'list'))
 }
+
 
 #' Create a detailed text_field for \code{\link{create_units}}
 #'
