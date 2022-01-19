@@ -1,63 +1,53 @@
-#' Create a variable for annotate mode in \code{\link{create_codebook}}
+#' Create an annotation variable
 #'
-#' codebook_variable creates a variable to use in a codebook. add_variable does the same, but can be used
-#' to add a variable to a codebook in a pipe.
+#' Creates an annotation variable that can be passed as an argument to \code{\link{create_codebook}}.
 #'
-#' @rdname codebook_variable
 #' @param name         The name/label of the variable
 #' @param instruction  A brief (think 1 or 2 sentences) instruction to the coder.
-#' @param codes        The codes that the coder can choose from. Can be a character vector.
-#'                     For more detailed settings (custom colors, nesting) use the \code{\link{codes}}
-#'                     For convenient shorthand, can also be a named character vector where names are the codes and
-#'                     values are colors (see example).
+#' @param codes        The codes that the coder can choose from. Can be a character vector, named character vector or data.frame.
+#'                     An unnamed character vector creates codes with random colors.
+#'                     A named character vector uses the names as codes and the values as colors, either as HEX or a name recognized by browsers (see \url{https://www.w3schools.com/colors/colors_names.asp}).
+#'                     A data.frame must have a code column, and can use certain special columns (see details).
 #' @param selection    The method for selecting codes. Can be "buttons" or "dropdown".
 #'                     "buttons" shows all codes as a button, "dropdown" gives a dropdown menu with a search bar,
 #'                     with in addition buttons for recently used codes
-#' @param onlyEdit     If TRUE, coders can only edit existing annotations. !! Note that this requires \code{\link{create_codebook}} to have
+#' @param onlyEdit     If TRUE, coders can only edit existing annotations. !! Note that this requires \code{\link{create_units}} to have
 #'                     have imported annotations for this variable.
 #' @param multiple     If TRUE, coder can select multiple codes for a selected piece of text before closing the popup. Note that they can always select
 #'                     multiple codes by opening the popup multiple times. The setting exists for cases where multiple codes for a selection are common (e.g. topics in a paragraph).
-#' @param .codebook    The codebook to which the variable should be added (enables piping, see example)
 #'
-#' @aliases add_variable
+#' @details
+#' Using a data.frame for the codes argument gives more flexibility. This data.frame should have a "code" column, and can in addition have a "color" and "parent" column
+#' The color should be a color name, either as HEX or a name recognized by browsers (see \url{https://www.w3schools.com/colors/colors_names.asp})
+#' The parent column is only relevant if you have many codes and use selection="dropdown". The dropdown menu will then show the codes with parent names,
+#' and parent names are included in the search string. A parent can be the name of another code, and parents can have parents,
+#' thus creating trees (just make sure not to create cycles). Use case would for example be an ontology with actor -> government -> president, and issue -> economy -> taxes.
+#'
 #' @return A variable object, to be used within the \code{\link{create_codebook}} function
 #' @export
 #'
 #' @examples
 #' # simple variable with simple codes
-#' codebook_variable("topic", "Assign topics to words",
-#'    codes = c("Economy","War","Health"))
+#' codes = c("Economy","War","Health")
+#' annotation_variable("topic", "Assign topics to words", codes=codes)
 #'
 #' # quick hand for setting colors
-#' codebook_variable("topic", "Assign topics to words",
-#'    codes = c(Economy = 'blue', War = 'red', Health = 'green'))
-#'
-#' # using codes and code functions for detailed codes
-#' x = codebook_variable("sentiment", "Assign sentiment to words",
-#' codes(
-#'   code('negative', color='red'),
-#'   code('neutral', color='grey'),
-#'   code('positive', color='green')
-#'   )
-#' )
+#' codes = c(Economy = 'blue', War = 'red', Health = 'green')
+#' annotation_variable("topic", "Assign topics to words", codes=codes)
 #'
 #' # get codes from a data.frame
 #' codes_df = data.frame(code  = c("negative","neutral","positive"),
 #'                       color = c("red",     "grey",   "green"))
-#' codebook_variable("sentiment", "Assign sentiment to words", codes_df)
+#' annotation_variable("sentiment", "Assign sentiment to words", codes_df)
 #'
+#' # codes data.frame with parents
+#' codes_df = data.frame(
+#'    parent = c('', 'actor', 'government', '', 'media', 'newspaper'),
+#'    code = c('actor','government','president','media','newspaper','NYT'))
+#' codes_df
 #'
-#' ## ADDING VARIABLES TO A CODEBOOK
-#'
-#' # directly with codebook_variable
-#' create_codebook('annotate',
-#'    codebook_variable("sentiment", "Assign sentiment to words", codes_df)
-#' )
-#'
-#' # via a pipe with add_codebook_variable
-#' create_codebook('annotate') |>
-#'    add_variable("sentiment", "assign sentiment to words", codes_df)
-codebook_variable <- function(name, instruction, codes=NULL, selection='buttons', onlyEdit=F, multiple=F) {
+#' annotation_variable("actors", "Label actors. Use the most specific label available", codes_df)
+annotation_variable <- function(name, instruction, codes=NULL, selection='buttons', onlyEdit=F, multiple=F) {
   a = as.list(environment())
   l = list(codes = codes)
   for (key in names(a)) {
@@ -87,14 +77,6 @@ codebook_variable <- function(name, instruction, codes=NULL, selection='buttons'
   structure(l, class=c('codebookVariable', 'list'))
 }
 
-#' @rdname codebook_variable
-#' @export
-add_variable <- function(.codebook, name, instruction, codes=NULL, selection='buttons', onlyEdit=F, multiple=F) {
-  cbv = codebook_variable(name=name, instruction=instruction, codes=codes, selection=selection, onlyEdit=onlyEdit, multiple=multiple)
-  if (.codebook$type != 'annotate') stop('A codebook with "annotate" mode requires variables. See codebook_variables()')
-  .codebook$variables = c(.codebook$variables, list(cbv))
-  .codebook
-}
 
 #' S3 print method for codebookVariable objects
 #'

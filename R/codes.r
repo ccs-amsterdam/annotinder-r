@@ -46,6 +46,16 @@ codes <- function(...) {
 #' @examples
 #' code('yes', color='green')
 #' code('no', color='red')
+#'
+#' # nested codes
+#' code('actor',
+#'     code('government',
+#'         code('president'),
+#'         code('vice-president')
+#'     ),
+#'     code('media'),
+#'     code('society')
+#' )
 code <- function(code, ..., color=NULL) {
   l = list(code = code)
   children = list(...)
@@ -84,3 +94,4 @@ map_codes <- function(codes, parent=NULL) {
   }
   c(list(df), children)
 }
+

@@ -2,17 +2,17 @@
 % Please edit documentation in R/units.r
 \name{create_units}
 \alias{create_units}
-\title{Create units}
+\title{Create unit settings}
 \usage{
-create_units(d, ..., text = NULL, meta = NULL, variables = NULL)
+create_units(d, id, text, meta = NULL, variables = NULL)
 }
 \arguments{
 \item{d}{A data.frame}
 
-\item{...}{Optionally, pass text_fields as (unnamed) arguments. If used, the text argument is ignored}
+\item{id}{A character string with the name of a column with unique ids.}
 
-\item{text}{A character vector with column names to use as text fields, or the output of \code{\link{text_fields}}
-for more customization options. text_field an also be passed as unnamed arguments (see ...)}
+\item{text}{A character vector with column names to use as text fields. Can also be the output of \code{\link{text_fields}},
+which allows more customization options such as styling (bold, fontsize) per field, and distinguishing the coding unit and context unit.}
 
 \item{meta}{A character vector with column names to show as a table of meta data above the units.}
 
@@ -22,20 +22,21 @@ for more customization options. text_field an also be passed as unnamed argument
 A list of units, to be used inside \code{\link{create_codebook}}
 }
 \description{
-Create units
+Create unit settings
 }
 \examples{
-d = data.frame(title = c('title 1', 'title 2'),
+d = data.frame(id = c(1,2),
+               title = c('title 1', 'title 2'),
                text=c('text 1','text 2'),
                pre=c('<','<'), post=c('>','>'),
                date=c('2010','2020'),
                topic=c('a','b'))
 
 ## simple units
-create_units(d, text=c('title','text'), meta='date', variables='topic')
+create_units(d, id='id', text=c('title','text'), meta='date', variables='topic')
 
 ## using text_fields() for more options
-create_units(d, text_fields(
+create_units(d, 'id', text_fields(
    text_field('title'),
    text_field('text', context_before='pre', context_after='post')
 ))

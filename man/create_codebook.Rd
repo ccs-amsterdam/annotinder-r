@@ -4,12 +4,11 @@
 \alias{create_codebook}
 \title{Create a codebook for the CCS Annotator}
 \usage{
-create_codebook(mode = c("annotate", "questions"), ...)
+create_codebook(...)
 }
 \arguments{
-\item{mode}{The type of annotation task. Currently supports "annotate" and "questions"}
-
-\item{...}{Questions for "questions" mode or Variables for "annotate" mode. See \code{\link{codebook_variable}}}
+\item{...}{Questions for "questions" mode or Variables for "annotate" mode. See \code{\link{codebook_variable}}
+Cannot combine "annotate" and "question", because these are very different annotation modes.}
 }
 \value{
 A codebook object
@@ -18,10 +17,10 @@ A codebook object
 Create a codebook for the CCS Annotator
 }
 \examples{
-create_codebook('annotate',
-codebook_variable("sentiment", "Assign sentiment to words", codes(
-  code('negative', color='red'),
-  code('neutral', color='grey'),
-  code('positive', color='green')
-)))
+
+
+variable = annotation_variable("sentiment", "Assign sentiment to words",
+  codes = c(Negative='red', Neutral='grey', Positive='green'))
+
+create_codebook(variable)
 }

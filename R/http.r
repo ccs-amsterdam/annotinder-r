@@ -105,6 +105,6 @@ error_handling <- function(res, only_2xx) {
 #' @export
 backend_error <- function() {
   fn = Sys.getenv('BACKEND_ERROR')
-  json = jsonlite::fromJSON(fn)
+  json = jsonlite::toJSON(fn, pretty = T)
   cat(json)
 }

@@ -1,43 +1,60 @@
 
 
-#' Create units
+#' Create unit settings
 #'
 #' @param d       A data.frame
-#' @param text    A character vector with column names to use as text fields, or the output of \code{\link{text_fields}}
-#'                for more customization options. text_field an also be passed as unnamed arguments (see ...)
+#' @param id      A character string with the name of a column with unique ids.
+#' @param text    A character vector with column names to use as text fields. Can also be the output of \code{\link{text_fields}},
+#'                which allows more customization options such as styling (bold, fontsize) per field, and distinguishing the coding unit and context unit.
 #' @param meta    A character vector with column names to show as a table of meta data above the units.
 #' @param variables A character vector with column names to use as unit variables
-#' @param ...     Optionally, pass text_fields as (unnamed) arguments. If used, the text argument is ignored
 #'
 #'
 #' @return A list of units, to be used inside \code{\link{create_codebook}}
 #' @export
 #'
 #' @examples
-#' d = data.frame(title = c('title 1', 'title 2'),
+#' d = data.frame(id = c(1,2),
+#'                title = c('title 1', 'title 2'),
 #'                text=c('text 1','text 2'),
 #'                pre=c('<','<'), post=c('>','>'),
 #'                date=c('2010','2020'),
 #'                topic=c('a','b'))
 #'
 #' ## simple units
-#' create_units(d, text=c('title','text'), meta='date', variables='topic')
+#' create_units(d, id='id', text=c('title','text'), meta='date', variables='topic')
 #'
 #' ## using text_fields() for more options
-#' create_units(d, text_fields(
+#' create_units(d, 'id', text_fields(
 #'    text_field('title'),
 #'    text_field('text', context_before='pre', context_after='post')
 #' ))
-create_units <- function(d, ..., text=NULL, meta=NULL, variables=NULL) {
-  l = text_fields(...)
-  if (length(l) > 0) text = l
-  if (is.null(l)) stop('either text argument or ... argument needs to be given')
+create_units <- function(d, id, text, meta=NULL, variables=NULL) {
+  ## check if all the stuff is there
+  if (!id %in% colnames(d)) stop(sprintf('"%s" is not a column name in d', id))
+  if (anyDuplicated(d[[id]])) stop(sprintf('The id column (%s) needs to have unique values', id))
+  if (methods::is(text, 'textFields')) {
+    for (textfield in text) {
+      for (textpart in c('coding_unit','context_before','context_after')) {
+        if (!is.null(textfield[[textpart]]) && !textfield[[textpart]] %in% colnames(d)) stop(sprintf('"%s" is not a column name in d', textfield[[textpart]]))
+      }
+    }
+  } else {
+    for (textcol in text) {
+      if (!textcol %in% colnames(d)) stop(sprintf('"%s" is not a column name in d', textcol))
+    }
+  }
+  for (metacol in meta) {
+    if (!metacol %in% colnames(d)) stop(sprintf('"%s" is not a column name in d', metacol))
+  }
+  for (variable in variables) {
+    if (!variable %in% colnames(d)) stop(sprintf('"%s" is not a column name in d', variable))
+  }
 
-  ## TODO: implement some checks here
 
   ## create_units just bundles the arguments. The actual transformation to the required json
   ## happens when calling create_job
-  cub = list(df = dplyr::as_tibble(d), text=text, meta=meta, variables=variables)
+  cub = list(df = dplyr::as_tibble(d), id=id, text=text, meta=meta, variables=variables)
   structure(cub, class = c('createUnitsBundle', 'list'))
 }
 
@@ -46,12 +63,13 @@ prepare_units <- function(createUnitsBundle) {
   units = vector('list', nrow(d))
   for (i in 1:nrow(d)) {
     rowdict = as.list(d[i,])
+    id = rowdict[[createUnitsBundle$id]]
     text_fields = create_text_fields(rowdict, createUnitsBundle$text)
     meta_fields = create_text_fields(rowdict, createUnitsBundle$meta)
     variables = create_variables(rowdict, createUnitsBundle$variables)
 
     ## to do: add "gold". Then when creating coding job check if gold answers match with questions
-    units[[i]] = list(unit = list(document_id=jsonlite::unbox(i),
+    units[[i]] = list(unit = list(unit_id=jsonlite::unbox(id),
                                   text_fields=text_fields,
                                   meta_fields=meta_fields,
                                   variables=variables))

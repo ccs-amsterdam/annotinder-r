@@ -2,7 +2,15 @@
 % Please edit documentation in R/codebook_variable.r
 \name{print.codebookVariable}
 \alias{print.codebookVariable}
-\title{S3 print method for codebookVariable objects}
+\title{#' @rdname codebook_variable
+#' @export
+add_variable <- function(.codebook, name, instruction, codes=NULL, selection='buttons', onlyEdit=F, multiple=F) {
+  cbv = codebook_variable(name=name, instruction=instruction, codes=codes, selection=selection, onlyEdit=onlyEdit, multiple=multiple)
+  if (.codebook$type != 'annotate') stop('A codebook with "annotate" mode requires variables. See codebook_variables()')
+  .codebook$variables = c(.codebook$variables, list(cbv))
+  .codebook
+}
+S3 print method for codebookVariable objects}
 \usage{
 \method{print}{codebookVariable}(x, ...)
 }
@@ -12,5 +20,13 @@
 \item{...}{not used}
 }
 \description{
+#' @rdname codebook_variable
+#' @export
+add_variable <- function(.codebook, name, instruction, codes=NULL, selection='buttons', onlyEdit=F, multiple=F) {
+  cbv = codebook_variable(name=name, instruction=instruction, codes=codes, selection=selection, onlyEdit=onlyEdit, multiple=multiple)
+  if (.codebook$type != 'annotate') stop('A codebook with "annotate" mode requires variables. See codebook_variables()')
+  .codebook$variables = c(.codebook$variables, list(cbv))
+  .codebook
+}
 S3 print method for codebookVariable objects
 }

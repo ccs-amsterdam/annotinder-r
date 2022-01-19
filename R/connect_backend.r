@@ -11,10 +11,7 @@
 #' @return Nothing. Stores API token in env
 #' @export
 backend_connect <- function(host, username, token=NULL, .password=NULL) {
-  conn = structure(list(host = host,
-                        username = username,
-                        token = token,
-                        host_version = NULL),
+  conn = structure(list(host = host, username = username, token = token),
                    class = c("annotatorBackendConnection",'list'))
 
   ## if active connection with same host and username, use existing token

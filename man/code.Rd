@@ -22,4 +22,14 @@ Create a code
 \examples{
 code('yes', color='green')
 code('no', color='red')
+
+# nested codes
+code('actor',
+    code('government',
+        code('president'),
+        code('vice-president')
+    ),
+    code('media'),
+    code('society')
+)
 }
