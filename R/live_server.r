@@ -30,15 +30,13 @@ start_annotator <- function(codingjob, background=F, db_path=getwd(), overwrite=
   Sys.setenv(ANNOTATION_DB = db_file)
 
   server_script = create_plumber_server_script(db_file)
-  if (browse) browseURL('https://ccs-amsterdam.github.io/ccs-annotator-client?local=8000')
+  if (browse) show_in_viewer()
   if (background) {
     run_as_job(server_script)
   } else {
     run_in_current_session(db_file, server_script)
   }
 }
-
-
 
 
 #' Create a
@@ -72,12 +70,12 @@ create_job_db <- function(codingjob, path=getwd(), overwrite=F) {
 run_as_job <- function(server_script) {
   pf = create_plumber_file(server_script)
   job = rstudioapi::jobRunScript(pf, workingDir = getwd())
-  message('Visit annotation client at:\nhttps://ccs-amsterdam.github.io/ccs-annotator-client?local=8000\nUse gimme_annotations() to fetch current annotations.')
+  message('Visit annotation client at:\nhttps://ccs-amsterdam.github.io/ccs-annotator-client?rport=8000\nUse gimme_annotations() to fetch current annotations.')
   job
 }
 
 run_in_current_session <- function(db_file, server_script) {
-  message(sprintf('Visit annotation client at:\nhttps://ccs-amsterdam.github.io/ccs-annotator-client?local=8000\nRetreive annotations with:\ngimme_annotations("%s")', db_file))
+  message(sprintf('Visit annotation client at:\nhttps://ccs-amsterdam.github.io/ccs-annotator-client?rport=8000\nRetreive annotations with:\ngimme_annotations("%s")', db_file))
 
   tryCatch({
     pr = plumber::pr(server_script)
@@ -88,7 +86,21 @@ run_in_current_session <- function(db_file, server_script) {
 }
 
 
+show_in_viewer <- function() {
+  react_build = system.file("ccs-annotator-client", package="ccsAnnotator", mustWork=T)
 
+  ## for some reason needs to run from temp folder
+  tf = tempdir()
+  if (!file.exists(file.path(tf, 'ccs-annotator-client/index.html'))) file.copy(react_build, tf, recursive = T)
+  url = file.path(tf, 'ccs-annotator-client/index.html')
+
+  utils::browseURL(url)
+  # viewer = getOption("viewer")
+  # if (!is.null(viewer))
+  #   viewer(url)
+  # else if (interactive())
+  #   utils::browseURL(url)
+}
 
 #' Get annotation for a given job DB
 #'
