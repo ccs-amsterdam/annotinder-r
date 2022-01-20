@@ -65,7 +65,7 @@ prepare_units <- function(createUnitsBundle) {
     rowdict = as.list(d[i,])
     id = rowdict[[createUnitsBundle$id]]
     text_fields = create_text_fields(rowdict, createUnitsBundle$text)
-    meta_fields = create_text_fields(rowdict, createUnitsBundle$meta)
+    meta_fields = create_meta_fields(rowdict, createUnitsBundle$meta)
     variables = create_variables(rowdict, createUnitsBundle$variables)
 
     ## to do: add "gold". Then when creating coding job check if gold answers match with questions
@@ -78,6 +78,7 @@ prepare_units <- function(createUnitsBundle) {
   structure(units, class=c('codingjobUnits', 'list'))
 }
 
+
 create_text_fields <- function(rowdict, text_cols) {
   lapply(seq_along(text_cols), function(i) {
     ## if text_cols is a simple character vector
@@ -85,7 +86,8 @@ create_text_fields <- function(rowdict, text_cols) {
       field = text_cols[i]
       value = rowdict[[text_cols[i]]]
 
-      return(list(field=jsonlite::unbox(field), value=jsonlite::unbox(value)))
+
+      return(list(name=jsonlite::unbox(field), value=jsonlite::unbox(value)))
     }
 
     ## if text_cols was created with text_fields()
@@ -108,8 +110,8 @@ create_text_fields <- function(rowdict, text_cols) {
 
 
 create_meta_fields <- function(rowdict, meta_cols) {
-  lapply(seq_along(text_cols), function(i) {
-    if (methods::is(text_cols, 'character')) return(list(field=text_cols[i], value=rowdict[[text_cols[i]]]))
+  lapply(seq_along(meta_cols), function(i) {
+    if (methods::is(meta_cols, 'character')) return(list(name=meta_cols[i], value=rowdict[[meta_cols[i]]]))
     NULL
   })
 }
@@ -149,7 +151,7 @@ text_fields <- function(...) {
     if (methods::is(x, 'character')) x = text_field(x)
     x
   })
-  names = sapply(l, function(x) x$coding_unit)
+  names = sapply(l, function(x) x$field)
   if (anyDuplicated(names)) stop('Text fields need to use unique columns for setting the coding_unit')
   structure(l, class=c('textFields', 'list'))
 }
@@ -197,6 +199,7 @@ text_field <- function(coding_unit=NULL, context_before=NULL, context_after=NULL
   l
 }
 
+
 #' S3 print method for textFields objects
 #'
 #' @param x an textFields object, created with \link{variable}
@@ -242,5 +245,5 @@ print.codingjobUnits <- function(x, ...){
 #' @examples
 #' @export
 print.createUnitsBundle <- function(x, ...){
-  cat(x)
+  cat(jsonlite::toJSON(x, pretty=T))
 }

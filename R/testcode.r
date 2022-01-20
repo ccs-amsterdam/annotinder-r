@@ -12,6 +12,8 @@ codingjob = create_job('Sotu sentiment',
                        create_units(mini_sotu, id='id', text='text', meta=c('name','year')),
                        create_codebook(sentiment))
 
+
+
 ## run in current session. Auto opens annotator in browser
 job_db = start_annotator(codingjob, overwrite=T)
 
