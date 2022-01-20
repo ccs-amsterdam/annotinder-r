@@ -47,7 +47,9 @@
 #' codes_df
 #'
 #' annotation_variable("actors", "Label actors. Use the most specific label available", codes_df)
-annotation_variable <- function(name, instruction, codes=NULL, selection='buttons', onlyEdit=F, multiple=F) {
+annotation_variable <- function(name, instruction, codes=NULL, selection=c('buttons', 'dropdown'), onlyEdit=F, multiple=F) {
+  selection = match.arg(selection)
+
   a = as.list(environment())
   l = list(codes = codes)
   for (key in names(a)) {

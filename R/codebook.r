@@ -8,8 +8,6 @@
 #' @export
 #'
 #' @examples
-#'
-#'
 #' variable = annotation_variable("sentiment", "Assign sentiment to words",
 #'   codes = c(Negative='red', Neutral='grey', Positive='green'))
 #'
@@ -27,6 +25,9 @@ create_codebook <- function(...) {
     x$codes = codes_df_to_list(x$codes)
     x
   })
+
+  ##### TO ADD:
+  ####### process branching
 
   if (has_variables) cb = list(type = jsonlite::unbox('annotate'), variables = l)
   if (has_questions) cb = list(type = jsonlite::unbox('questions'), questions = l)

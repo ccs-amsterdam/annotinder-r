@@ -14,6 +14,13 @@ create_job <- function(title, units, codebook) {
                     codebook=codebook,
                     units=prepare_units(units),
                     rules= list(ruleset = jsonlite::unbox('crowdcoding')))
+
+  ##### TO ADD:
+  ####### check whether variables used in questions are present in units
+  if (codebook$type == 'questions') {
+    ## for every question, grep [.*], then setdiff with units$variables
+  }
+
   structure(cj_package, class=c('codingjob', 'list'))
 }
 
