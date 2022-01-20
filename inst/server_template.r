@@ -6,29 +6,20 @@ db_file = "DB_FILE"
 db = DBI::dbConnect(RSQLite::SQLite(), db_file)
 
 
-# Enable CORS Filtering
-# see: https://github.com/rstudio/plumber/issues/66#issuecomment-845739601
 #' @filter cors
 cors <- function(req, res) {
-  safe_domains <- c("*")
 
-  referer = req$HTTP_REFERER
-  if (is.null(referer)) referer = req$HTTP_ORIGIN
+  res$setHeader("Access-Control-Allow-Origin", "*")
 
-  if (any(grepl(pattern = paste0(safe_domains,collapse="|"), referer,ignore.case=T))) {
-    res$setHeader("Access-Control-Allow-Origin", sub("/$","",referer)) #Have to remove last slash, for some reason
-
-    if (req$REQUEST_METHOD == "OPTIONS") {
-      res$setHeader("Access-Control-Allow-Methods","GET,HEAD,PUT,PATCH,POST,DELETE") #This is how node.js does it
-      res$setHeader("Access-Control-Allow-Headers", req$HTTP_ACCESS_CONTROL_REQUEST_HEADERS)
-      res$status <- 200
-      return(list())
-    } else {
-      plumber::forward()
-    }
+  if (req$REQUEST_METHOD == "OPTIONS") {
+    res$setHeader("Access-Control-Allow-Methods","*")
+    res$setHeader("Access-Control-Allow-Headers", req$HTTP_ACCESS_CONTROL_REQUEST_HEADERS)
+    res$status <- 200
+    return(list())
   } else {
     plumber::forward()
   }
+
 }
 
 ### GET
