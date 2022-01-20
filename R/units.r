@@ -58,8 +58,16 @@ create_units <- function(d, id, text, meta=NULL, variables=NULL) {
   structure(cub, class = c('createUnitsBundle', 'list'))
 }
 
-prepare_units <- function(createUnitsBundle) {
+prepare_units <- function(createUnitsBundle, annotations) {
   d = createUnitsBundle$df
+
+  if (is.null(annotations) || nrow(annotations) == 0) {
+    ann_list = NULL
+  } else {
+    ann_list = split(annotations, annotations$id)
+    ann_list = ann_list[match(d$id, names(ann_list))]
+  }
+
   units = vector('list', nrow(d))
   for (i in 1:nrow(d)) {
     rowdict = as.list(d[i,])
@@ -67,12 +75,16 @@ prepare_units <- function(createUnitsBundle) {
     text_fields = create_text_fields(rowdict, createUnitsBundle$text)
     meta_fields = create_meta_fields(rowdict, createUnitsBundle$meta)
     variables = create_variables(rowdict, createUnitsBundle$variables)
+    importedAnnotations = create_imported_annotations(ann_list[[i]])
 
     ## to do: add "gold". Then when creating coding job check if gold answers match with questions
     units[[i]] = list(unit = list(unit_id=jsonlite::unbox(id),
                                   text_fields=text_fields,
                                   meta_fields=meta_fields,
                                   variables=variables))
+
+    if (!is.null(importedAnnotations)) units[[i]]$unit$importedAnnotations = importedAnnotations
+
   }
 
   structure(units, class=c('codingjobUnits', 'list'))
@@ -123,6 +135,21 @@ create_variables <- function(rowdict, variable_cols) {
   }
   l
 }
+
+create_imported_annotations <- function(ann) {
+  if (is.null(ann)) return(NULL)
+  ann = ann[,c('field','variable','value','offset','length')]
+  ann = apply(ann, 1, function(x) {
+    l = as.list(x)
+    l$offset = as.numeric(l$offset)
+    l$length = as.numeric(l$length)
+    l = lapply(l, jsonlite::unbox)
+  })
+  names(ann) = NULL
+  ann
+}
+
+
 
 
 #' Helper function for text_field customization in \code{\link{create_units}}

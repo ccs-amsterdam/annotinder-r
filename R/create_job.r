@@ -3,16 +3,22 @@
 #' @param title     A character string, for the title of the codingjob
 #' @param units     A codingjobUnits object, as created with \code{\link{create_units}}
 #' @param codebook  A codebook object, as created with \code{\link{create_codebook}}
+#' @param annotations Optionally, create the job with imported annotations.
+#'                    Should be a data.frame like returned by \code{\link{gimme_annotations}}, with the columns:
+#'                    id, field, variable, value, offset and length. The "id" column should match the id column in the units
+#'                    (based on the id argument in create_units). "field" should be a text field in units. "variable" and "value"
+#'                    should match actual variables (or questions) and codes in the codebook. "offset" and "length" are the
+#'                    character position offset and the length of the span annotation.
 #'
 #' @return   A codingjob object
 #' @export
 #'
 #' @examples
-create_job <- function(title, units, codebook) {
+create_job <- function(title, units, codebook, annotations=NULL) {
   cj_package = list(title=jsonlite::unbox(title),
                     provenance=list(),
                     codebook=codebook,
-                    units=prepare_units(units),
+                    units=prepare_units(units, annotations),
                     rules= list(ruleset = jsonlite::unbox('crowdcoding')))
 
   ##### TO ADD:
