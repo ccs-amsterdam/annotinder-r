@@ -11,47 +11,64 @@
 #' command that is printed when running this function. The other way is to use RStudio background jobs, which runs the
 #' server in the background of the current session. To use this, set background = TRUE.
 #'
-#' @param codingjob   A codingjob, created with \code{\link{create_job}}
+#' @param job_db      A codingjob database file, created with \code{\link{create_job_db}}
 #' @param background  (RStudio only) If TRUE, start the server as an RStudio background job. This way you can
 #'                    keep working in the current session
-#' @param db_path     The path where the folder with coding job DBs is stored. Default is working directory.
-#'                    If you're just playing around, tempdir() is pretty solid.
-#' @param overwrite   You're not allowed to create two jobs with the same title (which also becomes the DB filename).
-#'                    Or well, you're allowed to, but you have to say overwrite is TRUE so you can't blame us if you
-#'                    accidentally delete any hard-earned annotations.
-#' @param browse      If TRUE (default), automatically opens your default browser to start the annotation.
+#' @param browse      If TRUE (default), automatically opens \code{\link{annotator_client}}
 #'
-#' @return
+#' @return The job_db (for piping convenience)
 #' @export
 #'
 #' @examples
-start_annotator <- function(codingjob, background=F, db_path=getwd(), overwrite=F, browse=T) {
-  db_file = create_job_db(codingjob, path=db_path, overwrite=overwrite)
-  Sys.setenv(ANNOTATION_DB = db_file)
+#' sentiment = annotation_variable('sentiment', 'assign sentiment to words',
+#'      codes = c(Negative = 'red', Neutral = 'grey', Positive = 'green'))
+#' codingjob = create_job('Sotu sentiment',
+#'                        create_units(mini_sotu, id='id', text='text', meta=c('name','year')),
+#'                        create_codebook(sentiment))
+#'
+#' job_db = create_job_db(codingjob)
+#'
+#' \dontrun{
+#' start_annotator(job_id)
+#' }
+start_annotator <- function(job_db, background=F, browse=T) {
+  Sys.setenv(ANNOTATION_DB = job_db)
 
-  server_script = create_plumber_server_script(db_file)
-  if (browse) view_annotator(in_browser = !background) ## if not background job, rstudio can't serve it
+  server_script = create_plumber_server_script(job_db)
+  if (browse) annotator_client(in_browser = !background) ## if not background job, rstudio can't serve it
 
   if (background) {
     run_as_job(server_script)
   } else {
     run_in_current_session(db_file, server_script)
   }
-  db_file
+  job_db
 }
 
 
 
-#' Create a
+#' Create a codingjob database
 #'
-#' @param codingjob
-#' @param path
-#' @param overwrite
+#' Creates an RSQlite database, that can be used in \code{\link{start_annotator}}
 #'
-#' @return
+#' @param codingjob   A codingjob, created with \code{\link{create_job}}
+#' @param db_path     The path where the folder with coding job DBs is stored. Default is working directory.
+#'                    If you don't want to store annotations beyond this session, use tempdir().
+#' @param overwrite   You're not allowed to create two jobs with the same title (which also becomes the DB filename).
+#'                    Or well, you're allowed to, but you have to say overwrite is TRUE so you can't blame us if you
+#'                    accidentally delete any hard-earned annotations.
+#'
+#' @return The job database file, that can be used in gimme_annotation()
 #' @export
 #'
 #' @examples
+#' sentiment = annotation_variable('sentiment', 'assign sentiment to words',
+#'      codes = c(Negative = 'red', Neutral = 'grey', Positive = 'green'))
+#' codingjob = create_job('Sotu sentiment',
+#'                        create_units(mini_sotu, id='id', text='text', meta=c('name','year')),
+#'                        create_codebook(sentiment))
+#'
+#' job_db = create_job_db(codingjob)
 create_job_db <- function(codingjob, path=getwd(), overwrite=F) {
   folder = if (!is.null(path)) file.path(path, 'ccsAnnotatorJobs') else 'ccsAnnotatorJobs'
   if (!file.exists(folder)) dir.create(folder, recursive = T)
@@ -73,53 +90,17 @@ create_job_db <- function(codingjob, path=getwd(), overwrite=F) {
 run_as_job <- function(server_script) {
   pf = create_plumber_file(server_script)
   job = rstudioapi::jobRunScript(pf, workingDir = getwd())
-  message('Visit annotation client at:\nhttps://ccs-amsterdam.github.io/ccs-annotator-client?rport=8000\nUse gimme_annotations() to fetch current annotations.')
   job
 }
 
 run_in_current_session <- function(db_file, server_script) {
-  message(sprintf('Visit annotation client at:\nhttps://ccs-amsterdam.github.io/ccs-annotator-client?rport=8000\nRetreive annotations with:\ngimme_annotations("%s")', db_file))
-
   tryCatch({
     pr = plumber::pr(server_script)
     plumber::pr_run(pr, docs=F, port=8000)
-  }, finally = {
-    gimme_annotations(db_file)
-  })
+  }, finally = "silence of the servers")
 }
 
 
-
-#' Get annotation for a given job DB
-#'
-#' @param db_file   If NULL (default) looks whether an an annotation server (see \code{\link{start_annotator}}) ran (or is running) in the current session.
-#'                  If so, it retrieves the annotations from this server
-#'                  annotations from this
-#' @param only_done If TRUE (default) only retrieve annotations with the "DONE" status. If FALSE, also retrieve annotations with the "IN_PROGRESS" status
-#'
-#' @return
-#' @export
-#'
-#' @examples
-gimme_annotations <- function(db_file=NULL, only_done=TRUE) {
-  if (is.null(db_file)) db_file = Sys.getenv('ANNOTATION_DB')
-  if (is.null(db_file)) return(NULL)
-  if_status = if (only_done) "DONE" else c("DONE","IN_PROGRESS")
-
-  db = DBI::dbConnect(RSQLite::SQLite(), db_file)
-  annotations = DBI::dbReadTable(db, 'annotations')
-  DBI::dbDisconnect(db)
-  annotations = annotations[annotations$json != '',]
-  if (nrow(annotations) == 0) return(NULL)
-
-  annotations = lapply(1:nrow(annotations), function(i) {
-    a = jsonlite::fromJSON(annotations$json[i])
-    if (!a$status %in% if_status) return(NULL)
-    dplyr::bind_cols(unit_id = annotations$unit_id[i], dplyr::as_tibble(a$annotation))
-  })
-  dplyr::bind_rows(annotations)
-
-}
 
 
 

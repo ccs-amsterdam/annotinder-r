@@ -1,5 +1,17 @@
 
-view_annotator <- function(in_browser=FALSE) {
+#' Open the annotator client
+#'
+#' Opens the annotator client. If you're running RStudio, it will try to use the Viewer.
+#' Otherwise, it will open in your default webbrowser.
+#'
+#' @param in_browser Can be TRUE if you want to force opening in the default webbrowser
+#'
+#' @return Nothing
+#' @export
+#'
+#' @examples
+#' annotator_client()
+annotator_client <- function(in_browser=FALSE) {
   react_build = system.file("ccs-annotator-client", package="ccsAnnotator", mustWork=T)
 
   viewer = getOption("viewer")
