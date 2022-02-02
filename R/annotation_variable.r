@@ -11,8 +11,8 @@
 #' @param selection    The method for selecting codes. Can be "buttons" or "dropdown".
 #'                     "buttons" shows all codes as a button, "dropdown" gives a dropdown menu with a search bar,
 #'                     with in addition buttons for recently used codes
-#' @param onlyEdit     If TRUE, coders can only edit existing annotations. !! Note that this requires \code{\link{create_units}} to have
-#'                     have imported annotations for this variable.
+#' @param only_edit    If TRUE, coders can only edit imported annotations. You can import annotations in \code{\link{create_jobs}} with the annotations argument
+#' @param only_imported If TRUE, codes can only use codes that were used at least once in a unit in the imported annotations.
 #' @param multiple     If TRUE, coder can select multiple codes for a selected piece of text before closing the popup. Note that they can always select
 #'                     multiple codes by opening the popup multiple times. The setting exists for cases where multiple codes for a selection are common (e.g. topics in a paragraph).
 #'
@@ -47,7 +47,7 @@
 #' codes_df
 #'
 #' annotation_variable("actors", "Label actors. Use the most specific label available", codes_df)
-annotation_variable <- function(name, instruction, codes=NULL, selection=c('buttons', 'dropdown'), onlyEdit=F, multiple=F) {
+annotation_variable <- function(name, instruction, codes=NULL, selection=c('buttons', 'dropdown'), only_edit=F, only_imported=F, multiple=F) {
   selection = match.arg(selection)
 
   a = as.list(environment())
@@ -68,6 +68,10 @@ annotation_variable <- function(name, instruction, codes=NULL, selection=c('butt
     }
     l[[key]] = jsonlite::unbox(a[[key]])
   }
+
+  l$editMode = jsonlite::unbox(only_edit)
+  l$onlyImported = jsonlite::unbox(only_imported)
+
 
   if (methods::is(l$codes, 'character')) {
     if (!is.null(names(l$codes))) {

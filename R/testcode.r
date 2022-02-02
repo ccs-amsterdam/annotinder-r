@@ -45,20 +45,52 @@ job_db = create_job_db(codingjob, overwrite = T)
 job_db = start_annotator(job_db)
 
 
+####################
+####################
+
+
 ## test with importing annotations
+detach("package:corpustools", unload = TRUE)
 library(corpustools)
+library(ccsAnnotator)
 
-tc = create_tcorpus(mini_sotu, c('name','text'), 'id')
+tc = create_tcorpus(mini_sotu, c('name','text'), 'id', remember_spaces = T)
+tc$code_dictionary(quanteda::data_dictionary_LSD2015, column = 'sentiment')
 
-tc$code_dictionary(quanteda::data_dictionary_LSD2015)
+units = untokenize(tc)
+annotations = export_span_annotations(tc, 'sentiment')
+annotations$id = annotations$doc_id
+
+unique(annotations[,c('variable','value')])
+sentiment = annotation_variable('sentiment', 'Annotate the sentiment of words', only_edit = T, multiple=T,
+          codes = c(positive='green', neg_negative='green', negative='red', neg_positive='red'))
+
+
+codingjob = create_job('Sotu sentiment',
+                       create_units(units, id='doc_id', text='text'),
+                       create_codebook(sentiment),
+                       annotations)
 
 
 
 
+codingjob$units[[1]]$unit$text_fields
+head(codingjob$units[[1]]$unit$importedAnnotations)
+
+job_db = create_job_db(codingjob, overwrite=T)
+start_annotator(job_db, background=T)
 
 
 
+codingjob = create_job('test nieuw 1',
+                       create_units(units, id='doc_id', text='text'),
+                       create_codebook(sentiment),
+                       annotations)
 
+codingjob$rules
+
+backend_connect('https://amcat4.labs.vu.nl/api/annotator', 'test@user.com')
+upload_job(codingjob)
 }
 
 

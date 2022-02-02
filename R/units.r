@@ -65,7 +65,7 @@ prepare_units <- function(createUnitsBundle, annotations) {
     ann_list = NULL
   } else {
     ann_list = split(annotations, annotations$id)
-    ann_list = ann_list[match(d$id, names(ann_list))]
+    ann_list = ann_list[match(d[[createUnitsBundle$id]], names(ann_list))]
   }
 
   units = vector('list', nrow(d))

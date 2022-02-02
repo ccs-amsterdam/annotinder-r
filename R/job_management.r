@@ -35,7 +35,7 @@ get_job <- function(job_id, annotations=T) {
 #'
 #' @examples
 upload_job <- function(codingjob) {
-  cj_data = request('codingjob', post = T, json_data = jsonlite::toJSON(codingjob))
+  cj_data = request('codingjob', post = T, json_data = jsonlite::toJSON(codingjob, auto_unbox = T))
   cj_data$id
 }
 
