@@ -137,7 +137,7 @@ create_variables <- function(rowdict, variable_cols) {
 }
 
 create_imported_annotations <- function(ann) {
-  if (is.null(ann)) return(NULL)
+  if (is.null(ann) || nrow(ann) == 0) return(NULL)
   ann = ann[,c('field','variable','value','offset','length')]
   ann = apply(ann, 1, function(x) {
     l = as.list(x)
