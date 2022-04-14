@@ -2,6 +2,48 @@
 function() {
 
 library(ccsAnnotator)
+sentiment = annotation_question('sentiment', 'What is the sentiment of this text?',
+                                codes = c(Negative = 'red', Neutral = 'grey', Positive = 'green'))
+codingjob = create_job('Sotu sentiment',
+                       create_units(mini_sotu, id='id', text='text', meta=c('name','year')),
+                       create_codebook(sentiment))
+backend_connect('https://amcat4.labs.vu.nl/api/annotator', 'test@user.com')
+upload_job(codingjob)
+
+
+jsonlite::toJSON(codingjob$codebook)
+job_db = create_job_db(codingjob, overwrite = T)
+
+
+library(corpustools)
+library(tidyverse)
+d = sotu_texts
+colnames(d)
+d$year = gsub('-.*','',d$date)
+d$id = paste0(gsub('.* ', '', d$president), d$year)
+d = d %>%
+  group_by(id) %>%
+  mutate(paragraph = 1:n())
+d = data.frame(id = paste(d$id, d$paragraph, sep='.'),
+               title = paste0(d$president),
+               text = d$text,
+               president = d$president,
+               paragraph = d$paragraph,
+               date = d$date)
+d = d[sample(1:nrow(d), 20, replace=F),]
+cj = create_job('Sotu sentiment',
+                create_units(d, id='id', meta=c('date', 'paragraph'), text_fields(
+                  text_field('title', bold = T, size = 1.2),
+                  text_field('text')
+                )),
+                create_codebook(sentiment))
+jsonlite::toJSON(cj$units)
+
+
+
+
+?create_units
+library(ccsAnnotator)
 
 ## create codebook
 sentiment = annotation_variable('sentiment', 'assign sentiment to words',

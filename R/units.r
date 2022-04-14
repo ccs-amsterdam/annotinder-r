@@ -6,7 +6,7 @@
 #' @param id      A character string with the name of a column with unique ids.
 #' @param text    A character vector with column names to use as text fields. Can also be the output of \code{\link{text_fields}},
 #'                which allows more customization options such as styling (bold, fontsize) per field, and distinguishing the coding unit and context unit.
-#' @param meta    A character vector with column names to show as a table of meta data above the units.
+#' @param meta    A character vector with names of columns that contain paths to image (png/jpeg) files.
 #' @param variables A character vector with column names to use as unit variables
 #'
 #'
@@ -29,14 +29,19 @@
 #'    text_field('title'),
 #'    text_field('text', context_before='pre', context_after='post')
 #' ))
-create_units <- function(d, id, text, meta=NULL, variables=NULL) {
+create_units <- function(d, id, text=NULL, meta=NULL, image=NULL, variables=NULL) {
+  if (is.null(text) && is.null(image)) stop('Either text or image needs to be specified')
   ## check if all the stuff is there
   if (!id %in% colnames(d)) stop(sprintf('"%s" is not a column name in d', id))
   if (anyDuplicated(d[[id]])) stop(sprintf('The id column (%s) needs to have unique values', id))
   if (methods::is(text, 'textFields')) {
     for (textfield in text) {
-      for (textpart in c('coding_unit','context_before','context_after')) {
-        if (!is.null(textfield[[textpart]]) && !textfield[[textpart]] %in% colnames(d)) stop(sprintf('"%s" is not a column name in d', textfield[[textpart]]))
+      if ('image_file' %in% names(textfield)) {
+        ## add some checks for images
+      } else {
+        for (textpart in c('coding_unit','context_before','context_after')) {
+          if (!is.null(textfield[[textpart]]) && !textfield[[textpart]] %in% colnames(d)) stop(sprintf('"%s" is not a column name in d', textfield[[textpart]]))
+        }
       }
     }
   } else {
@@ -47,6 +52,9 @@ create_units <- function(d, id, text, meta=NULL, variables=NULL) {
   for (metacol in meta) {
     if (!metacol %in% colnames(d)) stop(sprintf('"%s" is not a column name in d', metacol))
   }
+  for (imagecol in image) {
+    if (!imagecol %in% colnames(d)) stop(sprintf('"%s" is not a column name in d', imagecol))
+  }
   for (variable in variables) {
     if (!variable %in% colnames(d)) stop(sprintf('"%s" is not a column name in d', variable))
   }
@@ -54,7 +62,7 @@ create_units <- function(d, id, text, meta=NULL, variables=NULL) {
 
   ## create_units just bundles the arguments. The actual transformation to the required json
   ## happens when calling create_job
-  cub = list(df = dplyr::as_tibble(d), id=id, text=text, meta=meta, variables=variables)
+  cub = list(df = dplyr::as_tibble(d), id=id, text=text, meta=meta, image=image, variables=variables)
   structure(cub, class = c('createUnitsBundle', 'list'))
 }
 
@@ -74,6 +82,7 @@ prepare_units <- function(createUnitsBundle, annotations) {
     id = rowdict[[createUnitsBundle$id]]
     text_fields = create_text_fields(rowdict, createUnitsBundle$text)
     meta_fields = create_meta_fields(rowdict, createUnitsBundle$meta)
+    image_fields = create_image_fields(rowdict, createUnitsBundle$image)
     variables = create_variables(rowdict, createUnitsBundle$variables)
     importedAnnotations = create_imported_annotations(ann_list[[i]])
 
@@ -81,6 +90,7 @@ prepare_units <- function(createUnitsBundle, annotations) {
     units[[i]] = list(unit = list(unit_id=jsonlite::unbox(id),
                                   text_fields=text_fields,
                                   meta_fields=meta_fields,
+                                  image_fields=image_fields,
                                   variables=variables))
 
     if (!is.null(importedAnnotations)) units[[i]]$unit$importedAnnotations = importedAnnotations
@@ -123,10 +133,25 @@ create_text_fields <- function(rowdict, text_cols) {
 
 create_meta_fields <- function(rowdict, meta_cols) {
   lapply(seq_along(meta_cols), function(i) {
-    if (methods::is(meta_cols, 'character')) return(list(name=meta_cols[i], value=rowdict[[meta_cols[i]]]))
+    if (methods::is(meta_cols, 'character')) {
+      meta_field = list(name=meta_cols[i], value=rowdict[[meta_cols[i]]])
+      return(lapply(meta_field, jsonlite::unbox))
+    }
     NULL
   })
 }
+
+create_image_fields <- function(rowdict, image_cols) {
+  lapply(seq_along(image_cols), function(i) {
+    path = rowdict[[image_cols[i]]]
+    if (methods::is(image_cols, 'character')) {
+      image_field = list(name=image_cols[i], filename=gsub('.*/','',path), base64=base64enc::base64encode(path))
+      return(lapply(image_field, jsonlite::unbox))
+    }
+    NULL
+  })
+}
+
 
 create_variables <- function(rowdict, variable_cols) {
   l = list()
@@ -224,6 +249,19 @@ text_field <- function(coding_unit=NULL, context_before=NULL, context_after=NULL
   l = as.list(environment())
   l$field = field
   l
+}
+
+#' Create a detailed text_field for \code{\link{create_units}}
+#'
+#' @param image_file
+#' @param caption
+#'
+#' @return
+#' @export
+#'
+#' @examples
+image_field <- function(image_file, caption=NULL) {
+  as.list(environment())
 }
 
 

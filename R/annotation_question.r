@@ -22,11 +22,11 @@
 #'                     "buttons" shows all answers as buttons, "dropdown" gives a dropdown menu with a search bar.
 #'                     "annotinder" lets users swipe for answers, and can only be used if the number of answers is 2 or 3.
 #'                     The direction for each answer is "left" (first answer), "right" (second answer) and "up" (optional third answer).
-#' @param only_if      Conditions that need to be met for this question to be asked. Given as a list, where the names are the names of other questions
+#' @param only_if      (TODO!!) Conditions that need to be met for this question to be asked. Given as a list, where the names are the names of other questions
 #'                     in the codebook, and the values are character vectors with codes in this question. If the conditions are not met, this question will automatically
 #'                     be answered with the code "IRRELEVANT". For example: list(relevant = "yes") means: Only ask this question if the question named "relevant" was answered with "yes". Can use multiple conditions:
 #'                     list(relevant = "yes", mood = c("angry", "sad")) means that relevant needs to be answered "yes" and mood needs to be answered with either "angry" or "sad".
-#' @param not_if       Like only_if, but for negative conditions. list(relevant = "no") would mean: don't ask this question if the question named "relevant" was
+#' @param not_if       (TODO!!) Like only_if, but for negative conditions. list(relevant = "no") would mean: don't ask this question if the question named "relevant" was
 #'                     answered with the code "no".
 #'
 #' @details
