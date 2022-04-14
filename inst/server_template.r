@@ -93,7 +93,7 @@ function(job_id) {
 #* @post /codingjob/<job_id>/unit/<unit_id>/annotation
 function(req, job_id, unit_id) {
   body = req$argsBody
-  unit_id = as.numeric(unit_id)
+  unit_id = as.character(unit_id)
   db_insert_annotation(db, unit_id, body)
 }
 

@@ -31,7 +31,7 @@
 #' \dontrun{
 #' start_annotator(job_id)
 #' }
-start_annotator <- function(job_db, background=F, browse=T) {
+start_annotator <- function(job_db, background=F, browse=T, port=8000) {
   Sys.setenv(ANNOTATION_DB = job_db)
 
   server_script = create_plumber_server_script(job_db)
@@ -89,7 +89,10 @@ create_job_db <- function(codingjob, path=getwd(), overwrite=F) {
 
 run_as_job <- function(server_script) {
   pf = create_plumber_file(server_script)
+  #running_job = Sys.getenv('ANNOTATION_RSTUDIO_JOB')
+  #if (running_job != '') tryCatch({rstudioapi::jobRemove(running_job)}, error=function(e) NULL)
   job = rstudioapi::jobRunScript(pf, workingDir = getwd())
+  Sys.setenv(ANNOTATION_RSTUDIO_JOB = job)
   job
 }
 
@@ -99,10 +102,6 @@ run_in_current_session <- function(db_file, server_script) {
     plumber::pr_run(pr, docs=F, port=8000)
   }, finally = "silence of the servers")
 }
-
-
-
-
 
 create_plumber_server_script <- function(db_file) {
   server_file = tempfile(fileext = '.r')

@@ -28,7 +28,6 @@ request <- function(branch=NULL, param=list(), json_data=NULL, post=FALSE, post_
 
   param = arrange_url_arguments(param, ...)
   url = paste(conn$host, paste(branch, collapse='/'), sep='/')
-
   if (!post) {
     res = httr::GET(url, get_headers(conn), query=param)
   } else {
@@ -105,6 +104,7 @@ error_handling <- function(res, only_2xx) {
 #' @export
 backend_error <- function() {
   fn = Sys.getenv('BACKEND_ERROR')
-  json = jsonlite::toJSON(fn, pretty = T)
-  cat(json)
+  txt = readLines(fn)
+  json = jsonlite::toJSON(txt, pretty = T)
+  jsonlite::prettify(json)
 }

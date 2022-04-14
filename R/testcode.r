@@ -49,9 +49,31 @@ library(ccsAnnotator)
 sentiment = annotation_variable('sentiment', 'assign sentiment to words',
                                 codes = c(Negative = 'red', Neutral = 'grey', Positive = 'green'))
 
-codingjob = create_job('Sotu sentiment',
+mini_sotu$id = c('test','of','ID','werkt')
+
+codingjob = create_job('Sotu sentiment alternative',
                        create_units(mini_sotu, id='id', text='text', meta=c('name','year')),
                        create_codebook(sentiment))
+
+backend_connect('http://localhost:5000/annotator', 'test@user.com')
+upload_job(codingjob)
+
+
+
+backend_connect('https://amcat4.labs.vu.nl/api/annotator', 'test@user.com')
+upload_job(codingjob)
+
+
+test = codingjob$units[[1]]
+test$id
+
+#jsonlite::write_json(jsonlite::toJSON(list(codebook = codingjob$codebook)),
+#                     path = '~/projects/ccs-annotator-client/public/codebook/sentimentAnnotation.json')
+
+
+#jsonlite::write_json(jsonlite::toJSON(list(units=codingjob$units)),
+#                     path = '~/projects/ccs-annotator-client/public/units/sotu.json')
+
 
 job_db = create_job_db(codingjob, overwrite = T)
 
@@ -92,7 +114,6 @@ job_db = start_annotator(job_db)
 
 
 ## test with importing annotations
-detach("package:corpustools", unload = TRUE)
 library(corpustools)
 library(ccsAnnotator)
 
@@ -115,12 +136,9 @@ codingjob = create_job('Sotu sentiment',
 
 
 
-
-codingjob$units[[1]]$unit$text_fields
-head(codingjob$units[[1]]$unit$importedAnnotations)
-
 job_db = create_job_db(codingjob, overwrite=T)
 start_annotator(job_db, background=T)
+
 
 
 
@@ -131,7 +149,7 @@ codingjob = create_job('test nieuw 1',
 
 codingjob$rules
 
-backend_connect('https://amcat4.labs.vu.nl/api/annotator', 'test@user.com')
+backend_connect('http://localhost:5000/annotator', 'test@user.com')
 upload_job(codingjob)
 }
 

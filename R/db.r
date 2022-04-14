@@ -10,7 +10,7 @@ db_write_codebook <- function(db, codebook) {
 db_write_units <- function(db, units) {
   json_list = sapply(units, jsonlite::toJSON)
   index = (1:length(units)) - 1  ## start at zero to match js client indexing
-  id = sapply(units, function(x) x$unit$unit_id)
+  id = sapply(units, function(x) as.character(x$id))
   json_df = dplyr::tibble(unit_index=index, id=id, status="", json=json_list) ## (db field name cannot be index)
   DBI::dbWriteTable(db, 'units', json_df, overwrite=T)
   DBI::dbExecute(db, 'CREATE INDEX unit_index_index ON units (unit_index)')
@@ -20,12 +20,11 @@ db_write_units <- function(db, units) {
 }
 
 db_create_annotations <- function(db, units) {
-  unit_id = sapply(units, function(x) x$unit$unit_id)
+  unit_id = sapply(units, function(x) as.character(x$id))
   dummy_df = dplyr::tibble(unit_id=unit_id, json='')
   DBI::dbWriteTable(db, 'annotations', dummy_df, overwrite=T)
   DBI::dbExecute(db, 'CREATE INDEX unit_id_index ON annotations (unit_id)')
 }
-
 
 
 ## GET
@@ -60,7 +59,7 @@ db_get_unit <- function(db, index) {
 }
 
 db_get_annotation <- function(db, unit_id) {
-  res = DBI::dbSendQuery(db, sprintf("SELECT * FROM annotations WHERE unit_id = %s", unit_id))
+  res = DBI::dbSendQuery(db, sprintf("SELECT * FROM annotations WHERE unit_id = '%s'", unit_id))
   json_df = DBI::dbFetch(res)
   DBI::dbClearResult(res)
   if (nrow(json_df) != 1) return(NULL)
@@ -87,9 +86,9 @@ db_get_progress <- function(db) {
 db_insert_annotation <- function(db, unit_id, annotation) {
   annotation_json = jsonlite::toJSON(annotation)
   safe_annotation = DBI::dbQuoteIdentifier(db, annotation_json)
-  DBI::dbExecute(db, sprintf('UPDATE annotations SET json=%s WHERE unit_id = %s',
+  DBI::dbExecute(db, sprintf("UPDATE annotations SET json=%s WHERE unit_id = '%s'",
                      safe_annotation, unit_id))
-  DBI::dbExecute(db, sprintf('UPDATE units SET status="%s" WHERE id=%s',
+  DBI::dbExecute(db, sprintf("UPDATE units SET status='%s' WHERE id='%s'",
                      annotation$status, unit_id))
 }
 
