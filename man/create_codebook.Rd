@@ -17,8 +17,6 @@ A codebook object
 Create a codebook for the CCS Annotator
 }
 \examples{
-
-
 variable = annotation_variable("sentiment", "Assign sentiment to words",
   codes = c(Negative='red', Neutral='grey', Positive='green'))
 

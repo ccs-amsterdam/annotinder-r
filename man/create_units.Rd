@@ -4,7 +4,7 @@
 \alias{create_units}
 \title{Create unit settings}
 \usage{
-create_units(d, id, text, meta = NULL, variables = NULL)
+create_units(d, id, text = NULL, meta = NULL, image = NULL, variables = NULL)
 }
 \arguments{
 \item{d}{A data.frame}
@@ -14,7 +14,7 @@ create_units(d, id, text, meta = NULL, variables = NULL)
 \item{text}{A character vector with column names to use as text fields. Can also be the output of \code{\link{text_fields}},
 which allows more customization options such as styling (bold, fontsize) per field, and distinguishing the coding unit and context unit.}
 
-\item{meta}{A character vector with column names to show as a table of meta data above the units.}
+\item{meta}{A character vector with names of columns that contain paths to image (png/jpeg) files.}
 
 \item{variables}{A character vector with column names to use as unit variables}
 }

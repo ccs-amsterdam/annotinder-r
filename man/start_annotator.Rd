@@ -4,26 +4,41 @@
 \alias{start_annotator}
 \title{Start annotation server (RStudio only)}
 \usage{
-start_annotator(codingjob, db_path = getwd(), overwrite = F, browse = T)
+start_annotator(job_db, background = F, browse = T)
 }
 \arguments{
-\item{codingjob}{A codingjob, created with \code{\link{create_job}}}
+\item{job_db}{A codingjob database file, created with \code{\link{create_job_db}}}
 
-\item{db_path}{The path where the folder with coding job DBs is stored. Default is working directory.
-If you're just playing around, tempdir() is pretty solid.}
+\item{background}{(RStudio only) If TRUE, start the server as an RStudio background job. This way you can
+keep working in the current session}
 
-\item{overwrite}{You're not allowed to create two jobs with the same title (which also becomes the DB filename).
-Or well, you're allowed to, but you have to say overwrite is TRUE so you can't blame us if you
-accidentally delete any hard-earned annotations.}
-
-\item{browse}{If TRUE (default), automatically opens your default browser to start the annotation.}
+\item{browse}{If TRUE (default), automatically opens \code{\link{annotator_client}}}
 }
 \value{
-
+The job_db (for piping convenience)
 }
 \description{
-Starts a server as a background job. While the server is running you can still
-work in the current session and retrieve the annotations. The job is saved as a
-SQLite DB in the ccsAnnotatorJobs folder (see db_path). So you can continue also retrieve
-results or continue a job after closing (or breaking) the current R session.
+Starts a server and directs to the CSS annotator webclient.
+You can either run the job in the current R session, or run it in another session.
+If you run it in the current session (default), you can retrieve the annotations when you close (stop) the server.
+If you run it in a different session, you can also retrieve the annotations while the server is still running.
+}
+\details{
+There are two ways to run in a different session. One is to simply open another R session, and run the server there.
+The annotations are stored in a SQLite database, and can be retrieved from any R session with the gimme_annotations(db_file)
+command that is printed when running this function. The other way is to use RStudio background jobs, which runs the
+server in the background of the current session. To use this, set background = TRUE.
+}
+\examples{
+sentiment = annotation_variable('sentiment', 'assign sentiment to words',
+     codes = c(Negative = 'red', Neutral = 'grey', Positive = 'green'))
+codingjob = create_job('Sotu sentiment',
+                       create_units(mini_sotu, id='id', text='text', meta=c('name','year')),
+                       create_codebook(sentiment))
+
+job_db = create_job_db(codingjob)
+
+\dontrun{
+start_annotator(job_id)
+}
 }

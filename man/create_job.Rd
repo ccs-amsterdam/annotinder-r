@@ -4,7 +4,7 @@
 \alias{create_job}
 \title{Create a CCS Annotator codingjob}
 \usage{
-create_job(title, units, codebook)
+create_job(title, units, codebook, annotations = NULL)
 }
 \arguments{
 \item{title}{A character string, for the title of the codingjob}
@@ -12,6 +12,13 @@ create_job(title, units, codebook)
 \item{units}{A codingjobUnits object, as created with \code{\link{create_units}}}
 
 \item{codebook}{A codebook object, as created with \code{\link{create_codebook}}}
+
+\item{annotations}{Optionally, create the job with imported annotations.
+Should be a data.frame like returned by \code{\link{gimme_annotations}}, with the columns:
+id, field, variable, value, offset and length. The "id" column should match the id column in the units
+(based on the id argument in create_units). "field" should be a text field in units. "variable" and "value"
+should match actual variables (or questions) and codes in the codebook. "offset" and "length" are the
+character position offset and the length of the span annotation.}
 }
 \value{
 A codingjob object
