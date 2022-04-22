@@ -87,8 +87,8 @@ prepare_units <- function(createUnitsBundle, annotations) {
     importedAnnotations = create_imported_annotations(ann_list[[i]])
 
     ## to do: add "gold". Then when creating coding job check if gold answers match with questions
-    units[[i]] = list(unit = list(unit_id=jsonlite::unbox(id),
-                                  text_fields=text_fields,
+    units[[i]] = list(id = jsonlite::unbox(id),
+                      unit = list(text_fields=text_fields,
                                   meta_fields=meta_fields,
                                   image_fields=image_fields,
                                   variables=variables))

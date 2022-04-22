@@ -7,7 +7,7 @@ sentiment = annotation_question('sentiment', 'What is the sentiment of this text
 codingjob = create_job('Sotu sentiment',
                        create_units(mini_sotu, id='id', text='text', meta=c('name','year')),
                        create_codebook(sentiment))
-backend_connect('https://amcat4.labs.vu.nl/api/annotator', 'test@user.com')
+backend_connect('http://localhost:5000/annotator', 'test@user.com')
 upload_job(codingjob)
 
 
