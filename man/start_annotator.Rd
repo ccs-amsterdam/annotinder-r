@@ -4,7 +4,7 @@
 \alias{start_annotator}
 \title{Start annotation server (RStudio only)}
 \usage{
-start_annotator(job_db, background = F, browse = T)
+start_annotator(job_db, background = F, browse = T, port = 8000)
 }
 \arguments{
 \item{job_db}{A codingjob database file, created with \code{\link{create_job_db}}}

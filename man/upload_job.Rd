@@ -4,10 +4,12 @@
 \alias{upload_job}
 \title{Upload a CCS Annotator codingjob to a server}
 \usage{
-upload_job(codingjob)
+upload_job(codingjob, rules = rules_crowdcoding())
 }
 \arguments{
 \item{codingjob}{A codingjob created with \code{\link{create_job}}}
+
+\item{rules}{A rules object, as created with one of the rules_* functions (e.g., \code{\link{rules_crowdcoding}}, \code{\link{rules_fixedset}}). If left empty, the 'crowdcoding' ruleset will be used.}
 }
 \value{
 The id of the new codingjob on the server

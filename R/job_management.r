@@ -29,12 +29,14 @@ get_job <- function(job_id, annotations=T) {
 #' Upload a CCS Annotator codingjob to a server
 #'
 #' @param codingjob A codingjob created with \code{\link{create_job}}
+#' @param rules     A rules object, as created with one of the rules_* functions (e.g., \code{\link{rules_crowdcoding}}, \code{\link{rules_fixedset}}). If left empty, the 'crowdcoding' ruleset will be used.
 #'
 #' @return   The id of the new codingjob on the server
 #' @export
 #'
 #' @examples
-upload_job <- function(codingjob) {
+upload_job <- function(codingjob, rules = rules_crowdcoding()) {
+  codingjob$rules = rules
   cj_data = request('codingjob', post = T, json_data = jsonlite::toJSON(codingjob, auto_unbox = T))
   cj_data$id
 }

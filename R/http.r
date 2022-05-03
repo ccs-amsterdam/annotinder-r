@@ -1,6 +1,7 @@
 request_token <- function(conn, passwd) {
   if (is.null(passwd)) passwd = getPass::getPass(paste('Enter password for user', conn$username))
   res = httr::GET(paste0(conn$host, '/users/me/token'), httr::authenticate(conn$username, passwd))
+  res = httr::POST(paste0(conn$host, '/users/me/token'), body = list(username=conn$username, password=passwd))
   if (!res$status_code == 200) {
     stop(paste("Could not get token for ", conn$username,"@", conn$host, " please check host, username and password"))
   }

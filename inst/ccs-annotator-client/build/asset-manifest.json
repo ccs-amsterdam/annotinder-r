@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "./static/css/main.70ffe951.css",
-    "main.js": "./static/js/main.2c35bc31.js",
+    "main.js": "./static/js/main.055bd3a1.js",
     "static/media/brand-icons.svg": "./static/media/brand-icons.6729d29753e000c17489.svg",
     "static/media/icons.svg": "./static/media/icons.62d9dae4e0040e81c980.svg",
     "static/media/outline-icons.svg": "./static/media/outline-icons.9c4845b4b41ef40a22fa.svg",
@@ -22,6 +22,6 @@
   },
   "entrypoints": [
     "static/css/main.70ffe951.css",
-    "static/js/main.2c35bc31.js"
+    "static/js/main.055bd3a1.js"
   ]
 }
