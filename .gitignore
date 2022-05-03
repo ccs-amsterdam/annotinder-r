@@ -41,4 +41,5 @@ vignettes/*.pdf
 # stuff
 test.db
 cssAnnotatorJobs/*
+ccsAnnotatorJobs
 corpustools_data/*
