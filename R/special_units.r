@@ -19,13 +19,12 @@ create_question_unit <- function(title, text, ..., text_window_size=NULL) {
     text_field('title', bold=T, center=T, size='1.4'),
     text_field('text')
   ))
-  print(units)
   units = prepare_units(units, NULL)
   unit = units[[1]]
   unit$unit$codebook = create_codebook(...)
   if (!is.null(text_window_size)) {
     if (!class(text_window_size) == 'numeric') stop('text_window_size must be numeric')
-    if (text_window_size < 0 || text_window_size > 1) stop('text window size must be a value between 0 and 100')
+    if (text_window_size < 0 || text_window_size > 80) stop('text window size must be a value between 0 and 80')
     unit$unit$text_window_size = text_window_size
   }
   unit

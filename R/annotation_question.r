@@ -18,10 +18,13 @@
 #'                     An unnamed character vector creates codes with random colors.
 #'                     A named character vector uses the names as codes and the values as colors, either as HEX or a name recognized by browsers (see \url{https://www.w3schools.com/colors/colors_names.asp}).
 #'                     A data.frame must have a code column, and can use certain special columns (see details).
-#' @param selection    The method for selecting codes/answers. Can be "buttons", "dropdown" or "annotinder".
+#' @param selection    The method for selecting codes/answers. Can be "buttons", "dropdown", "scale" or "annotinder".
 #'                     "buttons" shows all answers as buttons, "dropdown" gives a dropdown menu with a search bar.
+#'                     "scale" is like buttons, but with a nice layout for likert type scales.
 #'                     "annotinder" lets users swipe for answers, and can only be used if the number of answers is 2 or 3.
 #'                     The direction for each answer is "left" (first answer), "right" (second answer) and "up" (optional third answer).
+#' @param single_row   If "buttons" selection is used, this puts all buttons on the same row (just make sure not to have too many buttons)
+#' @param same_size    If "buttons" selection is used, make all buttons the same size.
 #'
 #' @details
 #' Using a data.frame for the codes argument gives more flexibility. This data.frame should have a "code" column, and can in addition have a "color" and "parent" column
@@ -34,14 +37,16 @@
 #' @export
 #'
 #' @examples
-question <- function(name, question, codes=NULL, selection=c("buttons","dropdown","annotinder")) {
+question <- function(name, question, codes=NULL, selection=c("buttons","dropdown","scale", "annotinder"), single_row=F, same_size=F) {
   selection = match.arg(selection)
 
   l = list(
     name = jsonlite::unbox(name),
     question = jsonlite::unbox(question),
     codes = codes,
-    type= jsonlite::unbox(switch(selection, buttons='select code', dropdown='search code', annotinder='annotinder'))
+    single_row=jsonlite::unbox(single_row),
+    same_size=jsonlite::unbox(same_size),
+    type= jsonlite::unbox(switch(selection, buttons='select code', dropdown='search code', scale='scale', annotinder='annotinder'))
   )
 
   if (methods::is(l$codes, 'character')) {

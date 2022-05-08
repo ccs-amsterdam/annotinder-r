@@ -8,7 +8,9 @@ question(
   name,
   question,
   codes = NULL,
-  selection = c("buttons", "dropdown", "annotinder")
+  selection = c("buttons", "dropdown", "scale", "annotinder"),
+  single_row = F,
+  same_size = F
 )
 }
 \arguments{
@@ -19,10 +21,15 @@ An unnamed character vector creates codes with random colors.
 A named character vector uses the names as codes and the values as colors, either as HEX or a name recognized by browsers (see \url{https://www.w3schools.com/colors/colors_names.asp}).
 A data.frame must have a code column, and can use certain special columns (see details).}
 
-\item{selection}{The method for selecting codes/answers. Can be "buttons", "dropdown" or "annotinder".
+\item{selection}{The method for selecting codes/answers. Can be "buttons", "dropdown", "scale" or "annotinder".
 "buttons" shows all answers as buttons, "dropdown" gives a dropdown menu with a search bar.
+"scale" is like buttons, but with a nice layout for likert type scales.
 "annotinder" lets users swipe for answers, and can only be used if the number of answers is 2 or 3.
 The direction for each answer is "left" (first answer), "right" (second answer) and "up" (optional third answer).}
+
+\item{single_row}{If "buttons" selection is used, this puts all buttons on the same row (just make sure not to have too many buttons)}
+
+\item{same_size}{If "buttons" selection is used, make all buttons the same size.}
 
 \item{instruction}{A short (think 1 or 2 sentences) question.}
 }
