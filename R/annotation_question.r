@@ -3,7 +3,7 @@
 ## In CCS Annotator lingo, questions are a form of annotations where the coder is
 ## presented with a specific question. This is ideal for crowd coding tasks
 ## because it requires very little instruction.
-#annotation_question <- function()
+#question <- function()
 
 
 # annotinder argument. if TRUE, can have max 3 codes, which default to left, right, up. Use NA to disable a direction.
@@ -22,12 +22,6 @@
 #'                     "buttons" shows all answers as buttons, "dropdown" gives a dropdown menu with a search bar.
 #'                     "annotinder" lets users swipe for answers, and can only be used if the number of answers is 2 or 3.
 #'                     The direction for each answer is "left" (first answer), "right" (second answer) and "up" (optional third answer).
-#' @param only_if      (TODO!!) Conditions that need to be met for this question to be asked. Given as a list, where the names are the names of other questions
-#'                     in the codebook, and the values are character vectors with codes in this question. If the conditions are not met, this question will automatically
-#'                     be answered with the code "IRRELEVANT". For example: list(relevant = "yes") means: Only ask this question if the question named "relevant" was answered with "yes". Can use multiple conditions:
-#'                     list(relevant = "yes", mood = c("angry", "sad")) means that relevant needs to be answered "yes" and mood needs to be answered with either "angry" or "sad".
-#' @param not_if       (TODO!!) Like only_if, but for negative conditions. list(relevant = "no") would mean: don't ask this question if the question named "relevant" was
-#'                     answered with the code "no".
 #'
 #' @details
 #' Using a data.frame for the codes argument gives more flexibility. This data.frame should have a "code" column, and can in addition have a "color" and "parent" column
@@ -40,15 +34,14 @@
 #' @export
 #'
 #' @examples
-annotation_question <- function(name, question, codes=NULL, selection=c("buttons","dropdown","annotinder"), only_if=list(), not_if=list()) {
+question <- function(name, question, codes=NULL, selection=c("buttons","dropdown","annotinder")) {
   selection = match.arg(selection)
 
   l = list(
     name = jsonlite::unbox(name),
     question = jsonlite::unbox(question),
     codes = codes,
-    type= jsonlite::unbox(switch(selection, buttons='select code', dropdown='search code', annotinder='annotinder')),
-    branching = list(only_if = only_if, not_if = not_if)
+    type= jsonlite::unbox(switch(selection, buttons='select code', dropdown='search code', annotinder='annotinder'))
   )
 
   if (methods::is(l$codes, 'character')) {

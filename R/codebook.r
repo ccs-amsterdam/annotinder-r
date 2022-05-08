@@ -14,6 +14,7 @@
 #' create_codebook(variable)
 create_codebook <- function(...) {
   l = list(...)
+  names(l) = NULL
 
   has_variables = any(sapply(l, methods::is, 'codebookVariable'))
   has_questions = any(sapply(l, methods::is, 'codebookQuestion'))
@@ -41,6 +42,7 @@ codes_df_to_list <- function(codes_df) {
     lapply(codes_l, jsonlite::unbox)
   })
 }
+
 
 
 #' S3 print method for codebook objects

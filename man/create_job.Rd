@@ -4,14 +4,15 @@
 \alias{create_job}
 \title{Create a CCS Annotator codingjob}
 \usage{
-create_job(title, units, codebook, annotations = NULL)
+create_job(title, units, codebook = NULL, annotations = NULL)
 }
 \arguments{
 \item{title}{A character string, for the title of the codingjob}
 
 \item{units}{A codingjobUnits object, as created with \code{\link{create_units}}}
 
-\item{codebook}{A codebook object, as created with \code{\link{create_codebook}}}
+\item{codebook}{A codebook object, as created with \code{\link{create_codebook}}. Can only be missing for jobs that will be uploaded
+to the AmCAT annotator backend, and for which jobsets with specific codebooks are specified.}
 
 \item{annotations}{Optionally, create the job with imported annotations.
 Should be a data.frame like returned by \code{\link{gimme_annotations}}, with the columns:

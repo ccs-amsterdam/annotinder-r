@@ -9,7 +9,7 @@ x = base64enc::base64encode("~/projects/images/2ekamer.png")
 
 
 library(ccsAnnotator)
-sentiment = annotation_question('sentiment', 'What is the sentiment of this image?',
+sentiment = question('sentiment', 'What is the sentiment of this image?',
                                 codes = c(Negative = 'red', Neutral = 'grey', Positive = 'green'))
 
 d = data.frame(id=1:2, image = list.files('~/projects/images', full.names = T))

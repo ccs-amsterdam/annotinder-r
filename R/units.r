@@ -121,7 +121,7 @@ create_text_fields <- function(rowdict, text_cols) {
 
 
       text = if (is.null(tf$coding_unit)) '' else rowdict[[tf$coding_unit]]
-      text_field = list(name=tf$field, value=text, bold=tf$bold, italic=tf$italic, size=tf$size, justify=tf$justify, paragraphs=tf$paragraphs)
+      text_field = list(name=tf$field, value=text, bold=tf$bold, italic=tf$italic, size=tf$size, center=tf$center, justify=tf$justify, paragraphs=tf$paragraphs)
       if (!is.null(tf$label)) text_field$label = tf$label
       if (!is.null(tf$context_before)) text_field$context_before = paste0(rowdict[[tf$context_before]], tf$sep[1])
       if (!is.null(tf$context_after)) text_field$context_after = paste0(tf$sep[2], rowdict[[tf$context_after]])
@@ -230,6 +230,7 @@ text_fields <- function(...) {
 #' @param italic     If TRUE, make the text field bold
 #' @param size       A scaling value for the text size. default is 1. A value of 2 would be twice the size. A value of 0.5 half the size.
 #' @param justify    If TRUE (default) justify the text
+#' @param center     If TRUE, center the text
 #' @param paragraphs If TRUE (default) show line breaks
 #' @param offset     If the text is a part of a bigger text, you can include the offset for the character position where it starts. This can
 #'                   be relevant for connecting annotations at specific character positions between the full text and this text_field.
@@ -238,7 +239,7 @@ text_fields <- function(...) {
 #' @export
 #'
 #' @examples
-text_field <- function(coding_unit=NULL, context_before=NULL, context_after=NULL, sep=' ', label=NULL, bold=F, italic=F, size=1, justify=T, paragraphs=T, offset=0) {
+text_field <- function(coding_unit=NULL, context_before=NULL, context_after=NULL, sep=' ', label=NULL, bold=F, italic=F, size=1, justify=T, center=F, paragraphs=T, offset=0) {
   if (is.null(coding_unit)) {
     if (is.null(context_before) && is.null(context_after)) stop('at least one of coding_unit, context_before or context_after needs to be specified')
     if (!is.null(context_before) && !is.null(context_after)) stop('If no coding_unit is specified, you can only use context_before OR context_after (otherwise there wouldnt be a coding_unit at all)')
@@ -250,6 +251,7 @@ text_field <- function(coding_unit=NULL, context_before=NULL, context_after=NULL
   l$field = field
   l
 }
+
 
 #' Create a detailed text_field for \code{\link{create_units}}
 #'

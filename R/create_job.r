@@ -2,7 +2,8 @@
 #'
 #' @param title     A character string, for the title of the codingjob
 #' @param units     A codingjobUnits object, as created with \code{\link{create_units}}
-#' @param codebook  A codebook object, as created with \code{\link{create_codebook}}
+#' @param codebook  A codebook object, as created with \code{\link{create_codebook}}. Can only be missing for jobs that will be uploaded
+#'                  to the AmCAT annotator backend, and for which jobsets with specific codebooks are specified.
 #' @param annotations Optionally, create the job with imported annotations.
 #'                    Should be a data.frame like returned by \code{\link{gimme_annotations}}, with the columns:
 #'                    id, field, variable, value, offset and length. The "id" column should match the id column in the units
@@ -14,7 +15,7 @@
 #' @export
 #'
 #' @examples
-create_job <- function(title, units, codebook, annotations=NULL) {
+create_job <- function(title, units, codebook=NULL, annotations=NULL) {
   cj_package = list(title=jsonlite::unbox(title),
                     provenance=list(),
                     codebook=codebook,

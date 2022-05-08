@@ -14,6 +14,7 @@ text_field(
   italic = F,
   size = 1,
   justify = T,
+  center = F,
   paragraphs = T,
   offset = 0
 )
@@ -43,6 +44,8 @@ different separators before and after.}
 \item{size}{A scaling value for the text size. default is 1. A value of 2 would be twice the size. A value of 0.5 half the size.}
 
 \item{justify}{If TRUE (default) justify the text}
+
+\item{center}{If TRUE, center the text}
 
 \item{paragraphs}{If TRUE (default) show line breaks}
 

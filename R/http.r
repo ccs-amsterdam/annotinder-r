@@ -1,7 +1,7 @@
 request_token <- function(conn, passwd) {
   if (is.null(passwd)) passwd = getPass::getPass(paste('Enter password for user', conn$username))
-  res = httr::GET(paste0(conn$host, '/users/me/token'), httr::authenticate(conn$username, passwd))
-  res = httr::POST(paste0(conn$host, '/users/me/token'), body = list(username=conn$username, password=passwd))
+  #res = httr::GET(paste0(conn$host, '/annotator/users/me/token'), httr::authenticate(conn$username, passwd))
+  res = httr::POST(paste0(conn$host, '/annotator/users/me/token'), body = list(username=conn$username, password=passwd))
   if (!res$status_code == 200) {
     stop(paste("Could not get token for ", conn$username,"@", conn$host, " please check host, username and password"))
   }
@@ -28,7 +28,7 @@ request <- function(branch=NULL, param=list(), json_data=NULL, post=FALSE, post_
   if (is.null(conn)) stop('Not connected to an annotator backend. See backend_connect()')
 
   param = arrange_url_arguments(param, ...)
-  url = paste(conn$host, paste(branch, collapse='/'), sep='/')
+  url = paste(conn$host, 'annotator', paste(branch, collapse='/'), sep='/')
   if (!post) {
     res = httr::GET(url, get_headers(conn), query=param)
   } else {

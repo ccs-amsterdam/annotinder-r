@@ -1,11 +1,62 @@
 
 function() {
 
+library(ccsAnnotator)
+backend_connect('http://localhost:5000', 'test@user.com')
+
+
+  ## create codebook
+codebook = create_codebook(
+  question('sentiment', 'assign sentiment to words', codes = c(Negative = 'red', Neutral = 'grey', Positive = 'green')),
+  question('sentiment', 'assign sentiment to words', codes = c(Negative = 'red', Neutral = 'grey', Positive = 'green'))
+)
+codebook_swipe = create_codebook(
+  sentiment = question('sentiment', 'assign sentiment to words', selection = 'annotinder',
+                                  codes = c(Negative = 'red', Positive = 'green', Neutral = 'grey'))
+)
+
+codebook$questions[[1]]
+jsonlite::toJSON(codebook)
+
+units = create_units(mini_sotu_par, id='id', text='text', meta=c('name','year','paragraph'))
+
+jobsets = list(
+  jobset('2 items', unit_set=head(mini_sotu_par$id, 2)),
+  jobset('2 items, swiping', unit_set=head(mini_sotu_par$id, 3), codebook=codebook_swipe),
+  jobset('5 items rev', unit_set=rev(head(mini_sotu_par$id, 5)))
+)
+
+
+upload_job('single fixed set', units=units, codebook=codebook)
+upload_job('3 fixed sets', units=units, codebook=codebook, jobsets=jobsets)
+upload_job('3 crowd sets', units=units, codebook=codebook, jobsets=jobsets, rules=rules_crowdcoding())
+
+
+info$unit$text_fields
+
+demo$unit$text_fields
+demo = create_question_unit('Welkom!', "Hieronder vragen wij u eerst enkele vragen over wie u bent",
+                     question('geslacht', 'Wat is uw geslacht?',
+                              codes = c(Man='grey', Vrouw='grey', anders='grey', `wil ik niet zeggen`='grey')),
+                     question('opleiding', 'Wat is uw hoogst afgeronde opleidingsniveau?',
+                              codes = c('Middelbaar of lager', 'MBO', "HBO", "Universiteit" )))
+info = create_info_unit('Geloofwaardigheids-Tinder', "Zodadelijk ziet u een reeks nieuwsberichten voorbijkomen. Als u het bericht geloofwaardig vindt, swipe dan naar rechts (of klik op de knoppen onderaan het scherm). Als u twijfelt aan de geloofwaardigheid van het bericht, swipe dan naar Links")
+pre = list(demo, info)
+
+upload_job('with intro', units=units, codebook=codebook, pre=list(demo, info))
+upload_job('with intro sets', units=units, codebook=codebook, pre=list(demo, info), jobsets = jobsets)
+
+
+
+
+
+
+
 library(corpustools)
 library(ccsAnnotator)
 
 ## create codebook
-sentiment = annotation_question('sentiment', 'assign sentiment to words',
+sentiment = question('sentiment', 'assign sentiment to words',
                                 codes = c(Negative = 'red', Neutral = 'grey', Positive = 'green'))
 
 codingjob = create_job('Sotu sentiment crowd',
@@ -17,7 +68,6 @@ start_annotator(job_db, background=T)
 
 
 mini_sotu$id = c('test','of','ID','werkt')
-
 
 
 codingjob1 = create_job('Sotu sentiment crowd',
@@ -33,21 +83,37 @@ codingjob3 = create_job('Sotu sentiment fixed',
                        create_codebook(sentiment))
 
 codingjob4 = create_job('Sotu sentiment fixed forward=T',
-                       create_units(mini_sotu, id='id', text='text', meta=c('name','year')),
+                       create_units(sotu_texts, id='id', text='text'),
                        create_codebook(sentiment))
 
-codingjob5 = create_job('Sotu paragraph sentiment crowd',
-                        create_units(sotu_texts, id='id', text='text', meta=c('party','date')),
-                        create_codebook(sentiment),
-                        rules_crowdcoding(units_per_coder=5))
+codingjob5 = create_job('Sotu sentiment crowd',
+                        create_units(sotu_texts, id='id', text='text'),
+                        create_codebook(sentiment))
+
+codingjob6 = create_job('Sotu sentiment fixed 5 sets',
+                        create_units(sotu_texts, id='id', text='text'),
+                        create_codebook(sentiment))
 
 
-backend_connect('http://localhost:8000', 'test@user.com')
+backend_connect('http://localhost:5000', 'test@user.com')
 
 upload_job(codingjob1)
 upload_job(codingjob2, rules_crowdcoding(units_per_coder=2, can_seek_backwards = F))
 upload_job(codingjob3, rules_fixedset())
 upload_job(codingjob4, rules_fixedset(can_seek_forwards = T))
+upload_job(codingjob5, rules_crowdcoding())
+
+sets = list(
+  group1 = head(sotu_texts$id, 2),
+  group2 = head(sotu_texts$id, 3),
+  group3 = head(sotu_texts$id, 4),
+  group4 = rev(head(sotu_texts$id, 5))
+)
+
+
+upload_job(codingjob1, rules_crowdcoding(sets=sets))
+upload_job(codingjob6, rules_fixedset(sets=sets))
+
 upload_job(list())
 
 job_db = create_job_db(codingjob5, overwrite=T)
