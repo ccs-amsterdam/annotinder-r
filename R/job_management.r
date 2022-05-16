@@ -39,15 +39,17 @@ get_job <- function(job_id, annotations=T) {
 #'                    character position offset and the length of the span annotation.
 #' @param rules     A rules object, as created with one of the rules_* functions (e.g., \code{\link{rules_crowdcoding}}, \code{\link{rules_fixedset}}). If left empty, the 'crowdcoding' ruleset will be used.
 #' @param jobsets   A list of jobsets, as created with \code{\link{jobset}}
-#' @param pre       Optionally, a special unit or list of special units to show before the codingjob.
+#' @param debrief   At debriefing when a job is finished, such as a message and link. Create with \code{\link{debrief}}
+#' @param pre       A special unit or list of special units to show before the codingjob.
 #' @param pre       Like pre, but for after the codingjob.
 #'
 #' @return   The id of the new codingjob on the server
 #' @export
 #'
 #' @examples
-upload_job <- function(title, units, codebook=NULL, annotations=NULL, rules = rules_fixedset(), jobsets=NULL, pre=NULL, post=NULL) {
+upload_job <- function(title, units, codebook=NULL, annotations=NULL, rules = rules_fixedset(), jobsets=NULL, debrief=NULL, pre=NULL, post=NULL) {
   codingjob = create_job(title, units, codebook, annotations)
+
 
   pre = set_special_id(pre, 'pre')
   post = set_special_id(post, 'post')
@@ -59,21 +61,26 @@ upload_job <- function(title, units, codebook=NULL, annotations=NULL, rules = ru
       stop('jobsets must have unique "name"')
     pre_ids = unlist(lapply(pre, '[[', 'id'))
     post_ids = unlist(lapply(post, '[[', 'id'))
-    for (jobset in jobsets) {
-      if (is.null(jobset$codebook)&& is.null(codingjob$codebook))
+    for (i in 1:length(jobsets)) {
+      if (is.null(jobsets[[i]]$codebook)&& is.null(codingjob$codebook))
         stop('Either codingjob needs to have a codebook, or all jobsets must have a codebook')
-      jobset$unit_set = c(pre_ids, jobset$unit_set, post_ids)
+      jobsets[[i]]$unit_set = c(pre_ids, jobsets[[i]]$unit_set, post_ids)
     }
   }
+  codingjob$jobsets = jobsets
+
+  if (!is.null(debrief)) codingjob$debriefing = debrief
 
   cj_data = request('codingjob', post = T, json_data = jsonlite::toJSON(codingjob, auto_unbox = T))
   cj_data$id
 }
 
 
+
+
 set_special_id <- function(units, what) {
   if (is.null(units)) return(NULL)
-  if (class(units) != 'list') units = list(units)
+  if (!is.null(units$id)) units = list(units)  ## if it has an $id, it's a single unit
   for (i in 1:length(units)) {
     units[[i]]$id = paste0(what, ' ', i, ': ', units[[i]]$id)
   }

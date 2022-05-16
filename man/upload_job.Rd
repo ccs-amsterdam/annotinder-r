@@ -11,6 +11,7 @@ upload_job(
   annotations = NULL,
   rules = rules_fixedset(),
   jobsets = NULL,
+  debrief = NULL,
   pre = NULL,
   post = NULL
 )
@@ -32,6 +33,8 @@ character position offset and the length of the span annotation.}
 \item{rules}{A rules object, as created with one of the rules_* functions (e.g., \code{\link{rules_crowdcoding}}, \code{\link{rules_fixedset}}). If left empty, the 'crowdcoding' ruleset will be used.}
 
 \item{jobsets}{A list of jobsets, as created with \code{\link{jobset}}}
+
+\item{debrief}{At debriefing when a job is finished, such as a message and link. Create with \code{\link{debrief}}}
 
 \item{pre}{Like pre, but for after the codingjob.}
 }

@@ -4,18 +4,30 @@
 \alias{create_question_unit}
 \title{Create a special unit for asking questions}
 \usage{
-create_question_unit(title, text, ..., text_window_size = NULL)
+create_question_unit(
+  id,
+  ...,
+  title = NULL,
+  text = NULL,
+  markdown = NULL,
+  text_window_size = NULL
+)
 }
 \arguments{
+\item{id}{A unique id for the unit}
+
+\item{...}{Questions to ask, created with the \code{\link{question}}}
+
 \item{title}{A title}
 
 \item{text}{Some text to introduce the}
 
-\item{...}{Questions to ask, created with the \code{\link{question}}}
+\item{markdown}{Alternatively, provide the content as a markdown string. If used, title+text are ignored. See \url{https://commonmark.org/help/} for help.}
 
 \item{text_window_size}{The annotation interface has two parts: text (on top) and the answer form (at the bottom). By default, the text window size is about 70 (70%),
 and users can change the size themselves (because the best size might differ depending on device). Here you can optionally set a fixed alternative.
-This can for instance be useful if you have a question with big or many buttons, in which case you could set the text window size to something small.}
+This can for instance be useful if you have a question with big or many buttons, in which case you could set the text window size to something small.
+Can also be set to 'auto' so the annotator tries a nice fi (but be sure to test beforehand whether this makes sense for your codebook)}
 }
 \value{
 

@@ -4,7 +4,15 @@
 \alias{create_units}
 \title{Create unit settings}
 \usage{
-create_units(d, id, text = NULL, meta = NULL, image = NULL, variables = NULL)
+create_units(
+  d,
+  id,
+  text = NULL,
+  meta = NULL,
+  image = NULL,
+  markdown = NA,
+  variables = NULL
+)
 }
 \arguments{
 \item{d}{A data.frame}
@@ -15,6 +23,12 @@ create_units(d, id, text = NULL, meta = NULL, image = NULL, variables = NULL)
 which allows more customization options such as styling (bold, fontsize) per field, and distinguishing the coding unit and context unit.}
 
 \item{meta}{A character vector with names of columns that contain paths to image (png/jpeg) files.}
+
+\item{image}{A character vector with paths to jpg files.}
+
+\item{markdown}{The name of a column that contains a markdown string. A markdown field cannot be annotated,
+but it makes it easy to do some custom styling in question units. See \url{https://commonmark.org/help/} for help,
+and you can test the markdown here: \url{https://spec.commonmark.org/dingus/}.}
 
 \item{variables}{A character vector with column names to use as unit variables}
 }

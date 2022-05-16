@@ -4,7 +4,7 @@
 \alias{code}
 \title{Create a code}
 \usage{
-code(code, ..., color = NULL)
+code(code, ..., color = NULL, makes_irrelevant = NULL, required_for = NULL)
 }
 \arguments{
 \item{code}{The name of the code}
@@ -12,6 +12,12 @@ code(code, ..., color = NULL)
 \item{...}{Optionally, nested codes for children}
 
 \item{color}{Optionally, the color of the code}
+
+\item{makes_irrelevant}{Optionally, a character vector of question names that become irrelevant if this code is the selected answer.
+Can also be "REMAINING" to make all questions after the current one irrelevant.}
+
+\item{required_for}{Optionally, a character vector of question names. If this code is not selected, all these questions become irrelevant.
+Can also be "REMAINING" for all questions after the current.}
 }
 \value{
 A annotatorCode object, to be used inside the \code{\link{codes}} function

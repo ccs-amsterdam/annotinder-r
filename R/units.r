@@ -7,6 +7,11 @@
 #' @param text    A character vector with column names to use as text fields. Can also be the output of \code{\link{text_fields}},
 #'                which allows more customization options such as styling (bold, fontsize) per field, and distinguishing the coding unit and context unit.
 #' @param meta    A character vector with names of columns that contain paths to image (png/jpeg) files.
+#' @param image   A character vector with paths to jpg files.
+#' @param markdown The name of a column that contains a markdown string. A markdown field cannot be annotated,
+#'                 but it makes it easy to do some custom styling in question units. See \url{https://commonmark.org/help/} for help,
+#'                 and you can test the markdown here: \url{https://spec.commonmark.org/dingus/}.
+#'
 #' @param variables A character vector with column names to use as unit variables
 #'
 #'
@@ -29,8 +34,8 @@
 #'    text_field('title'),
 #'    text_field('text', context_before='pre', context_after='post')
 #' ))
-create_units <- function(d, id, text=NULL, meta=NULL, image=NULL, variables=NULL) {
-  if (is.null(text) && is.null(image)) stop('Either text or image needs to be specified')
+create_units <- function(d, id, text=NULL, meta=NULL, image=NULL, markdown=NA, variables=NULL) {
+  if (is.null(text) && is.null(image) && is.null(markdown)) stop('text, image or markdown needs to be specified')
   ## check if all the stuff is there
   if (!id %in% colnames(d)) stop(sprintf('"%s" is not a column name in d', id))
   if (anyDuplicated(d[[id]])) stop(sprintf('The id column (%s) needs to have unique values', id))
@@ -58,11 +63,11 @@ create_units <- function(d, id, text=NULL, meta=NULL, image=NULL, variables=NULL
   for (variable in variables) {
     if (!variable %in% colnames(d)) stop(sprintf('"%s" is not a column name in d', variable))
   }
-
+  if (!is.na(markdown) && !markdown %in% colnames(d)) stop(sprintf('"%s" is not a column name in d', markdown))
 
   ## create_units just bundles the arguments. The actual transformation to the required json
   ## happens when calling create_job
-  cub = list(df = dplyr::as_tibble(d), id=id, text=text, meta=meta, image=image, variables=variables)
+  cub = list(df = dplyr::as_tibble(d), id=id, text=text, meta=meta, image=image, markdown=markdown, variables=variables)
   structure(cub, class = c('createUnitsBundle', 'list'))
 }
 
@@ -83,6 +88,7 @@ prepare_units <- function(createUnitsBundle, annotations) {
     text_fields = create_text_fields(rowdict, createUnitsBundle$text)
     meta_fields = create_meta_fields(rowdict, createUnitsBundle$meta)
     image_fields = create_image_fields(rowdict, createUnitsBundle$image)
+    markdown_field = create_markdown_field(rowdict, createUnitsBundle$markdown)
     variables = create_variables(rowdict, createUnitsBundle$variables)
     importedAnnotations = create_imported_annotations(ann_list[[i]])
 
@@ -91,6 +97,7 @@ prepare_units <- function(createUnitsBundle, annotations) {
                       unit = list(text_fields=text_fields,
                                   meta_fields=meta_fields,
                                   image_fields=image_fields,
+                                  markdown_field=markdown_field,
                                   variables=variables))
 
     if (!is.null(importedAnnotations)) units[[i]]$unit$importedAnnotations = importedAnnotations
@@ -152,6 +159,13 @@ create_image_fields <- function(rowdict, image_cols) {
   })
 }
 
+create_markdown_field <- function(rowdict, markdown_col) {
+  if (methods::is(markdown_col, "character")) {
+    markdown_field = rowdict[[markdown_col]]
+    return(markdown_field)
+  }
+  NA
+}
 
 create_variables <- function(rowdict, variable_cols) {
   l = list()

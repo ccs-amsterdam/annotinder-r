@@ -20,9 +20,10 @@ annotation_variable(
 \item{instruction}{A brief (think 1 or 2 sentences) instruction to the coder.}
 
 \item{codes}{The codes that the coder can choose from. Can be a character vector, named character vector or data.frame.
-An unnamed character vector creates codes with random colors.
+An unnamed character vector creates simple codes.
 A named character vector uses the names as codes and the values as colors, either as HEX or a name recognized by browsers (see \url{https://www.w3schools.com/colors/colors_names.asp}).
-A data.frame must have a code column, and can use certain special columns (see details).}
+A data.frame must have a code column, and can use certain special columns (see details).
+For most control, codes can be a list of 'code' objects created with \code{\link{code}}.}
 
 \item{selection}{The method for selecting codes. Can be "buttons" or "dropdown".
 "buttons" shows all codes as a button, "dropdown" gives a dropdown menu with a search bar,
