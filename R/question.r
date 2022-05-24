@@ -44,7 +44,6 @@
 #' @examples
 question <- function(name, question, codes=NULL, type=c("buttons","dropdown","scale", "annotinder", "inputs"), color='#7fb9eb', single_row=F, same_size=T, items=NULL) {
   type = match.arg(type)
-
   l = list(
     name = jsonlite::unbox(name),
     question = jsonlite::unbox(question),
