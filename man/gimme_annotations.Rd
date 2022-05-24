@@ -8,8 +8,7 @@ gimme_annotations(db_file = NULL, only_done = FALSE)
 }
 \arguments{
 \item{db_file}{If NULL (default) looks whether an an annotation server (see \code{\link{start_annotator}}) ran (or is running) in the current session.
-If so, it retrieves the annotations from this server
-annotations from this}
+If so, it retrieves the annotations from this server}
 
 \item{only_done}{If TRUE (default) only retrieve annotations with the "DONE" status. If FALSE, also retrieve annotations with the "IN_PROGRESS" status}
 }

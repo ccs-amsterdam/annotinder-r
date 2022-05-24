@@ -6,18 +6,17 @@ geloofwaardig = question('geloofwaardig', 'Vind jij de inhoud van dit bericht ge
                          codes = c(Nee = 'crimson', Ja = 'lightgreen'))
 
 ## unit data
-d = data.frame(stimulus = list.files('~/projects/swipe_right/data/stimulus', pattern='\\.jpg', full.names = T))
-d$set = gsub('_.*', '', gsub('.*/Set', '', d$stimulus) )
+d = data.frame(stimulus = list.files('~/projects/swipe_right/data/Stimulus', pattern='\\.jpg', full.names = T))
 d$id = gsub('\\..*', '', gsub('.*/', '', d$stimulus) )
 
 ## split units into three jobsets
 jobsets = list(
-  jobset('Set_1', unit_set = grep('Set1', d$id, value = T)),
-  jobset('Set_2', unit_set = grep('Set2', d$id, value = T)),
-  jobset('Set_3', unit_set = grep('Set3', d$id, value = T)),
-  jobset('Set_4', unit_set = grep('Set4', d$id, value = T)),
-  jobset('Set_5', unit_set = grep('Set5', d$id, value = T)),
-  jobset('Set_6', unit_set = grep('Set6', d$id, value = T))
+  jobset('Set_1', unit_set = grep('^set1', d$id, value = T, ignore.case = T)),
+  jobset('Set_2', unit_set = grep('^set2', d$id, value = T, ignore.case = T)),
+  jobset('Set_3', unit_set = grep('^set3', d$id, value = T, ignore.case = T)),
+  jobset('Set_4', unit_set = grep('^set4', d$id, value = T, ignore.case = T)),
+  jobset('Set_5', unit_set = grep('^set5', d$id, value = T, ignore.case = T)),
+  jobset('Set_6', unit_set = grep('^set6', d$id, value = T, ignore.case = T))
 )
 
 ## pre / post questions
@@ -48,31 +47,31 @@ intro = create_question_unit(id="introductie", markdown=intro_markdown,
     question('consent', 'Informed consent', codes="Ik heb bovenstaande informatie gelezen en begrepen, en geef toestemming voor deelname aan het onderzoek en gebruik van de daarmee verkregen gegevens"),
     question('leeftijd', "Wat is je leeftijd?", type="inputs", items=list(name = list(type='number', label='leeftijd'))),
     question('geslacht', 'Wat is je geslacht?', codes = c('man','vrouw','anders','zeg ik liever niet')),
-    question('opleiding', 'Wat is je hoogst genoten opleiding?', codes = c('Middelbare school','VMBO','HAVO','VWO','MBO','HBO','WO','WO Master')))
+    question('opleiding', 'Wat is je hoogst genoten opleiding?', codes = c('Basisschool','VMBO','HAVO','VWO','MBO','HBO','WO','WO Master')))
 
 
-trust = create_question_unit(id='vertrouwen', title='', text='', text_window_size = 'auto',
+trust = create_question_unit(id='vertrouwen', title='', text='', text_window_size = 0,
     question('vertrouwen', 'Hieronder ziet u een aantal instituties. Kunt u aangeven hoeveel vertrouwen u heeft in deze instituties?', type='scale',
             codes = c('totaal geen vertrouwen', 'een beetje vertrouwen','best wel veel vertrouwen','veel vertrouwen'),
-            items=c(V1_regering='vertrouwen in regering',
+            items=c(V1_regering='vertrouwen in de regering',
                     V2_overheidsinstanties='vertrouwen in overheidsinstanties (denk aan gemeentes, organisaties zoals het UWV en de politie)',
-                    V3_EU='vertrouwen in Europese Unie',
-                    V4_nieuwsmedia='vertrouwen in Nederlandse nieuwsmedia')))
+                    V3_EU='vertrouwen in de Europese Unie',
+                    V4_nieuwsmedia='vertrouwen in de Nederlandse nieuwsmedia')))
 
 social = create_question_unit(id="instagram", title='Instagram',
     question('account', 'Heb je een instagram account?', codes=list(code('Nee', color='crimson', makes_irrelevant='REMAINING'),
                                                                     code('Ja', color='lightgreen'))),
     question('frequentie', "Hoe vaak check je je instagram?", codes = c("Bijna nooit","Eens in de paar dagen","Een keer per dag","Meerdere keren per dag","Elk uur")),
-    question('tijd', 'Hoe veel tid spendeer je op Instagram op een gemiddelde dag?', codes = c('5 minuten of minder','15 minuten','30 minuten','1 uur','2 uur','3 uur','meer dan 3 uur','meer dan 5 uur')))
+    question('tijd', 'Hoe veel tijd spendeer je op Instagram op een gemiddelde dag?', codes = c('5 minuten of minder','15 minuten','30 minuten','1 uur','2 uur','3 uur','meer dan 3 uur','meer dan 5 uur')))
 
 
-nieuws = create_question_unit(id='nieuws', title='Nieuwsconsumptie', text='',
+nieuws = create_question_unit(id='nieuws', title='Nieuwsconsumptie', text='', text_window_size=50,
     question('nieuwsbron', 'Via welke media verkrijg jij normaal gesproken meestal je nieuws?',
              codes = list('Papieren krant','Televisie','Radio','Online nieuws site','Social media','Ik lees geen nieuws',
                           code('Anders, namelijk', required_for = 'nieuwsbron_anders'))),
-    question('nieuwsbron_anders', 'Via welke media verkrijg jij normaal gesproken meestal je nieuws?', type="inputs", items=list(media = list(type='textarea', label=''))))
+    question('nieuwsbron_anders', 'Via welke media verkrijg jij normaal gesproken meestal je nieuws?', type="inputs", items=list(media = list(type='textarea', label='type hieronder je antwoord'))))
 
-insta_nieuws = create_question_unit(id='insta_nieuws', title='Nieuwsconsumptie', text='', text_window_size=20,
+insta_nieuws = create_question_unit(id='insta_nieuws', title='Nieuwsconsumptie', text='', text_window_size=0,
      question('instagram_nieuws', 'Geef van de volgende stellingen aan in hoeverre deze van toepassing zijn voor jou', type='scale',
               codes = c('sterk mee oneens','oneens','een beetje oneens','neutraal','een beetje eens','eens','sterk mee eens'),
               items=list(V1_gebruik='Ik gebruik Instagram voor mijn nieuwsconsumptie',
@@ -96,7 +95,7 @@ swipeinfo = create_info_unit(id='swipe', markdown=swipe_markdown, button='Ik heb
 
 
 post = create_question_unit(id='post_survey', title='Laatste vraag!', text="We zijn bijna op het einde aangekomen van dit onderzoek. Er volgen nu nog een aantal afsluitende vragen",
-    text_window_size=20,
+    text_window_size=0,
     question('hedonistic', 'Geef van de volgende stellingen aan in hoeverre deze van toepassing zijn voor jou', type='scale',
              codes = c('sterk mee oneens','oneens','een beetje oneens','neutraal','een beetje eens','eens','sterk mee eens'),
              items=c(V1_vermakelijk='Swipen door de Instagram nieuws content voelde vermakelijk',
@@ -139,10 +138,10 @@ afsluiting = create_question_unit(id='email', markdown=afsluiting_markdown,
 
 
 ## upload job
-backend_connect('http://localhost:5001', 'test@user.com')
-#backend_connect('https://kasperwelbers.com/annotator', 'test@user.com')
+#backend_connect('http://localhost:5001', 'test@user.com')
+backend_connect('https://kasperwelbers.com/annotator', 'test@user.com')
 
-upload_job('Swipe right! versie 3',
+upload_job('Swipe right! adjusted',
            units=create_units(d, id='id', image='stimulus'),
            codebook=create_codebook(geloofwaardig),
            jobsets=jobsets,

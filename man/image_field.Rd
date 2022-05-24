@@ -9,9 +9,6 @@ image_field(image_file, caption = NULL)
 \arguments{
 \item{caption}{}
 }
-\value{
-
-}
 \description{
 Create a detailed text_field for \code{\link{create_units}}
 }

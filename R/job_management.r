@@ -76,6 +76,34 @@ upload_job <- function(title, units, codebook=NULL, annotations=NULL, rules = ru
 }
 
 
+#' Download annotation for a given job_id
+#'
+#' @param job_id The codingjob id.
+#'
+#' @return A tibble of annotations in long format
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#'   download_annotations(7)
+#' }
+download_annotations <- function(job_id) {
+    cj = request(c('codingjob', job_id, 'annotations'), annotations=T)
+
+    annotations = lapply(cj, function(unit) {
+      unit$annotation = lapply(unit$annotation, function(x) {
+        ## cleanup, but this should actually not be returned by server
+        x$meta = NULL
+        x$makes_irrelevant = NULL
+        x
+      })
+      d = dplyr::bind_rows(unit$annotation)
+      dplyr::bind_cols(unit[names(unit) != 'annotation'], d)
+    })
+
+    dplyr::bind_rows(annotations)
+}
+
 
 
 set_special_id <- function(units, what) {
@@ -86,4 +114,5 @@ set_special_id <- function(units, what) {
   }
   units
 }
+
 

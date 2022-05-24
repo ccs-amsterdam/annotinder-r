@@ -24,9 +24,6 @@ See \url{https://commonmark.org/help/} for help.}
 
 \item{button}{The text to show on the button}
 }
-\value{
-
-}
 \description{
 Create a special unit for informing coders
 }
