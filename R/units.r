@@ -1,6 +1,14 @@
 
 
-#' Create unit settings
+#' Create units
+#'
+#' Create an object that represents the coding units.
+#'
+#' A codingjob can include gold units for which the 'correct' answer is already given. These units
+#' can be used as 'training' and 'test' units. Training units are shown at the beginning of a job,
+#' and coders are shown whether they gave the correct answer. Test units are mixed in with regular units,
+#' and can then either inform coders when they're wrong (to keep em sharp) or silently keep track of
+#' bad answers to disqualify bad coders.
 #'
 #' @param d       A data.frame
 #' @param id      A character string with the name of a column with unique ids.
@@ -13,6 +21,8 @@
 #'                 and you can test the markdown here: \url{https://spec.commonmark.org/dingus/}.
 #'
 #' @param variables A character vector with column names to use as unit variables
+#' @param gold    A character vector with column names of gold answers. The name of the column should then
+#'                correspond to a variable/question name in the codebook, and the value should match a code.
 #'
 #'
 #' @return A list of units, to be used inside \code{\link{create_codebook}}
@@ -34,7 +44,32 @@
 #'    text_field('title'),
 #'    text_field('text', context_before='pre', context_after='post')
 #' ))
-create_units <- function(d, id, text=NULL, meta=NULL, image=NULL, markdown=NA, variables=NULL) {
+create_units <- function(d, id, text=NULL, meta=NULL, image=NULL, markdown=NA, variables=NULL, type=c('unit','train','test'), condition=NULL) {
+  do_create_units(d, id, text=text, meta=meta, image=image, markdown=markdown, variables=variables)
+}
+
+#' #' Create gold units
+#' #'
+#' #'
+#' #'
+#' #' @param gold
+#' #' @inheritParams create_units
+#' #'
+#' #' @return
+#' #' @export
+#' #'
+#' #' @examples
+#' #' d = data.frame(id = c(1,2),
+#' #'                title = c('title 1', 'title 2'),
+#' #'                text=c('text 1','text 2'),
+#' #'                sentiment=c('positive','negative'))
+#' #'
+#' #' create_units(d, id='id', text=c('title','text'), gold='sentiment')
+#' create_gold_units <- function(d, id, gold, text=NULL, meta=NULL, image=NULL, markdown=NA, variables=NULL) {
+#'   do_create_units(d, id, text=text, meta=meta, image=image, markdown=markdown, variables=variables, gold=gold)
+#' }
+
+do_create_units <- function(d, id, text=NULL, meta=NULL, image=NULL, markdown=NA, variables=NULL, gold=NULL) {
   if (is.null(text) && is.null(image) && is.null(markdown)) stop('text, image or markdown needs to be specified')
   ## check if all the stuff is there
   if (!id %in% colnames(d)) stop(sprintf('"%s" is not a column name in d', id))
@@ -63,11 +98,17 @@ create_units <- function(d, id, text=NULL, meta=NULL, image=NULL, markdown=NA, v
   for (variable in variables) {
     if (!variable %in% colnames(d)) stop(sprintf('"%s" is not a column name in d', variable))
   }
+  for (goldcol in gold) {
+    if (!goldcol %in% colnames(d)) stop(sprintf('"%s" is not a column name in d', goldcol))
+  }
   if (!is.na(markdown) && !markdown %in% colnames(d)) stop(sprintf('"%s" is not a column name in d', markdown))
 
   ## create_units just bundles the arguments. The actual transformation to the required json
   ## happens when calling create_job
-  cub = list(df = dplyr::as_tibble(d), id=id, text=text, meta=meta, image=image, markdown=markdown, variables=variables)
+  cub = list(df = dplyr::as_tibble(d), id=id, text=text, meta=meta, image=image, markdown=markdown, variables=variables, gold=gold)
+
+
+
   structure(cub, class = c('createUnitsBundle', 'list'))
 }
 
@@ -90,6 +131,7 @@ prepare_units <- function(createUnitsBundle, annotations) {
     image_fields = create_image_fields(rowdict, createUnitsBundle$image)
     markdown_field = create_markdown_field(rowdict, createUnitsBundle$markdown)
     variables = create_variables(rowdict, createUnitsBundle$variables)
+    gold = create_gold(rowdict, createUnitsBundle$gold)
     importedAnnotations = create_imported_annotations(ann_list[[i]])
 
     ## to do: add "gold". Then when creating coding job check if gold answers match with questions
@@ -101,6 +143,7 @@ prepare_units <- function(createUnitsBundle, annotations) {
                                   variables=variables))
 
     if (!is.null(importedAnnotations)) units[[i]]$unit$importedAnnotations = importedAnnotations
+    if (!is.null(gold)) units[[i]]$gold = gold
 
   }
 
@@ -187,6 +230,20 @@ create_imported_annotations <- function(ann) {
   names(ann) = NULL
   ann
 }
+
+create_gold <- function(rowdict, gold_cols) {
+  l = list()
+  i = 1
+  for (gc in gold_cols) {
+    # all gold columns need to be present in order to use unit as gold unit
+    if (is.na(rowdict[[gc]])) return(NULL)
+    l[[i]] = list(variable=gc, value=rowdict[[gc]])
+    i = i + 1
+  }
+  l
+}
+
+
 
 
 
@@ -301,6 +358,7 @@ print.textFields <- function(x, ...){
     cat('\n')
   }
 }
+
 
 
 #' S3 print method for codingjobUnits objects

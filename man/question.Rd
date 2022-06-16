@@ -16,7 +16,7 @@ question(
 )
 }
 \arguments{
-\item{name}{The name/label of the question}
+\item{name}{The name/label of the question. Recommended to keep short. Cannot contain a "."}
 
 \item{codes}{The codes that the coder can choose from. Can be a character vector, named character vector or data.frame.
 An unnamed character vector creates simple codes.

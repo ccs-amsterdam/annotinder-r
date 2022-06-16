@@ -104,13 +104,13 @@ download_annotations <- function(job_id) {
     dplyr::bind_rows(annotations)
 }
 
-
+duplicate_questions <- function()
 
 set_special_id <- function(units, what) {
   if (is.null(units)) return(NULL)
   if (!is.null(units$id)) units = list(units)  ## if it has an $id, it's a single unit
   for (i in 1:length(units)) {
-    units[[i]]$id = paste0(what, ' ', i, ': ', units[[i]]$id)
+    units[[i]]$id = paste(what, i, sep='.')
   }
   units
 }

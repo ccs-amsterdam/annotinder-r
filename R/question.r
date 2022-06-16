@@ -12,7 +12,7 @@
 #'
 #' Creates a question that can be passed as an argument to \code{\link{create_codebook}}.
 #'
-#' @param name         The name/label of the question
+#' @param name         The name/label of the question. Recommended to keep short. Cannot contain a "."
 #' @param instruction  A short (think 1 or 2 sentences) question.
 #' @param codes        The codes that the coder can choose from. Can be a character vector, named character vector or data.frame.
 #'                     An unnamed character vector creates simple codes.
@@ -43,6 +43,7 @@
 #'
 #' @examples
 question <- function(name, question, codes=NULL, type=c("buttons","dropdown","scale", "annotinder", "inputs"), color='#7fb9eb', single_row=F, same_size=T, items=NULL) {
+  if (grepl('\\.', name)) stop('Question name is not allowed to contain a "." symbol')
   type = match.arg(type)
   l = list(
     name = jsonlite::unbox(name),
