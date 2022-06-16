@@ -2,7 +2,7 @@
 #'
 #' Creates an annotation variable that can be passed as an argument to \code{\link{create_codebook}}.
 #'
-#' @param name         The name/label of the variable
+#' @param name         The name/label of the variable. The name/label of the question. Recommended to keep short. Cannot contain a "."
 #' @param instruction  A brief (think 1 or 2 sentences) instruction to the coder.
 #' @param codes        The codes that the coder can choose from. Can be a character vector, named character vector or data.frame.
 #'                     An unnamed character vector creates simple codes.
@@ -49,6 +49,8 @@
 #'
 #' annotation_variable("actors", "Label actors. Use the most specific label available", codes_df)
 annotation_variable <- function(name, instruction, codes=NULL, selection=c('buttons', 'dropdown'), only_edit=F, only_imported=F, multiple=F) {
+  if (grepl('\\.', name)) stop('Variable name is not allowed to contain a "." symbol')
+
   selection = match.arg(selection)
 
   a = as.list(environment())

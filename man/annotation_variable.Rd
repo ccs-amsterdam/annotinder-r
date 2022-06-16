@@ -15,7 +15,7 @@ annotation_variable(
 )
 }
 \arguments{
-\item{name}{The name/label of the variable}
+\item{name}{The name/label of the variable. The name/label of the question. Recommended to keep short. Cannot contain a "."}
 
 \item{instruction}{A brief (think 1 or 2 sentences) instruction to the coder.}
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/units.r
 \name{create_units}
 \alias{create_units}
-\title{Create unit settings}
+\title{Create units}
 \usage{
 create_units(
   d,
@@ -11,7 +11,8 @@ create_units(
   meta = NULL,
   image = NULL,
   markdown = NA,
-  variables = NULL
+  variables = NULL,
+  gold = NULL
 )
 }
 \arguments{
@@ -31,12 +32,23 @@ but it makes it easy to do some custom styling in question units. See \url{https
 and you can test the markdown here: \url{https://spec.commonmark.org/dingus/}.}
 
 \item{variables}{A character vector with column names to use as unit variables}
+
+\item{gold}{A character vector with column names of gold answers. The name of the column should then
+correspond to a variable/question name in the codebook, and the value should match a code.}
 }
 \value{
 A list of units, to be used inside \code{\link{create_codebook}}
 }
 \description{
-Create unit settings
+Create an object that represents the coding units. This step actually bundles the
+data.frame with the column selections and runs some checks.
+}
+\details{
+A codingjob can include gold units for which the 'correct' answer is already given. These units
+can be used as 'training' and 'test' units. Training units are shown at the beginning of a job,
+and coders are shown whether they gave the correct answer. Test units are mixed in with regular units,
+and can then either inform coders when they're wrong (to keep em sharp) or silently keep track of
+bad answers to disqualify bad coders.
 }
 \examples{
 d = data.frame(id = c(1,2),
