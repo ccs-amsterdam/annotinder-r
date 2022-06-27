@@ -13,14 +13,14 @@
 #' @export
 #'
 #' @examples
-create_units <- function(data, id, type=NULL, variables=NULL) {
+create_units <- function(data, id, variables=NULL) {
+  id = name_as_character(substitute(id))
   if (!id %in% colnames(data)) stop(sprintf('"%s" is not a column name in d', id))
   if ('.TYPE' %in% colnames(data)) stop('data cannot have a column called ".TYPE" (what a coincidence, right?)')
   if (anyDuplicated(data[[id]])) stop(sprintf('The id column (%s) needs to have unique values', id))
   for (variable in variables) {
     if (!variable %in% colnames(d)) stop(sprintf('"%s" is not a column name in d', variable))
   }
-  if (!is.null(type))
 
   l = list(df = dplyr::as_tibble(data), id=id, fields=c(), variables=variables)
   l$df$.TYPE = 'code'
@@ -49,13 +49,14 @@ function() {
                     animal=c('Cat',NA,'Dog',NA, 'Neither :('))
 
 
-units = create_units(data, 'id') |>
-  set_meta('source') |>
-  set_meta('date') |>
-  set_text('title', size=1.3, bold=T) |>
-  set_text('text') |>
-  set_image('image', caption='caption') |>
-  set_markdown('markdown', align='center')
+units = create_units(data, id) |>
+  set_meta(source) |>
+  set_meta(date) |>
+  set_text(title, size=1.3, bold=T) |>
+  set_text(text) |>
+  set_image(image, caption=caption) |>
+  set_markdown(markdown, align='center') |>
+  set_train(animal, on_wrong='# WRONG\n\nTry again you idiot')
 
 prepare_units(units, NULL)
 }
@@ -156,6 +157,7 @@ set_meta <- function(data, column, label=NULL, bold=TRUE, ...) {
 #' @examples
 set_image <- function(data, column, caption=NULL, ...) {
   column = name_as_character(substitute(column))
+  caption = name_as_character(substitute(caption))
   for (col in c(column, caption)) {
     if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
   }
@@ -197,36 +199,55 @@ set_markdown <- function(data, column, ...) {
   data
 }
 
-test <- function(x) {
-  print(as.character(substitute(x)))
-  print(class(substitute(x)))
-}
-
-test(x = banaan)
-
 #' Set training units
 #'
+#' Mark certain units as training units, and provide the correct answers/annotations for these units.
+#' If the answer/annotation is wrong, coders will see a message and need to retry.
+#'
 #' @param data        A createUnitsBundle object, as created with \code{\link{create_units}}
-#' @param select      A logical expression to select which units are training units. Perhaps the best approach is to
-#'                    already have a column in the data that indicates the type of units (code, train or test). The select
-#'                    expression would then be something like: type == 'train'.
-#' @param ...         \code{\link{condition}} functions, to indicate
+#' @param column      The name of a column in data that has the correct annotation values. The name of the column needs to correspond to a variable/question
+#'                    in the codebook, or alternatively use the 'variable' argument. If you need to set training answers for multiple columns (e.g.,
+#'                    for units with multiple questions) you can use the set_train function multiple times.
+#' @param select      A logical expression to select which units are training units. like `id %in% c(...)`, or `type == 'train'`. If not given,
+#'                    all units for which column is not NA will be used.
+#' @param variable The name of the variable as used in the codebook. If not specified, the name of the column will be used.
+#' @param damage   The amount of damage a coder should receive.
+#' @param operator How should the annotation value be compared to the column value? Default is "==" (equals).
+#'                 But to screen on age you could for instance use "<=".
+#' @param on_wrong    A markdown string that will be displayed when a coder gives an incorrect answer. If not given, the message will be:
+#'                    "### You gave an incorrect answer.\n\nThis is a **training** unit. \nPlease have another look and select a different answer"
+#' @param hint     Optionally, The name of a column in data with a specific markdown string to display when this condition is not met.
+#'                 This message will be displayed beneath the on_wrong message.
 #'
 #' @return
 #' @export
 #'
 #' @examples
-set_train <- function(data, select) {
+set_train <- function(data, column, select=NULL, variable=NULL, damage=0, operator='==', on_wrong=NULL, hint=NULL) {
+  column = name_as_character(substitute(column))
+  if (is.null(variable)) variable = column
+  hint = name_as_character(substitute(hint))
+  if (!operator %in% c('==','<=','<','>=','>','!=')) stop("invalid operator. Has to be one of: '==','<=','<','>=','>','!='")
+
+  for (col in c(column, hint)) {
+    if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
+  }
+
   s = substitute(select)
-  data$.TYPE = ifelse(eval(s, data), 'train', data$.TYPE)
-  eval(s, data)
+  if (is.null(s)) {
+    s = !is.na(data$df[[column]])
+  } else {
+    s = eval(s, data$df)
+  }
+  data$df$.TYPE = ifelse(s, 'train', data$df$.TYPE)
+
+  if (is.null(data$train)) data$train = list()
+  data$train[[length(data$train)+1]] = list(which = which(s), column=column, variable=variable,
+                                            damage=damage, operator=operator, on_wrong=on_wrong, hint=hint)
+
+  data
 }
 
-test <- function(x ) {
-  print(as.character(substitute(x)))
-  print(class(substitute(x)))
-
-}
 
 name_as_character <- function(substituted) {
   if (class(substituted)[1] %in% c('name', 'character'))
@@ -247,8 +268,8 @@ name_as_character <- function(substituted) {
 print.createUnitsBundle <- function(x, ...){
   units = table(x$df$.TYPE)
   units = units[match(unique(x$df$.TYPE), names(units))] # sort by occurence
-  cat(sprintf('- units:'), paste(paste0(names(units), ' (', units, ')'), collapse=', '))
-  cat(sprintf('\n- fields: %s', paste(x$fields, collapse=', ')))
+  cat(sprintf('units:'), paste(paste0(names(units), ' (', units, ')'), collapse=', '))
+  cat(sprintf('\nfields: %s', paste(x$fields, collapse=', ')))
 }
 
 #' Set styling
