@@ -2,15 +2,21 @@
 #'
 #' Debrief a coder when a job is finished.
 #'
-#' @param message A message to show when a coder finishes a job.
+#' @param message A message in markdown to show when a coder finishes a job. The text is centered
 #' @param link A url that will  be shown when the job is finished. If the url contains {user_id}, this will be replaced with the user ID (an email address or ID assigned via jobtoken)
+#' @param link_text the text shown on the button with the link
+#' @param qr   If TRUE, show QR code for creating a new job coder at the end, so coders can share the job with others
 #'
 #' @return
 #' @export
 #'
 #' @examples
-debrief <- function(message, link=NULL) {
+debrief <- function(message, link=NULL, link_text=NULL, qr=FALSE) {
   l = list(message=message)
-  if (!is.null(link)) l$link = link
+  if (!is.null(link)) {
+    if (is.null(link_text)) stop('If link is used, also give a link_text')
+    l$link = link
+  }
+  if (qr) l$qr = TRUE
   l
 }

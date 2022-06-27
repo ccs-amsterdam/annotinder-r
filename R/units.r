@@ -128,11 +128,11 @@ create_text_fields <- function(rowdict, text_cols) {
 
 
       text = if (is.null(tf$coding_unit)) '' else rowdict[[tf$coding_unit]]
-      text_field = list(name=tf$field, value=text, bold=tf$bold, italic=tf$italic, size=tf$size, center=tf$center, justify=tf$justify, paragraphs=tf$paragraphs)
+      text_field = list(name=tf$field, value=text, style=tf$style, paragraphs=tf$paragraphs)
       if (!is.null(tf$label)) text_field$label = tf$label
       if (!is.null(tf$context_before)) text_field$context_before = paste0(rowdict[[tf$context_before]], tf$sep[1])
       if (!is.null(tf$context_after)) text_field$context_after = paste0(tf$sep[2], rowdict[[tf$context_after]])
-      return(lapply(text_field, jsonlite::unbox))
+      text_field
     }
   })
 }
@@ -246,6 +246,7 @@ text_fields <- function(...) {
 #' @param justify    If TRUE (default) justify the text
 #' @param center     If TRUE, center the text
 #' @param paragraphs If TRUE (default) show line breaks
+#' @param style      You can also directly specify inline CSS
 #' @param offset     If the text is a part of a bigger text, you can include the offset for the character position where it starts. This can
 #'                   be relevant for connecting annotations at specific character positions between the full text and this text_field.
 #'
@@ -253,7 +254,7 @@ text_fields <- function(...) {
 #' @export
 #'
 #' @examples
-text_field <- function(coding_unit=NULL, context_before=NULL, context_after=NULL, sep=' ', label=NULL, bold=F, italic=F, size=1, justify=T, center=F, paragraphs=T, offset=0) {
+text_field <- function(coding_unit=NULL, context_before=NULL, context_after=NULL, sep=' ', label=NULL, bold=F, italic=F, size=1, justify=T, center=F, paragraphs=T, style=list(), offset=0) {
   if (is.null(coding_unit)) {
     if (is.null(context_before) && is.null(context_after)) stop('at least one of coding_unit, context_before or context_after needs to be specified')
     if (!is.null(context_before) && !is.null(context_after)) stop('If no coding_unit is specified, you can only use context_before OR context_after (otherwise there wouldnt be a coding_unit at all)')
@@ -261,7 +262,23 @@ text_field <- function(coding_unit=NULL, context_before=NULL, context_after=NULL
   field = coding_unit
   if (is.null(field)) field = context_before
   if (is.null(field)) field = context_after
-  l = as.list(environment())
+
+  l = list(coding_unit = coding_unit,
+           context_before=context_before,
+           context_after=context_after,
+           field=field,
+           sep=sep)
+  if (!is.null(label)) l$label = label
+  if (offset != 0) l$offset = offset
+  if (!paragraphs) l$paragraphs = FALSE
+
+  l$style = style
+  if (bold) l$style$fontWeight = 'bold'
+  if (italic) l$style$fontStyle = 'italic'
+  if (size != 1) l$style$fontSize = paste0(size, 'em')
+  if (justify) l$style$textAlign = 'justify'
+  if (center) l$style$textAlign = 'center'
+
   l$field = field
   l
 }
