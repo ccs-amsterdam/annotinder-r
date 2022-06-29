@@ -14,7 +14,6 @@
 #'
 #' @examples
 create_units <- function(data, id, variables=NULL) {
-  id = name_as_character(substitute(id))
   if (!id %in% colnames(data)) stop(sprintf('"%s" is not a column name in d', id))
   if ('.TYPE' %in% colnames(data)) stop('data cannot have a column called ".TYPE" (what a coincidence, right?)')
   if (anyDuplicated(data[[id]])) stop(sprintf('The id column (%s) needs to have unique values', id))
@@ -46,19 +45,21 @@ function() {
                             'https://cdn.pixabay.com/photo/2016/11/29/09/32/auto-1868726_960_720.jpg'),
                     caption=c('Cat!','Caaaaaat','Doggie!!','Dog','Crrr'),
                     markdown=c('**useless markdown text**'),
-                    animal=c('Cat',NA,'Dog',NA, 'Neither :('))
+                    animal=c('Cat',NA,'Dog',NA, 'Neither :('),
+                    animal_hint=c('It clearly says CAT!!!', NA, NA, NA,NA))
 
+  units = create_units(data, 'id') |>
+    set_meta('source') |>
+    set_meta('date') |>
+    set_text('title', size=1.3, bold=T) |>
+    set_text('text') |>
+    set_image('image', caption='caption') |>
+    set_markdown('markdown', align='center') |>
+    set_train('animal', 'animal_hint', on_wrong='# WRONG\n\nTry again you idiot') |>
+    set_test('animal')
 
-units = create_units(data, id) |>
-  set_meta(source) |>
-  set_meta(date) |>
-  set_text(title, size=1.3, bold=T) |>
-  set_text(text) |>
-  set_image(image, caption=caption) |>
-  set_markdown(markdown, align='center') |>
-  set_train(animal, on_wrong='# WRONG\n\nTry again you idiot')
-
-prepare_units(units, NULL)
+  u = prepare_units(units)
+  jsonlite::toJSON(u[[1]], pretty = T, auto_unbox = T)
 }
 
 
@@ -70,11 +71,11 @@ prepare_units(units, NULL)
 #'                    Note that this can also be empty if the current text field is only context (before or after the coding unit).
 #'                    For example, the data.frame could be a keyword in context listing with the columns "pre", "keyword" and "post" (see for instance quanteda's kwic function).
 #'                    These could then be set to the "before", "column" and "after" arguments, respectively.
-#' @param before The text can have a context before and after the coding unit. This context will be shown to coders in grey,
+#' @param before     The text can have a context before and after the coding unit. This context will be shown to coders in grey,
 #'                   and they cannot annotate it (in annotate mode). The 'before' argument can be the name of a "character" column. If specified,
 #'                   the value of this column will be included in the current text_field as context. NOTE that if a text_field has a 'before' context, all text_fields before it
 #'                   will automatically also be considered as context. (i.e. context can only occur before of after the coding unit, not within it)
-#' @param after See 'before' argument
+#' @param after      See 'before' argument
 #' @param label      A character value to label the text field. Coders will then see this label where this field starts.
 #' @param ...        Style settings, passed to \code{\link{style}}
 #' @param offset     If the text is a part of a bigger text, you can include the offset for the character position where it starts. This is relevant if you want to import
@@ -85,10 +86,6 @@ prepare_units(units, NULL)
 #'
 #' @examples
 set_text <- function(data, column=NULL, before=NULL, after=NULL, label=NULL, ..., offset=0) {
-  if (!is.null(column)) column = name_as_character(substitute(column))
-  if (!is.null(before)) before = name_as_character(substitute(before))
-  if (!is.null(after)) after = name_as_character(substitute(after))
-
   for (col in c(column, before, after, label)) {
     if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
   }
@@ -128,7 +125,6 @@ set_text <- function(data, column=NULL, before=NULL, after=NULL, label=NULL, ...
 #'
 #' @examples
 set_meta <- function(data, column, label=NULL, bold=TRUE, ...) {
-  column = name_as_character(substitute(column))
   for (col in c(column, label)) {
     if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
   }
@@ -156,8 +152,6 @@ set_meta <- function(data, column, label=NULL, bold=TRUE, ...) {
 #'
 #' @examples
 set_image <- function(data, column, caption=NULL, ...) {
-  column = name_as_character(substitute(column))
-  caption = name_as_character(substitute(caption))
   for (col in c(column, caption)) {
     if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
   }
@@ -184,7 +178,6 @@ set_image <- function(data, column, caption=NULL, ...) {
 #'
 #' @examples
 set_markdown <- function(data, column, ...) {
-  column = name_as_character(substitute(column))
   for (col in c(column)) {
     if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
   }
@@ -209,27 +202,70 @@ set_markdown <- function(data, column, ...) {
 #'                    in the codebook, or alternatively use the 'variable' argument. If you need to set training answers for multiple columns (e.g.,
 #'                    for units with multiple questions) you can use the set_train function multiple times.
 #' @param select      A logical expression to select which units are training units. like `id %in% c(...)`, or `type == 'train'`. If not given,
-#'                    all units for which column is not NA will be used.
+#'                    all units where the values in `column` and (if given) `message` are not NA will be assigned a train units.
 #' @param variable The name of the variable as used in the codebook. If not specified, the name of the column will be used.
 #' @param damage   The amount of damage a coder should receive.
-#' @param operator How should the annotation value be compared to the column value? Default is "==" (equals).
-#'                 But to screen on age you could for instance use "<=".
+#' @param operator How should the annotation value be compared to the column value? Default is "==" (equals). Alternatives are "!=" (not equals),
+#'                 "<=", "<", ">=" or ">".
 #' @param on_wrong    A markdown string that will be displayed when a coder gives an incorrect answer. If not given, the message will be:
-#'                    "### You gave an incorrect answer.\n\nThis is a **training** unit. \nPlease have another look and select a different answer"
-#' @param hint     Optionally, The name of a column in data with a specific markdown string to display when this condition is not met.
+#'                    \code{"### You gave an incorrect answer.\n\nThis is a **training** unit. \nPlease have another look and select a different answer"}.
+#' @param message     Optionally, The name of a column in data with a specific markdown string to display when this condition is not met.
 #'                 This message will be displayed beneath the on_wrong message.
 #'
 #' @return
 #' @export
 #'
 #' @examples
-set_train <- function(data, column, select=NULL, variable=NULL, damage=0, operator='==', on_wrong=NULL, hint=NULL) {
-  column = name_as_character(substitute(column))
+set_train <- function(data, column, message=NULL, select=NULL, variable=NULL, damage=0, operator='==', on_wrong=NULL) {
   if (is.null(variable)) variable = column
-  hint = name_as_character(substitute(hint))
   if (!operator %in% c('==','<=','<','>=','>','!=')) stop("invalid operator. Has to be one of: '==','<=','<','>=','>','!='")
 
-  for (col in c(column, hint)) {
+  for (col in c(column, message)) {
+    if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
+  }
+
+  s = substitute(select)
+  if (is.null(s)) {
+    s = !is.na(data$df[[column]])
+    if (!is.null(message)) s = s & !is.na(data$df[[message]])
+  } else {
+    s = eval(s, data$df)
+  }
+  data$df$.TYPE = ifelse(s, 'train', data$df$.TYPE)
+
+  if (is.null(data$train)) data$train = list()
+  data$train[[length(data$train)+1]] = list(column=column, variable=variable,
+                                            damage=damage, operator=operator, on_wrong=on_wrong, message=message)
+
+  data
+}
+
+#' Set test units
+#'
+#' Mark certain units as test units, and provide the correct answers/annotations for these units.
+#' If the answer/annotation is wrong, coders receive damage.
+#'
+#' @param data        A createUnitsBundle object, as created with \code{\link{create_units}}
+#' @param column      The name of a column in data that has the correct annotation values. The name of the column needs to correspond to a variable/question
+#'                    in the codebook, or alternatively use the 'variable' argument. If you need to set training answers for multiple columns (e.g.,
+#'                    for units with multiple questions) you can use the set_test function multiple times.
+#' @param select      A logical expression to select which units are test units. like `id %in% c(...)`, or `type == 'test'`. If not given,
+#'                    will use all units for which column is not NA. If units have already been assigned as train units, they will not be assigned as test units.
+#' @param variable    The name of the variable as used in the codebook. If not specified, the name of the column will be used.
+#' @param damage      The amount of damage a coder should receive for getting a value wrong.
+#' @param operator    How should the annotation value be compared to the column value? Default is "==" (equals).
+#'                    But to screen on age you could for instance use "<=".
+#' @param on_wrong    A markdown string that will be displayed when a coder gives an incorrect answer. If not given, no message will be displayed.
+#'
+#' @return
+#' @export
+#'
+#' @examples
+set_test <- function(data, column, select=NULL, variable=NULL, damage=10, operator='==') {
+  if (is.null(variable)) variable = column
+  if (!operator %in% c('==','<=','<','>=','>','!=')) stop("invalid operator. Has to be one of: '==','<=','<','>=','>','!='")
+
+  for (col in c(column)) {
     if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
   }
 
@@ -239,22 +275,16 @@ set_train <- function(data, column, select=NULL, variable=NULL, damage=0, operat
   } else {
     s = eval(s, data$df)
   }
-  data$df$.TYPE = ifelse(s, 'train', data$df$.TYPE)
+  s = s & data$df$.TYPE != 'train'
+  data$df$.TYPE = ifelse(s, 'test', data$df$.TYPE)
 
-  if (is.null(data$train)) data$train = list()
-  data$train[[length(data$train)+1]] = list(which = which(s), column=column, variable=variable,
-                                            damage=damage, operator=operator, on_wrong=on_wrong, hint=hint)
+  if (is.null(data$test)) data$test = list()
+  data$test[[length(data$test)+1]] = list(column=column, variable=variable,
+                                            damage=damage, operator=operator)
 
   data
 }
 
-
-name_as_character <- function(substituted) {
-  if (class(substituted)[1] %in% c('name', 'character'))
-    as.character(substituted)
-  else
-    eval(substituted)
-}
 
 
 #' S3 print method for createUnitsBundle objects

@@ -4,17 +4,44 @@
 \alias{set_train}
 \title{Set training units}
 \usage{
-set_train(data, select)
+set_train(
+  data,
+  column,
+  message = NULL,
+  select = NULL,
+  variable = NULL,
+  damage = 0,
+  operator = "==",
+  on_wrong = NULL
+)
 }
 \arguments{
 \item{data}{A createUnitsBundle object, as created with \code{\link{create_units}}}
 
-\item{select}{A logical expression to select which units are training units. Perhaps the best approach is to
-already have a column in the data that indicates the type of units (code, train or test). The select
-expression would then be something like: type == 'train'.}
+\item{column}{The name of a column in data that has the correct annotation values. The name of the column needs to correspond to a variable/question
+in the codebook, or alternatively use the 'variable' argument. If you need to set training answers for multiple columns (e.g.,
+for units with multiple questions) you can use the set_train function multiple times.}
 
-\item{...}{\code{\link{condition}} functions, to indicate}
+\item{message}{Optionally, The name of a column in data with a specific markdown string to display when this condition is not met.
+This message will be displayed beneath the on_wrong message.}
+
+\item{select}{A logical expression to select which units are training units. like `id %in% c(...)`, or `type == 'train'`. If not given,
+all units where the values in `column` and (if given) `message` are not NA will be assigned a train units.}
+
+\item{variable}{The name of the variable as used in the codebook. If not specified, the name of the column will be used.}
+
+\item{damage}{The amount of damage a coder should receive.}
+
+\item{operator}{How should the annotation value be compared to the column value? Default is "==" (equals). Alternatives are "!=" (not equals),
+"<=", "<", ">=" or ">".}
+
+\item{on_wrong}{A markdown string that will be displayed when a coder gives an incorrect answer. If not given, the message will be:
+\code{"### You gave an incorrect answer.\n\nThis is a **training** unit. \nPlease have another look and select a different answer"}.}
+}
+\value{
+
 }
 \description{
-Set training units
+Mark certain units as training units, and provide the correct answers/annotations for these units.
+If the answer/annotation is wrong, coders will see a message and need to retry.
 }

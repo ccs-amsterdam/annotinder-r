@@ -1,12 +1,12 @@
-prepare_units <- function(createUnitsBundle, annotations=NULL) {
+prepare_units <- function(createUnitsBundle) {
   d = createUnitsBundle$df
 
-  if (is.null(annotations) || nrow(annotations) == 0) {
-    ann_list = NULL
-  } else {
-    ann_list = split(annotations, annotations$id)
-    ann_list = ann_list[match(d[[createUnitsBundle$id]], names(ann_list))]
-  }
+  # if (is.null(annotations) || nrow(annotations) == 0) {
+  #   ann_list = NULL
+  # } else {
+  #   ann_list = split(annotations, annotations$id)
+  #   ann_list = ann_list[match(d[[createUnitsBundle$id]], names(ann_list))]
+  # }
 
   units = vector('list', nrow(d))
   for (i in 1:nrow(d)) {
@@ -18,8 +18,10 @@ prepare_units <- function(createUnitsBundle, annotations=NULL) {
     markdown_field = create_markdown_field(rowdict, createUnitsBundle$markdown)
     variables = create_variables(rowdict, createUnitsBundle$variables)
 
-    gold = create_gold(rowdict, createUnitsBundle$gold)
-    importedAnnotations = create_imported_annotations(ann_list[[i]])
+    conditions = NULL
+    if (rowdict$.TYPE == 'train') conditions = create_conditions(rowdict, createUnitsBundle$train)
+    if (rowdict$.TYPE == 'test') conditions = create_conditions(rowdict, createUnitsBundle$test)
+    #importedAnnotations = create_imported_annotations(ann_list[[i]])
 
     ## to do: add "gold". Then when creating coding job check if gold answers match with questions
     units[[i]] = list(id = jsonlite::unbox(id),
@@ -30,8 +32,8 @@ prepare_units <- function(createUnitsBundle, annotations=NULL) {
                                   markdown_field=markdown_field,
                                   variables=variables))
 
-    if (!is.null(importedAnnotations)) units[[i]]$unit$importedAnnotations = importedAnnotations
-    if (!is.null(gold)) units[[i]]$gold = gold
+    if (!is.null(conditions)) units[[i]]$conditions = conditions
+    #if (!is.null(importedAnnotations)) units[[i]]$unit$importedAnnotations = importedAnnotations
 
   }
 
@@ -83,6 +85,20 @@ create_variables <- function(rowdict, variable_cols) {
     l[[vc]] = rowdict[[vc]]
   }
   l
+}
+
+create_conditions <- function(rowdict, condition_settings) {
+  conditions = list()
+  for (i in seq_along(condition_settings)) {
+    cs = condition_settings[[i]]
+    conditions[[i]] = list(variable = cs$column,
+                           value=rowdict[[cs$column]],
+                           damage=cs$damage,
+                           operator=cs$operator)
+    if (!is.null(cs$message)) conditions[[i]]$message = rowdict[[cs$message]]
+  }
+  if (length(conditions) == 0) return(NULL)
+  conditions
 }
 
 create_imported_annotations <- function(ann) {

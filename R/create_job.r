@@ -26,7 +26,7 @@ create_job <- function(title, units, codebook=NULL, pre=NULL, post=NULL, trainin
   cj_package = list(title=jsonlite::unbox(title),
                     provenance=list(),
                     codebook=codebook,
-                    units=prepare_units(units, annotations))
+                    units=prepare_units(units))
 
   ##### TO ADD:
   ####### check whether variables used in questions are present in units

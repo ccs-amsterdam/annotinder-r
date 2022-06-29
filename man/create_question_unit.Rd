@@ -4,7 +4,7 @@
 \alias{create_question_unit}
 \title{Create a special unit for asking questions}
 \usage{
-create_question_unit(..., markdown = NULL, text_window_size = NULL)
+create_question_unit(..., markdown = "", text_window_size = NULL)
 }
 \arguments{
 \item{...}{Questions to ask, created with \code{\link{question}}. Can be multiple (just as in \code{\link{create_codebook}}.}
@@ -15,6 +15,9 @@ create_question_unit(..., markdown = NULL, text_window_size = NULL)
 and users can change the size themselves (because the best size might differ depending on device). Here you can optionally set a fixed alternative.
 This can for instance be useful if you have a question with big or many buttons, in which case you could set the text window size to something small.
 Can also be set to 'auto' so the annotator tries a nice fi (but be sure to test beforehand whether this makes sense for your codebook)}
+}
+\value{
+
 }
 \description{
 Sometimes you don't want to ask a coder about a unit, but rather about themselves, or something.

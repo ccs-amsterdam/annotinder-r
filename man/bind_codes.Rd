@@ -9,6 +9,9 @@ bind_codes(...)
 \arguments{
 \item{...}{codes as created with \code{\link{code}}. Can also be a list of codes}
 }
+\value{
+
+}
 \description{
 Create a codes data.frame
 }
