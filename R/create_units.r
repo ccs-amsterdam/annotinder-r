@@ -115,7 +115,7 @@ set_text <- function(data, column=NULL, before=NULL, after=NULL, label=NULL, ...
 #' Set meta-data content
 #'
 #' @param data        A createUnitsBundle object, as created with \code{\link{create_units}}
-#' @param column      The column with the meta data
+#' @param column      The column with the meta data.
 #' @param label      A character value to label the meta field.
 #' @param bold       Meta data by default uses 'bold' style setting.
 #' @param ...        Style settings, passed to \code{\link{style}}

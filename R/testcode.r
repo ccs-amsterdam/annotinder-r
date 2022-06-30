@@ -5,20 +5,25 @@ library(ccsAnnotator)
 backend_connect('http://localhost:5000', 'test@user.com')
 
 
-  ## create codebook
+## create codebook
 codebook = create_codebook(
-  question('sentiment', 'assign sentiment to words', codes = c(Negative = 'red', Neutral = 'grey', Positive = 'green')),
-  question('sentiment', 'assign sentiment to words', codes = c(Negative = 'red', Neutral = 'grey', Positive = 'green'))
-)
-codebook_swipe = create_codebook(
-  sentiment = question('sentiment', 'assign sentiment to words', selection = 'annotinder',
+  sentiment = question('sentiment', 'assign sentiment to words', type = 'annotinder',
                                   codes = c(Negative = 'red', Positive = 'green', Neutral = 'grey'))
 )
 
-codebook$questions[[1]]
-jsonlite::toJSON(codebook)
+units = create_units(mini_sotu_par, 'id') |>
+  set_meta('name') |>
+  set_meta('year') |>
+  set_meta('paragraph') |>
+  set_text('text')
 
-units = create_units(mini_sotu_par, id='id', text='text', meta=c('name','year','paragraph'))
+job = create_job('test', units, codebook)
+job_db = create_job_db(job, overwrite = T)
+start_annotator(job_db, background = T)
+
+upload_job('test', units=units, codebook=codebook)
+
+
 
 jobsets = list(
   jobset('2 items', unit_set=head(mini_sotu_par$id, 2)),
