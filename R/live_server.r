@@ -112,6 +112,8 @@ create_plumber_server_script <- function(db_file) {
   server_file
 }
 
+
+
 create_plumber_file <- function(server_script) {
   start_server_file = tempfile(fileext = '.r')
   start_server_script = sprintf("library(ccsAnnotator)\ntryCatch(plumber::pr_run(plumber::pr('%s'), docs=F, port=8000), error=function(e) NULL)", server_script)

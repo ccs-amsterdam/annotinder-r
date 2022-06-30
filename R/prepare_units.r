@@ -25,7 +25,7 @@ prepare_units <- function(createUnitsBundle) {
 
     ## to do: add "gold". Then when creating coding job check if gold answers match with questions
     units[[i]] = list(id = jsonlite::unbox(id),
-                      type = d$.TYPE,
+                      type = rowdict$.TYPE,
                       unit = list(text_fields=text_fields,
                                   meta_fields=meta_fields,
                                   image_fields=image_fields,

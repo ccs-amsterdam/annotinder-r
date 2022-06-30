@@ -9,7 +9,7 @@ set_meta(data, column, label = NULL, bold = TRUE, ...)
 \arguments{
 \item{data}{A createUnitsBundle object, as created with \code{\link{create_units}}}
 
-\item{column}{The column with the meta data}
+\item{column}{The column with the meta data.}
 
 \item{label}{A character value to label the meta field.}
 

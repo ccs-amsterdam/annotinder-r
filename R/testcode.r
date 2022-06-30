@@ -21,6 +21,9 @@ job = create_job('test', units, codebook)
 job_db = create_job_db(job, overwrite = T)
 start_annotator(job_db, background = T)
 
+plumber::pr_run
+plumber:::validate_pr
+
 upload_job('test', units=units, codebook=codebook)
 
 
