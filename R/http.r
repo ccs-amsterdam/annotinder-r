@@ -78,7 +78,7 @@ parse_response <- function(res) {
 
 error_handling <- function(res, only_2xx) {
   code_class = floor(res$status_code/100)
-  cutoff_string <- function(x, n=70) if (nchar(x) > n) paste0(substr(x, 0, n), '...') else x
+  cutoff_string <- function(x, n=500) if (nchar(x) > n) paste0(substr(x, 0, n), '...') else x
 
   if (code_class != 2 && only_2xx){
     res_msg = parse_response(res)

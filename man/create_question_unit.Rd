@@ -16,9 +16,6 @@ and users can change the size themselves (because the best size might differ dep
 This can for instance be useful if you have a question with big or many buttons, in which case you could set the text window size to something small.
 Can also be set to 'auto' so the annotator tries a nice fi (but be sure to test beforehand whether this makes sense for your codebook)}
 }
-\value{
-
-}
 \description{
 Sometimes you don't want to ask a coder about a unit, but rather about themselves, or something.
 For instance, to include some basic survey questions at the start of a coding set.

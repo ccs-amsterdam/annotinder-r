@@ -8,11 +8,11 @@ set_train(
   data,
   column,
   message = NULL,
+  submessage = NULL,
   select = NULL,
-  variable = NULL,
+  variable = column,
   damage = 0,
-  operator = "==",
-  on_wrong = NULL
+  operator = "=="
 )
 }
 \arguments{
@@ -22,11 +22,14 @@ set_train(
 in the codebook, or alternatively use the 'variable' argument. If you need to set training answers for multiple columns (e.g.,
 for units with multiple questions) you can use the set_train function multiple times.}
 
-\item{message}{Optionally, The name of a column in data with a specific markdown string to display when this condition is not met.
+\item{message}{A markdown string that will be displayed when a coder gives an incorrect answer. If not given, the message will be:
+\code{"### You gave an incorrect answer.\n\nThis is a **training** unit. \nPlease have another look and select a different answer"}.}
+
+\item{submessage}{Optionally, The name of a column in data with a specific markdown string to display when this condition is not met.
 This message will be displayed beneath the on_wrong message.}
 
 \item{select}{A logical expression to select which units are training units. like `id %in% c(...)`, or `type == 'train'`. If not given,
-all units where the values in `column` and (if given) `message` are not NA will be assigned a train units.}
+all units where the values in `column` and (if given) `submessage` are not NA will be assigned a train units.}
 
 \item{variable}{The name of the variable as used in the codebook. If not specified, the name of the column will be used.}
 
@@ -34,12 +37,6 @@ all units where the values in `column` and (if given) `message` are not NA will 
 
 \item{operator}{How should the annotation value be compared to the column value? Default is "==" (equals). Alternatives are "!=" (not equals),
 "<=", "<", ">=" or ">".}
-
-\item{on_wrong}{A markdown string that will be displayed when a coder gives an incorrect answer. If not given, the message will be:
-\code{"### You gave an incorrect answer.\n\nThis is a **training** unit. \nPlease have another look and select a different answer"}.}
-}
-\value{
-
 }
 \description{
 Mark certain units as training units, and provide the correct answers/annotations for these units.

@@ -1,13 +1,6 @@
 prepare_units <- function(createUnitsBundle) {
   d = createUnitsBundle$df
 
-  # if (is.null(annotations) || nrow(annotations) == 0) {
-  #   ann_list = NULL
-  # } else {
-  #   ann_list = split(annotations, annotations$id)
-  #   ann_list = ann_list[match(d[[createUnitsBundle$id]], names(ann_list))]
-  # }
-
   units = vector('list', nrow(d))
   for (i in 1:nrow(d)) {
     rowdict = as.list(d[i,])
@@ -15,24 +8,25 @@ prepare_units <- function(createUnitsBundle) {
     text_fields = create_text_fields(rowdict, createUnitsBundle$text)
     meta_fields = create_meta_fields(rowdict, createUnitsBundle$meta)
     image_fields = create_image_fields(rowdict, createUnitsBundle$image)
-    markdown_field = create_markdown_field(rowdict, createUnitsBundle$markdown)
+    markdown_fields = create_markdown_fields(rowdict, createUnitsBundle$markdown)
     variables = create_variables(rowdict, createUnitsBundle$variables)
 
-    conditions = NULL
-    if (rowdict$.TYPE == 'train') conditions = create_conditions(rowdict, createUnitsBundle$train)
-    if (rowdict$.TYPE == 'test') conditions = create_conditions(rowdict, createUnitsBundle$test)
+    conditionals = NULL
+    if (rowdict$.TYPE == 'train') conditionals = create_conditionals(rowdict, createUnitsBundle$train)
+    if (rowdict$.TYPE == 'test') conditionals = create_conditionals(rowdict, createUnitsBundle$test)
     #importedAnnotations = create_imported_annotations(ann_list[[i]])
 
     ## to do: add "gold". Then when creating coding job check if gold answers match with questions
     units[[i]] = list(id = jsonlite::unbox(id),
                       type = rowdict$.TYPE,
+                      position = rowdict$.POSITION,
                       unit = list(text_fields=text_fields,
                                   meta_fields=meta_fields,
                                   image_fields=image_fields,
-                                  markdown_field=markdown_field,
+                                  markdown_fields=markdown_fields,
                                   variables=variables))
 
-    if (!is.null(conditions)) units[[i]]$conditions = conditions
+    if (!is.null(conditionals)) units[[i]]$conditionals = conditionals
     #if (!is.null(importedAnnotations)) units[[i]]$unit$importedAnnotations = importedAnnotations
 
   }
@@ -66,12 +60,12 @@ create_image_fields <- function(rowdict, image_cols) {
   lapply(seq_along(image_cols), function(i) {
     rf = image_cols[[i]]
     image_field = list(name = rf$field, value=rowdict[[rf$field]], style=rf$style)
-    if (!is.null(rf$caption)) image_field$caption = rf$caption
+    if (!is.null(rf$caption)) image_field$caption = rowdict[[rf$caption]]
     image_field
   })
 }
 
-create_markdown_field <- function(rowdict, markdown_cols) {
+create_markdown_fields <- function(rowdict, markdown_cols) {
   lapply(seq_along(markdown_cols), function(i) {
     mf = markdown_cols[[i]]
     markdown_field = list(name = mf$field, value=rowdict[[mf$field]], style=mf$style)
@@ -87,18 +81,19 @@ create_variables <- function(rowdict, variable_cols) {
   l
 }
 
-create_conditions <- function(rowdict, condition_settings) {
-  conditions = list()
-  for (i in seq_along(condition_settings)) {
-    cs = condition_settings[[i]]
-    conditions[[i]] = list(variable = cs$column,
-                           value=rowdict[[cs$column]],
-                           damage=cs$damage,
-                           operator=cs$operator)
-    if (!is.null(cs$message)) conditions[[i]]$message = rowdict[[cs$message]]
+create_conditionals <- function(rowdict, conditional_settings) {
+  conditionals = list()
+  for (i in seq_along(conditional_settings)) {
+    cs = conditional_settings[[i]]
+    conditionals[[i]] = list(variable = cs$column,
+                             conditions = list(list(value = rowdict[[cs$column]],
+                                                    operator=cs$operator)),
+                             damage=cs$damage,
+                             message=cs$message)
+    if (!is.null(cs$message)) conditionals[[i]]$conditions[[1]]$submessage = rowdict[[cs$submessage]]
   }
-  if (length(conditions) == 0) return(NULL)
-  conditions
+  if (length(conditionals) == 0) return(NULL)
+  conditionals
 }
 
 create_imported_annotations <- function(ann) {

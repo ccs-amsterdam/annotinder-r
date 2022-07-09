@@ -4,7 +4,6 @@ function() {
 library(ccsAnnotator)
 backend_connect('http://localhost:5000', 'test@user.com')
 
-
 ## create codebook
 codebook = create_codebook(
   sentiment = question('sentiment', 'assign sentiment to words', type = 'annotinder',
@@ -24,7 +23,10 @@ start_annotator(job_db, background = T)
 plumber::pr_run
 plumber:::validate_pr
 
-upload_job('test', units=units, codebook=codebook)
+upload_job('a', units=units, codebook=codebook)
+
+
+
 
 
 

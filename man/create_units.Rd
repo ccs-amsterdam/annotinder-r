@@ -15,9 +15,6 @@ create_units(data, id, variables = NULL)
 For example, if there is a column "topic", you could ask the question: "is this sentence about {topic}".
 The {topic} part will then be replaced in the question with the value for this unit in the "topic" column.}
 }
-\value{
-
-}
 \description{
 Create the basis for a units object. The content of the units can then be
 designed in a pipe of \code{\link{set_text}}, \code{\link{set_meta}}, \code{\link{set_image}} and \code{\link{set_markdown}} functions

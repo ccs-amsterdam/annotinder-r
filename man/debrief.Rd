@@ -11,9 +11,6 @@ debrief(message, link = NULL)
 
 \item{link}{A url that will  be shown when the job is finished. If the url contains {user_id}, this will be replaced with the user ID (an email address or ID assigned via jobtoken)}
 }
-\value{
-
-}
 \description{
 Debrief a coder when a job is finished.
 }

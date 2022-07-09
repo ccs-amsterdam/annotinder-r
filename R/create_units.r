@@ -5,6 +5,7 @@
 #'
 #' @param data  A data.frame
 #' @param id    A column in the data.frame with unique values.
+#' @param type  A column in the data.frame with types. Valid types are: "code", "train", "test" and "survey"
 #' @param variables A vector of column names. These column names can then be referenced from the codebook.
 #'                  For example, if there is a column "topic", you could ask the question: "is this sentence about {topic}".
 #'                  The {topic} part will then be replaced in the question with the value for this unit in the "topic" column.
@@ -13,22 +14,26 @@
 #' @export
 #'
 #' @examples
-create_units <- function(data, id, variables=NULL) {
+create_units <- function(data, id='id', type=NULL, variables=NULL) {
   if (!id %in% colnames(data)) stop(sprintf('"%s" is not a column name in d', id))
+  if (!is.null(type) && !type %in% colnames(data)) stop(sprintf('"%s" is not a column name in d', type))
   if ('.TYPE' %in% colnames(data)) stop('data cannot have a column called ".TYPE" (what a coincidence, right?)')
+  if ('.POSITION' %in% colnames(data)) stop('data cannot have a column called ".POSITION" (what a coincidence, right?)')
   if (anyDuplicated(data[[id]])) stop(sprintf('The id column (%s) needs to have unique values', id))
   for (variable in variables) {
     if (!variable %in% colnames(d)) stop(sprintf('"%s" is not a column name in d', variable))
   }
 
   l = list(df = dplyr::as_tibble(data), id=id, fields=c(), variables=variables)
-  l$df$.TYPE = 'code'
+  l$df$.TYPE = if (!is.null(type)) l$df[[type]] else 'code'
+  l$df$.POSITION = 'job'
 
   structure(l, class = c('createUnitsBundle', 'list'))
 }
 
 function() {
   data = data.frame(id = c(1,2,3,4,5),
+                    type = c('train','code','test','code','test'),
                     letter = letters[1:5],
                     date=c('2020-01-01','2020-01-02','2020-01-03','2020-01-04','2020-01-05'),
                     source=c('imagination'),
@@ -46,22 +51,40 @@ function() {
                     caption=c('Cat!','Caaaaaat','Doggie!!','Dog','Crrr'),
                     markdown=c('**useless markdown text**'),
                     animal=c('Cat',NA,'Dog',NA, 'Neither :('),
-                    animal_hint=c('It clearly says CAT!!!', NA, NA, NA,NA))
+                    animal_hint=c("Hint: look closely at those ears and paws.", NA, NA, NA,NA))
 
-  units = create_units(data, 'id') |>
+  units = create_units(data, 'id', 'type') |>
     set_meta('source') |>
     set_meta('date') |>
-    set_text('title', size=1.3, bold=T) |>
-    set_text('text') |>
+    set_text('title', size=2, bold=T, align='center') |>
+    set_text('text', align='center') |>
     set_image('image', caption='caption') |>
     set_markdown('markdown', align='center') |>
-    set_train('animal', 'animal_hint', on_wrong='# WRONG\n\nTry again you idiot') |>
+    set_train('animal', message='# OH NOES!!\n\nThis was a training unit, and it seems you got it wrong!', submessage='animal_hint') |>
     set_test('animal')
+
+  ## add a set_type or something. Because its not cool that set_train would now need to select for every variable
+
+  codebook = create_codebook(
+    sentiment = question('animal', 'What animal is this?', type = 'annotinder',
+                         codes = c('Cat','Dog','Neither :('))
+  )
+
+  backend_connect('http://localhost:5000', 'test@user.com')
+  job = create_job('test', units, codebook)
+
+  js = list(
+    jobset())
+
+  upload_job('5', units=units, codebook=codebook, rules=rules_fixedset(randomize=T))
+
 
   u = prepare_units(units)
   jsonlite::toJSON(u[[1]], pretty = T, auto_unbox = T)
 }
 
+
+## set_survey(position=c('pre','post'))
 
 
 #' Set text content
@@ -192,65 +215,54 @@ set_markdown <- function(data, column, ...) {
   data
 }
 
-#' Set training units
+#' Set test units
 #'
-#' Mark certain units as training units, and provide the correct answers/annotations for these units.
+#' Setup training units, and provide the correct answers/annotations for these units.
 #' If the answer/annotation is wrong, coders will see a message and need to retry.
+#' Note that which units are train units needs to be indicated with the 'type' argument in \code{\link{create_units}}
 #'
 #' @param data        A createUnitsBundle object, as created with \code{\link{create_units}}
 #' @param column      The name of a column in data that has the correct annotation values. The name of the column needs to correspond to a variable/question
 #'                    in the codebook, or alternatively use the 'variable' argument. If you need to set training answers for multiple columns (e.g.,
 #'                    for units with multiple questions) you can use the set_train function multiple times.
-#' @param select      A logical expression to select which units are training units. like `id %in% c(...)`, or `type == 'train'`. If not given,
-#'                    all units where the values in `column` and (if given) `message` are not NA will be assigned a train units.
 #' @param variable The name of the variable as used in the codebook. If not specified, the name of the column will be used.
 #' @param damage   The amount of damage a coder should receive.
 #' @param operator How should the annotation value be compared to the column value? Default is "==" (equals). Alternatives are "!=" (not equals),
 #'                 "<=", "<", ">=" or ">".
-#' @param on_wrong    A markdown string that will be displayed when a coder gives an incorrect answer. If not given, the message will be:
+#' @param message     A markdown string that will be displayed when a coder gives an incorrect answer. If not given, the message will be:
 #'                    \code{"### You gave an incorrect answer.\n\nThis is a **training** unit. \nPlease have another look and select a different answer"}.
-#' @param message     Optionally, The name of a column in data with a specific markdown string to display when this condition is not met.
+#' @param submessage  Optionally, The name of a column in data with a specific markdown string to display when this condition is not met.
 #'                 This message will be displayed beneath the on_wrong message.
 #'
 #' @return
 #' @export
 #'
 #' @examples
-set_train <- function(data, column, message=NULL, select=NULL, variable=NULL, damage=0, operator='==', on_wrong=NULL) {
-  if (is.null(variable)) variable = column
+set_train <- function(data, column, message=NULL, submessage=NULL, variable=column, damage=0, operator='==') {
+  if (!any(data$df$.TYPE == 'train')) stop('There are no train units specified. You can do this in the "create_units" function with the "type" argument')
   if (!operator %in% c('==','<=','<','>=','>','!=')) stop("invalid operator. Has to be one of: '==','<=','<','>=','>','!='")
 
-  for (col in c(column, message)) {
+  for (col in c(column, submessage)) {
     if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
   }
 
-  s = substitute(select)
-  if (is.null(s)) {
-    s = !is.na(data$df[[column]])
-    if (!is.null(message)) s = s & !is.na(data$df[[message]])
-  } else {
-    s = eval(s, data$df)
-  }
-  data$df$.TYPE = ifelse(s, 'train', data$df$.TYPE)
-
   if (is.null(data$train)) data$train = list()
   data$train[[length(data$train)+1]] = list(column=column, variable=variable,
-                                            damage=damage, operator=operator, on_wrong=on_wrong, message=message)
+                                            damage=damage, operator=operator, message=message, submessage=submessage)
 
   data
 }
 
 #' Set test units
 #'
-#' Mark certain units as test units, and provide the correct answers/annotations for these units.
+#' Setup test units (also known as gold units).
 #' If the answer/annotation is wrong, coders receive damage.
+#' Note that which units are test units needs to be indicated with the 'type' argument in \code{\link{create_units}}
 #'
 #' @param data        A createUnitsBundle object, as created with \code{\link{create_units}}
 #' @param column      The name of a column in data that has the correct annotation values. The name of the column needs to correspond to a variable/question
 #'                    in the codebook, or alternatively use the 'variable' argument. If you need to set training answers for multiple columns (e.g.,
 #'                    for units with multiple questions) you can use the set_test function multiple times.
-#' @param select      A logical expression to select which units are test units. like `id %in% c(...)`, or `type == 'test'`. If not given,
-#'                    will use all units for which column is not NA. If units have already been assigned as train units, they will not be assigned as test units.
 #' @param variable    The name of the variable as used in the codebook. If not specified, the name of the column will be used.
 #' @param damage      The amount of damage a coder should receive for getting a value wrong.
 #' @param operator    How should the annotation value be compared to the column value? Default is "==" (equals).
@@ -261,7 +273,8 @@ set_train <- function(data, column, message=NULL, select=NULL, variable=NULL, da
 #' @export
 #'
 #' @examples
-set_test <- function(data, column, select=NULL, variable=NULL, damage=10, operator='==') {
+set_test <- function(data, column, variable=NULL, damage=10, operator='==') {
+  if (!any(data$df$.TYPE == 'test')) stop('There are no test units specified. You can do this in the "create_units" function with the "type" argument')
   if (is.null(variable)) variable = column
   if (!operator %in% c('==','<=','<','>=','>','!=')) stop("invalid operator. Has to be one of: '==','<=','<','>=','>','!='")
 
@@ -269,22 +282,12 @@ set_test <- function(data, column, select=NULL, variable=NULL, damage=10, operat
     if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
   }
 
-  s = substitute(select)
-  if (is.null(s)) {
-    s = !is.na(data$df[[column]])
-  } else {
-    s = eval(s, data$df)
-  }
-  s = s & data$df$.TYPE != 'train'
-  data$df$.TYPE = ifelse(s, 'test', data$df$.TYPE)
-
   if (is.null(data$test)) data$test = list()
   data$test[[length(data$test)+1]] = list(column=column, variable=variable,
                                             damage=damage, operator=operator)
 
   data
 }
-
 
 
 #' S3 print method for createUnitsBundle objects
