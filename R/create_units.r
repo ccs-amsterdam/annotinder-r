@@ -21,17 +21,18 @@ create_units <- function(data, id='id', type=NULL, variables=NULL) {
   if ('.POSITION' %in% colnames(data)) stop('data cannot have a column called ".POSITION" (what a coincidence, right?)')
   if (anyDuplicated(data[[id]])) stop(sprintf('The id column (%s) needs to have unique values', id))
   for (variable in variables) {
-    if (!variable %in% colnames(d)) stop(sprintf('"%s" is not a column name in d', variable))
+    if (!variable %in% colnames(data)) stop(sprintf('"%s" is not a column name in d', variable))
   }
 
-  l = list(df = dplyr::as_tibble(data), id=id, fields=c(), variables=variables)
+  l = list(df = dplyr::as_tibble(data), id=id, fields=c(), content_order=c(), variables=variables)
   l$df$.TYPE = if (!is.null(type)) l$df[[type]] else 'code'
-  l$df$.POSITION = 'job'
+  l$df$.POSITION = NA
 
   structure(l, class = c('createUnitsBundle', 'list'))
 }
 
 function() {
+  library(annotinder)
   data = data.frame(id = c(1,2,3,4,5),
                     type = c('train','code','test','code','test'),
                     letter = letters[1:5],
@@ -84,6 +85,7 @@ function() {
 }
 
 
+
 ## set_survey(position=c('pre','post'))
 
 
@@ -120,6 +122,8 @@ set_text <- function(data, column=NULL, before=NULL, after=NULL, label=NULL, ...
   field = column
   if (is.null(field)) field = before
   if (is.null(field)) field = after
+  if (length(field) != 1) stop('Only one text field can be set at a time. Note that you can call set_text multiple times')
+
   l = list(field=field,
            coding_unit=column,
            context_before=before,
@@ -132,14 +136,15 @@ set_text <- function(data, column=NULL, before=NULL, after=NULL, label=NULL, ...
   data$text[[length(data$text)+1]] = l
   if (field %in% data$fields) stop(sprintf('field name (%s) already exists', field))
   data$fields = c(data$fields, field)
+  data$content_order = c(data$content_order, field)
   data
 }
 
 #' Set meta-data content
 #'
 #' @param data        A createUnitsBundle object, as created with \code{\link{create_units}}
-#' @param column      The column with the meta data.
-#' @param label      A character value to label the meta field.
+#' @param columns     The column with the meta data.
+#' @param label      A character value to label the meta field. If not specified, the column name is used.
 #' @param bold       Meta data by default uses 'bold' style setting.
 #' @param ...        Style settings, passed to \code{\link{style}}
 #'
@@ -148,8 +153,9 @@ set_text <- function(data, column=NULL, before=NULL, after=NULL, label=NULL, ...
 #'
 #' @examples
 set_meta <- function(data, column, label=NULL, bold=TRUE, ...) {
-  for (col in c(column, label)) {
-    if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
+  if (length(column) != 1) stop('Only one meta item can be set at a time. Note that you can call set_meta multiple times')
+  for (col in column) {
+    if (!column %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
   }
 
   l = list(field = column,
@@ -167,6 +173,7 @@ set_meta <- function(data, column, label=NULL, bold=TRUE, ...) {
 #'
 #' @param data        A createUnitsBundle object, as created with \code{\link{create_units}}
 #' @param column      The name of a column in data that contains paths/urls to image files
+#' @param base64      If TRUE, store the image as a base64 in the codingjob json file
 #' @param caption     The name of a column in data that contains the image caption
 #' @param ...        Style settings, passed to \code{\link{style}}
 #'
@@ -174,12 +181,15 @@ set_meta <- function(data, column, label=NULL, bold=TRUE, ...) {
 #' @export
 #'
 #' @examples
-set_image <- function(data, column, caption=NULL, ...) {
+set_image <- function(data, column, base64=FALSE, caption=NULL, ...) {
+  if (length(column) != 1) stop('Only one image can be set at a time. Note that you can call set_image multiple times')
+
   for (col in c(column, caption)) {
     if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
   }
 
   l = list(field = column,
+           base64=base64,
            style = style(...))
   if (!is.null(caption)) l$caption = caption
 
@@ -187,6 +197,7 @@ set_image <- function(data, column, caption=NULL, ...) {
   data$image[[length(data$image)+1]] = l
   if (column %in% data$fields) stop(sprintf('field name (%s) already exists', column))
   data$fields = c(data$fields, column)
+  data$content_order = c(data$content_order, column)
   data
 }
 
@@ -201,6 +212,8 @@ set_image <- function(data, column, caption=NULL, ...) {
 #'
 #' @examples
 set_markdown <- function(data, column, ...) {
+  if (length(column) != 1) stop('Only one markdown string can be set at a time. Note that you can call set_markdown multiple times')
+
   for (col in c(column)) {
     if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
   }
@@ -212,6 +225,7 @@ set_markdown <- function(data, column, ...) {
   data$markdown[[length(data$markdown)+1]] = l
   if (column %in% data$fields) stop(sprintf('field name (%s) already exists', column))
   data$fields = c(data$fields, column)
+  data$content_order = c(data$content_order, column)
   data
 }
 

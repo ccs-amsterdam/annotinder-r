@@ -1,5 +1,5 @@
-## remotes::install_github('ccs-amsterdam/ccsAnnotator')
-library(ccsAnnotator)
+## remotes::install_github('ccs-amsterdam/annotinder_r')
+library(annotinder)
 
 ## codebook variables
 geloofwaardig = question('geloofwaardig', 'Vind jij de inhoud van dit bericht geloofwaardig?', type='annotinder',
@@ -11,12 +11,12 @@ d$id = gsub('\\..*', '', gsub('.*/', '', d$stimulus) )
 
 ## split units into three jobsets
 jobsets = list(
-  jobset('Set_1', unit_set = grep('^set1', d$id, value = T, ignore.case = T)),
-  jobset('Set_2', unit_set = grep('^set2', d$id, value = T, ignore.case = T)),
-  jobset('Set_3', unit_set = grep('^set3', d$id, value = T, ignore.case = T)),
-  jobset('Set_4', unit_set = grep('^set4', d$id, value = T, ignore.case = T)),
-  jobset('Set_5', unit_set = grep('^set5', d$id, value = T, ignore.case = T)),
-  jobset('Set_6', unit_set = grep('^set6', d$id, value = T, ignore.case = T))
+  jobset('Set_1', set = grep('^set1', d$id, value = T, ignore.case = T)),
+  jobset('Set_2', set = grep('^set2', d$id, value = T, ignore.case = T)),
+  jobset('Set_3', set = grep('^set3', d$id, value = T, ignore.case = T)),
+  jobset('Set_4', set = grep('^set4', d$id, value = T, ignore.case = T)),
+  jobset('Set_5', set = grep('^set5', d$id, value = T, ignore.case = T)),
+  jobset('Set_6', set = grep('^set6', d$id, value = T, ignore.case = T))
 )
 
 ## pre / post questions

@@ -9,13 +9,13 @@ set_meta(data, column, label = NULL, bold = TRUE, ...)
 \arguments{
 \item{data}{A createUnitsBundle object, as created with \code{\link{create_units}}}
 
-\item{column}{The column with the meta data.}
-
-\item{label}{A character value to label the meta field.}
+\item{label}{A character value to label the meta field. If not specified, the column name is used.}
 
 \item{bold}{Meta data by default uses 'bold' style setting.}
 
 \item{...}{Style settings, passed to \code{\link{style}}}
+
+\item{columns}{The column with the meta data.}
 }
 \value{
 A createUnitsBundle object

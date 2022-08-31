@@ -4,12 +4,14 @@
 \alias{create_units}
 \title{Create units for the cssAnnotator}
 \usage{
-create_units(data, id, variables = NULL)
+create_units(data, id = "id", type = NULL, variables = NULL)
 }
 \arguments{
 \item{data}{A data.frame}
 
 \item{id}{A column in the data.frame with unique values.}
+
+\item{type}{A column in the data.frame with types. Valid types are: "code", "train", "test" and "survey"}
 
 \item{variables}{A vector of column names. These column names can then be referenced from the codebook.
 For example, if there is a column "topic", you could ask the question: "is this sentence about {topic}".

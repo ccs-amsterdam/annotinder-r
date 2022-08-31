@@ -4,14 +4,7 @@
 \alias{set_test}
 \title{Set test units}
 \usage{
-set_test(
-  data,
-  column,
-  select = NULL,
-  variable = NULL,
-  damage = 10,
-  operator = "=="
-)
+set_test(data, column, variable = NULL, damage = 10, operator = "==")
 }
 \arguments{
 \item{data}{A createUnitsBundle object, as created with \code{\link{create_units}}}
@@ -19,9 +12,6 @@ set_test(
 \item{column}{The name of a column in data that has the correct annotation values. The name of the column needs to correspond to a variable/question
 in the codebook, or alternatively use the 'variable' argument. If you need to set training answers for multiple columns (e.g.,
 for units with multiple questions) you can use the set_test function multiple times.}
-
-\item{select}{A logical expression to select which units are test units. like `id %in% c(...)`, or `type == 'test'`. If not given,
-will use all units for which column is not NA. If units have already been assigned as train units, they will not be assigned as test units.}
 
 \item{variable}{The name of the variable as used in the codebook. If not specified, the name of the column will be used.}
 
@@ -33,6 +23,7 @@ But to screen on age you could for instance use "<=".}
 \item{on_wrong}{A markdown string that will be displayed when a coder gives an incorrect answer. If not given, no message will be displayed.}
 }
 \description{
-Mark certain units as test units, and provide the correct answers/annotations for these units.
+Setup test units (also known as gold units).
 If the answer/annotation is wrong, coders receive damage.
+Note that which units are test units needs to be indicated with the 'type' argument in \code{\link{create_units}}
 }

@@ -1,11 +1,11 @@
-Package: ccsAnnotator
+Package: annotinder
 Type: Package
 Title: A tool for manually annotating texts
 Version: 0.1.0
 Author: Kasper Welbers
 Maintainer: Kasper Welbers <kasperwelbers@gmail.com>
-Description: Create codingjobs for the CCS Annotator, interact with
-    the AmCAT annotator backend, or host a server to do live annotations.
+Description: Create codingjobs for AnnoTinder, interact with
+    an AnnoTinder server, or run a local server to do live annotations.
 Imports:
     jsonlite (>= 1.7.2),
     httr (>= 1.4.2),
@@ -18,4 +18,4 @@ Imports:
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.1

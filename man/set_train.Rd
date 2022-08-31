@@ -2,14 +2,13 @@
 % Please edit documentation in R/create_units.r
 \name{set_train}
 \alias{set_train}
-\title{Set training units}
+\title{Set test units}
 \usage{
 set_train(
   data,
   column,
   message = NULL,
   submessage = NULL,
-  select = NULL,
   variable = column,
   damage = 0,
   operator = "=="
@@ -28,9 +27,6 @@ for units with multiple questions) you can use the set_train function multiple t
 \item{submessage}{Optionally, The name of a column in data with a specific markdown string to display when this condition is not met.
 This message will be displayed beneath the on_wrong message.}
 
-\item{select}{A logical expression to select which units are training units. like `id %in% c(...)`, or `type == 'train'`. If not given,
-all units where the values in `column` and (if given) `submessage` are not NA will be assigned a train units.}
-
 \item{variable}{The name of the variable as used in the codebook. If not specified, the name of the column will be used.}
 
 \item{damage}{The amount of damage a coder should receive.}
@@ -39,6 +35,7 @@ all units where the values in `column` and (if given) `submessage` are not NA wi
 "<=", "<", ">=" or ">".}
 }
 \description{
-Mark certain units as training units, and provide the correct answers/annotations for these units.
+Setup training units, and provide the correct answers/annotations for these units.
 If the answer/annotation is wrong, coders will see a message and need to retry.
+Note that which units are train units needs to be indicated with the 'type' argument in \code{\link{create_units}}
 }

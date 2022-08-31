@@ -4,12 +4,14 @@
 \alias{set_image}
 \title{Set image content}
 \usage{
-set_image(data, column, caption = NULL, ...)
+set_image(data, column, base64 = FALSE, caption = NULL, ...)
 }
 \arguments{
 \item{data}{A createUnitsBundle object, as created with \code{\link{create_units}}}
 
 \item{column}{The name of a column in data that contains paths/urls to image files}
+
+\item{base64}{If TRUE, store the image as a base64 in the codingjob json file}
 
 \item{caption}{The name of a column in data that contains the image caption}
 

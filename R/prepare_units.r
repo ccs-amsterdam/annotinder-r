@@ -9,6 +9,7 @@ prepare_units <- function(createUnitsBundle) {
     meta_fields = create_meta_fields(rowdict, createUnitsBundle$meta)
     image_fields = create_image_fields(rowdict, createUnitsBundle$image)
     markdown_fields = create_markdown_fields(rowdict, createUnitsBundle$markdown)
+    grid = create_field_grid(createUnitsBundle$grid, createUnitsBundle$content_order)
     variables = create_variables(rowdict, createUnitsBundle$variables)
 
     conditionals = NULL
@@ -16,17 +17,17 @@ prepare_units <- function(createUnitsBundle) {
     if (rowdict$.TYPE == 'test') conditionals = create_conditionals(rowdict, createUnitsBundle$test)
     #importedAnnotations = create_imported_annotations(ann_list[[i]])
 
-    ## to do: add "gold". Then when creating coding job check if gold answers match with questions
     units[[i]] = list(id = jsonlite::unbox(id),
                       type = rowdict$.TYPE,
-                      position = rowdict$.POSITION,
                       unit = list(text_fields=text_fields,
                                   meta_fields=meta_fields,
                                   image_fields=image_fields,
                                   markdown_fields=markdown_fields,
                                   variables=variables))
 
+    if (!is.null(rowdict$.POSITION) && !is.na(rowdict$.POSITION)) units[[i]]$position = rowdict$.POSITION
     if (!is.null(conditionals)) units[[i]]$conditionals = conditionals
+    if (!is.null(grid)) units[[i]]$unit$grid = grid
     #if (!is.null(importedAnnotations)) units[[i]]$unit$importedAnnotations = importedAnnotations
 
   }
@@ -46,7 +47,6 @@ create_text_fields <- function(rowdict, text_cols) {
   })
 }
 
-
 create_meta_fields <- function(rowdict, meta_cols) {
   lapply(seq_along(meta_cols), function(i) {
     mf = meta_cols[[i]]
@@ -59,7 +59,7 @@ create_meta_fields <- function(rowdict, meta_cols) {
 create_image_fields <- function(rowdict, image_cols) {
   lapply(seq_along(image_cols), function(i) {
     rf = image_cols[[i]]
-    image_field = list(name = rf$field, value=rowdict[[rf$field]], style=rf$style)
+    image_field = list(name = rf$field, value=rowdict[[rf$field]], base64=rf$base64, style=rf$style)
     if (!is.null(rf$caption)) image_field$caption = rowdict[[rf$caption]]
     image_field
   })
@@ -107,6 +107,11 @@ create_imported_annotations <- function(ann) {
   })
   names(ann) = NULL
   ann
+}
+
+create_field_grid <- function(grid, content_order) {
+  if (is.null(grid) && length(content_order) > 1) grid = content_order
+  grid
 }
 
 #' S3 print method for codingjobUnits objects
