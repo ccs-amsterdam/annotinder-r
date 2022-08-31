@@ -26,19 +26,6 @@ create_job <- function(title, units, codebook=NULL, pre=NULL, post=NULL) {
 
   pre = set_special_id(pre, 'pre')
   post = set_special_id(post, 'post')
-  # if (!is.null(train)) {
-  #   if (!methods::is(train, 'createGoldUnitsBundle')) stop('train units have not been created with the create_gold_units function')
-  #   train = prepare_units(train)
-  # }
-  # if (!is.null(test)) {
-  #   if (!methods::is(test, 'createGoldUnitsBundle')) stop('test units have not been created with the create_gold_units function')
-  #   test = prepare_units(test)
-  #   testmix = vector('list', length(codingjob$units) + length(test))
-  #   unit_indices = sort(sample(1:length(testmix), length(codingjob$units), replace=F))
-  #   testmix[unit_indices] = codingjob$units
-  #   testmix[sapply(testmix, is.null)] = test
-  #   codingjob$units = testmix
-  # }
   codingjob$units = c(pre, codingjob$units, post)
 
   structure(codingjob, class=c('codingjob', 'list'))

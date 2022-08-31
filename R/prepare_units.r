@@ -1,4 +1,5 @@
 prepare_units <- function(createUnitsBundle) {
+  print('what the kanker fuck')
   d = createUnitsBundle$df
 
   units = vector('list', nrow(d))
