@@ -40,6 +40,6 @@ vignettes/*.pdf
 
 # stuff
 test.db
-cssAnnotatorJobs/*
-ccsAnnotatorJobs
+annotinder_jobs/*
+annotinder_jobs
 corpustools_data/*

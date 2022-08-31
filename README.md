@@ -1,5 +1,5 @@
-# ccsAnnotator
+# annotinder
 
-R package for working with the CCS Annotator
+R package for working with the AnnoTinder annotation software.
 
 In development. See R/testcode.r for some idea of where this is going.

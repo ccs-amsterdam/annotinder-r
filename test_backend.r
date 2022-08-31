@@ -1,4 +1,4 @@
-library(ccsAnnotator)
+library(annotinder)
 library(dplyr)
 
 data = data.frame(id = c(1,2,3,4,5),

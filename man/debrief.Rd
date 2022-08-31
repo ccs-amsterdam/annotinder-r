@@ -4,12 +4,16 @@
 \alias{debrief}
 \title{Debrief coder}
 \usage{
-debrief(message, link = NULL)
+debrief(message, link = NULL, link_text = NULL, qr = FALSE)
 }
 \arguments{
-\item{message}{A message to show when a coder finishes a job.}
+\item{message}{A message in markdown to show when a coder finishes a job. The text is centered}
 
 \item{link}{A url that will  be shown when the job is finished. If the url contains {user_id}, this will be replaced with the user ID (an email address or ID assigned via jobtoken)}
+
+\item{link_text}{the text shown on the button with the link}
+
+\item{qr}{If TRUE, show QR code for creating a new job coder at the end, so coders can share the job with others}
 }
 \description{
 Debrief a coder when a job is finished.

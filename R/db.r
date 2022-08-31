@@ -37,7 +37,7 @@ db_get_codebook <- function(db) {
 }
 
 db_get_unit <- function(db, index) {
-  if (is.na(index)) {
+  if (is.na(index) || index < 0) {
     res = DBI::dbSendQuery(db, 'SELECT * FROM units WHERE status = "" OR status = "IN_PROGRESS" ORDER BY unit_index ASC LIMIT 1')
   } else {
     res = DBI::dbSendQuery(db, sprintf("SELECT * FROM units WHERE unit_index = %s", index))
@@ -48,6 +48,7 @@ db_get_unit <- function(db, index) {
   if (nrow(json_df) != 1) return(NULL)
 
   unit = jsonlite::fromJSON(json_df$json[1])
+  unit$index = json_df$unit_index
   unit$id = jsonlite::unbox(json_df$id)
   unit$status = jsonlite::unbox(json_df$status)
 

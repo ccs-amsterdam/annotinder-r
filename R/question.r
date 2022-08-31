@@ -42,8 +42,8 @@
 #' @export
 #'
 #' @examples
+question <- function(name, question, codes=NULL, type=c("buttons","dropdown","scale", "annotinder", "inputs"), color='#7fb9eb', single_row=F, same_size=T, items=NULL) {
 
-question <- function(name, question, codes=NULL, type=c("buttons","dropdown","scale", "annotinder", "inputs","confirm"), color='#7fb9eb', single_row=F, same_size=T, items=NULL) {
   if (grepl('\\.', name)) stop('Question name is not allowed to contain a "." symbol')
   type = match.arg(type)
 

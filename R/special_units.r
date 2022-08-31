@@ -14,19 +14,10 @@
 #' @export
 #'
 #' @examples
-create_question_unit <- function(..., markdown=NULL, text_window_size=NULL) {
-  if (is.null(title) && is.null(text) && is.null(markdown)) stop('Either title+text or markdown need to be given')
-  if (is.null(markdown)) {
-    if (is.null(title)) title = ''
-    if (is.null(text)) text = ''
-    units = create_units(data.frame(id=NA, title=title, text=text), id='id', text=text_fields(
-      text_field('title', bold=T, center=T, size='1.4'),
-      text_field('text')
-    ))
-  } else {
-    units = create_units(data.frame(id=NA, markdown=markdown), id='id', markdown='markdown')
-  }
-  units = prepare_units(units, NULL)
+create_question_unit <- function(..., markdown='', text_window_size=NULL) {
+  units = create_units(data.frame(id=NA, markdown=markdown), id='id')
+  units = set_markdown(units, 'markdown')
+  units = prepare_units(units)
   unit = units[[1]]
   unit$unit$codebook = create_codebook(...)
   if (!is.null(text_window_size)) {
@@ -52,20 +43,12 @@ create_question_unit <- function(..., markdown=NULL, text_window_size=NULL) {
 #' @export
 #'
 #' @examples
-create_info_unit <- function(id, title=NULL, text=NULL, markdown=NULL, button="Continue") {
-  if (is.null(title) && is.null(text) && is.null(markdown)) stop('Either title+text or markdown need to be given')
-  if (is.null(markdown)) {
-    if (is.null(title)) title = ''
-    if (is.null(text)) text = ''
-    units = create_units(data.frame(id=id, title=title, text=text), id='id', text=text_fields(
-      text_field('title', bold=T, center=T, size='1.4'),
-      text_field('text')
-    ))
-  } else {
-    units = create_units(data.frame(id=id, markdown=markdown), id='id', markdown='markdown')
-  }
-  units = prepare_units(units, NULL)
+create_info_unit <- function(id, markdown='', button="Continue") {
+  units = create_units(data.frame(id=NA, markdown=markdown), id='id')
+  units = set_markdown(units, 'markdown')
+  units = prepare_units(units)
   unit = units[[1]]
+
 
   unit$unit$codebook = list(type='questions', questions=list(list(name='confirm', type='confirm', button=button)))
   unit

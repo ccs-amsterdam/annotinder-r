@@ -4,7 +4,7 @@
 \alias{create_question_unit}
 \title{Create a special unit for asking questions}
 \usage{
-create_question_unit(..., markdown = NULL, text_window_size = NULL)
+create_question_unit(..., markdown = "", text_window_size = NULL)
 }
 \arguments{
 \item{...}{Questions to ask, created with \code{\link{question}}. Can be multiple (just as in \code{\link{create_codebook}}.}

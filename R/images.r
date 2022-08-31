@@ -8,7 +8,7 @@ function() {
 x = base64enc::base64encode("~/projects/images/2ekamer.png")
 
 
-library(ccsAnnotator)
+library(annotinder)
 sentiment = question('sentiment', 'What is the sentiment of this image?',
                                 codes = c(Negative = 'red', Neutral = 'grey', Positive = 'green'))
 

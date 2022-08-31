@@ -4,7 +4,11 @@
 \alias{rules_fixedset}
 \title{FixedSet ruleset}
 \usage{
-rules_fixedset(can_seek_backwards = TRUE, can_seek_forwards = FALSE)
+rules_fixedset(
+  can_seek_backwards = TRUE,
+  can_seek_forwards = FALSE,
+  randomize = FALSE
+)
 }
 \arguments{
 \item{can_seek_backwards}{Boolean. Should the coder be allowed to go back to previous unit and edit them?}

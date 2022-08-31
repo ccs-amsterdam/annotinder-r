@@ -1,34 +1,47 @@
 
 function() {
 
-library(ccsAnnotator)
+library(annotinder)
 backend_connect('http://localhost:5000', 'test@user.com')
 
-
-  ## create codebook
+## create codebook
 codebook = create_codebook(
-  question('sentiment', 'assign sentiment to words', codes = c(Negative = 'red', Neutral = 'grey', Positive = 'green')),
-  question('sentiment', 'assign sentiment to words', codes = c(Negative = 'red', Neutral = 'grey', Positive = 'green'))
-)
-codebook_swipe = create_codebook(
-  sentiment = question('sentiment', 'assign sentiment to words', selection = 'annotinder',
+  sentiment = question('sentiment', 'assign sentiment to words',
                                   codes = c(Negative = 'red', Positive = 'green', Neutral = 'grey'))
 )
 
-codebook$questions[[1]]
-jsonlite::toJSON(codebook)
+units = create_units(mini_sotu_par, 'id') |>
+  set_meta('name') |>
+  set_meta('year') |>
+  set_meta('paragraph') |>
+  set_text('text')
 
-units = create_units(mini_sotu_par, id='id', text='text', meta=c('name','year','paragraph'))
+
+job = create_job('test', units, codebook)
+job_db = create_job_db(job, overwrite = T)
+start_annotator(job_db, background = T)
+
+
+upload_job('a', units=units, codebook=codebook)
+
+
+
+
+codebook_swipe = create_codebook(
+  sentiment = question('sentiment', 'assign sentiment to words', type = 'annotinder',
+                       codes = c(Negative = 'red', Positive = 'green', Neutral = 'grey'))
+)
 
 jobsets = list(
-  jobset('2 items', unit_set=head(mini_sotu_par$id, 2)),
-  jobset('2 items, swiping', unit_set=head(mini_sotu_par$id, 3), codebook=codebook_swipe),
-  jobset('5 items rev', unit_set=rev(head(mini_sotu_par$id, 5)))
+  jobset('2 items', ids=head(mini_sotu_par$id, 2)),
+  jobset('2 items, swiping', ids=head(mini_sotu_par$id, 3), codebook=codebook_swipe),
+  jobset('5 items rev', ids=rev(head(mini_sotu_par$id, 5)))
 )
 
 
 upload_job('single fixed set', units=units, codebook=codebook)
 upload_job('3 fixed sets', units=units, codebook=codebook, jobsets=jobsets)
+upload_job('single crowd set', units=units, codebook=codebook, rules=rules_crowdcoding())
 upload_job('3 crowd sets', units=units, codebook=codebook, jobsets=jobsets, rules=rules_crowdcoding())
 
 
@@ -52,7 +65,7 @@ upload_job('with intro sets', units=units, codebook=codebook, pre=list(demo, inf
 
 
 library(corpustools)
-library(ccsAnnotator)
+library(annotinder)
 
 ## create codebook
 sentiment = question('sentiment', 'assign sentiment to words',
@@ -126,13 +139,6 @@ upload_job(codingjob5)
 test = codingjob$units[[1]]
 test$id
 
-#jsonlite::write_json(jsonlite::toJSON(list(codebook = codingjob$codebook)),
-#                     path = '~/projects/ccs-annotator-client/public/codebook/sentimentAnnotation.json')
-
-
-#jsonlite::write_json(jsonlite::toJSON(list(units=codingjob$units)),
-#                     path = '~/projects/ccs-annotator-client/public/units/sotu.json')
-
 
 job_db = create_job_db(codingjob, overwrite = T)
 
@@ -174,7 +180,7 @@ job_db = start_annotator(job_db)
 
 ## test with importing annotations
 library(corpustools)
-library(ccsAnnotator)
+library(annotinder)
 
 tc = create_tcorpus(mini_sotu, c('name','text'), 'id', remember_spaces = T)
 tc$code_dictionary(quanteda::data_dictionary_LSD2015, column = 'sentiment')

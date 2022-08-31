@@ -12,7 +12,7 @@
 #' @examples
 #' annotator_client()
 annotator_client <- function(in_browser=FALSE) {
-  react_build = system.file("ccs-annotator-client", package="ccsAnnotator", mustWork=T)
+  react_build = system.file("annotinder_client", package="annotinder", mustWork=T)
 
   viewer = getOption("viewer")
 
@@ -22,8 +22,9 @@ annotator_client <- function(in_browser=FALSE) {
   } else {
     ## RStudio can host it from an R temp file (see ?rstudioapi::viewer)
     tf = tempdir()
-    url = file.path(tf, 'ccs-annotator-client/build/index.html')
+    url = file.path(tf, 'annotinder_client/build/index.html')
     if (!file.exists(url)) file.copy(react_build, tf, recursive = T, overwrite = T)
+    print(url)
     viewer(url)
   }
 }

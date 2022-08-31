@@ -45,7 +45,7 @@ function(res, req) {
 #* @serializer unboxedJSON
 #* @get /codingjob/<job_id>/codebook
 function(job_id) {
-  db_get_codebook(db)
+  annotinder:::db_get_codebook(db)
 }
 
 #*
@@ -53,7 +53,7 @@ function(job_id) {
 #* @serializer unboxedJSON
 #* @get /codingjob/<job_id>/progress
 function(job_id) {
-  db_get_progress(db)
+  annotinder:::db_get_progress(db)
 }
 
 #*
@@ -66,7 +66,7 @@ function(res, req, job_id) {
   })
 
   if (length(index) == 0) index = NA
-  unit = db_get_unit(db, index)
+  unit = annotinder:::db_get_unit(db, index)
 
   if (is.null(unit)) {
     res$status = 404
@@ -94,6 +94,6 @@ function(job_id) {
 function(req, job_id, unit_id) {
   body = req$argsBody
   unit_id = as.character(unit_id)
-  db_insert_annotation(db, unit_id, body)
+  annotinder:::db_insert_annotation(db, unit_id, body)
 }
 

@@ -70,7 +70,7 @@ start_annotator <- function(job_db, background=F, browse=T, port=8000) {
 #'
 #' job_db = create_job_db(codingjob)
 create_job_db <- function(codingjob, path=getwd(), overwrite=F) {
-  folder = if (!is.null(path)) file.path(path, 'ccsAnnotatorJobs') else 'ccsAnnotatorJobs'
+  folder = if (!is.null(path)) file.path(path, 'annotinder_jobs') else 'annotinder_jobs'
   if (!file.exists(folder)) dir.create(folder, recursive = T)
   filename = file.path(folder, paste0(codingjob$title, '.db'))
 
@@ -105,16 +105,18 @@ run_in_current_session <- function(db_file, server_script) {
 
 create_plumber_server_script <- function(db_file) {
   server_file = tempfile(fileext = '.r')
-  server_template = system.file("server_template.r", package="ccsAnnotator", mustWork=T)
+  server_template = system.file("server_template.r", package="annotinder", mustWork=T)
   server_script = readChar(server_template, file.info(server_template)$size)
   server_script = gsub('DB_FILE', db_file, server_script)
   writeLines(server_script, server_file)
   server_file
 }
 
+
+
 create_plumber_file <- function(server_script) {
   start_server_file = tempfile(fileext = '.r')
-  start_server_script = sprintf("library(ccsAnnotator)\nplumber::pr_run(plumber::pr('%s'), docs=F, port=8000)", server_script)
+  start_server_script = sprintf("library(annotinder)\ntryCatch(plumber::pr_run(plumber::pr('%s'), docs=F, port=8000), error=function(e) NULL)", server_script)
   writeLines(start_server_script, start_server_file)
   start_server_file
 }

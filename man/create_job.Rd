@@ -4,15 +4,7 @@
 \alias{create_job}
 \title{Create a CCS Annotator codingjob}
 \usage{
-create_job(
-  title,
-  units,
-  codebook = NULL,
-  pre = NULL,
-  post = NULL,
-  training = 0,
-  annotations = NULL
-)
+create_job(title, units, codebook = NULL, pre = NULL, post = NULL)
 }
 \arguments{
 \item{title}{A character string, for the title of the codingjob}
@@ -25,19 +17,6 @@ to the AmCAT annotator backend, and for which jobsets with specific codebooks ar
 \item{pre}{A special unit or list of special question units created with \code{\link{create_question_unit}} to show before the codingjob.}
 
 \item{post}{Like pre, but shown after the codingjob.}
-
-\item{training}{If there are gold units, you can use some of them for training the coders at the start of the session. These will be shown
-at the start of the session (after pre).}
-
-\item{annotations}{Optionally, create the job with imported annotations.
-Should be a data.frame like returned by \code{\link{gimme_annotations}}, with the columns:
-id, field, variable, value, offset and length. The "id" column should match the id column in the units
-(based on the id argument in create_units). "field" should be a text field in units. "variable" and "value"
-should match actual variables (or questions) and codes in the codebook. "offset" and "length" are the
-character position offset and the length of the span annotation.}
-
-\item{test}{Mix gold units with regular units to test whether coders are performing well. For local jobs in R, the gold units
-are just added randomly. For jobs uploaded to the AmCAT annotator backend, different strategies can be set with the rules.}
 }
 \value{
 A codingjob object

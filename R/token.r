@@ -7,7 +7,7 @@ set_token <- function(token) {
 token_file <- function() {
   path = Sys.getenv("HOME")
   if (path == '') path = normalizePath('~')
-  paste0(path, '/.ccsAnnotator.rds')
+  paste0(path, '/.annotinder.rds')
 }
 
 #' Delete backend API token

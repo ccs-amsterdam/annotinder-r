@@ -16,6 +16,7 @@ text_field(
   justify = T,
   center = F,
   paragraphs = T,
+  style = list(),
   offset = 0
 )
 }
@@ -48,6 +49,8 @@ different separators before and after.}
 \item{center}{If TRUE, center the text}
 
 \item{paragraphs}{If TRUE (default) show line breaks}
+
+\item{style}{You can also directly specify inline CSS}
 
 \item{offset}{If the text is a part of a bigger text, you can include the offset for the character position where it starts. This can
 be relevant for connecting annotations at specific character positions between the full text and this text_field.}
