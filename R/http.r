@@ -27,7 +27,7 @@ request <- function(branch=NULL, param=list(), json_data=NULL, post=FALSE, post_
   if (is.null(conn)) stop('Not connected to an annotator backend. See backend_connect()')
 
   param = arrange_url_arguments(param, ...)
-  url = paste(conn$host, 'annotator', paste(branch, collapse='/'), sep='/')
+  url = paste(conn$host, paste(branch, collapse='/'), sep='/')
   if (!post) {
     res = httr::GET(url, get_headers(conn), query=param)
   } else {
