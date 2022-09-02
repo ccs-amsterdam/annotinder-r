@@ -22,6 +22,9 @@ But to screen on age you could for instance use "<=".}
 
 \item{on_wrong}{A markdown string that will be displayed when a coder gives an incorrect answer. If not given, no message will be displayed.}
 }
+\value{
+
+}
 \description{
 Setup test units (also known as gold units).
 If the answer/annotation is wrong, coders receive damage.

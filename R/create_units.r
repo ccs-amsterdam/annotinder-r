@@ -97,7 +97,7 @@ function() {
 #'                    For example, the data.frame could be a keyword in context listing with the columns "pre", "keyword" and "post" (see for instance quanteda's kwic function).
 #'                    These could then be set to the "before", "column" and "after" arguments, respectively.
 #' @param before     The text can have a context before and after the coding unit. This context will be shown to coders in grey,
-#'                   and they cannot annotate it (in annotate mode). The 'before' argument can be the name of a "character" column. If specified,
+#'                   and they cannot annotate it (in annotate mode). The 'before' argument must be the name of a "character" column. If specified,
 #'                   the value of this column will be included in the current text_field as context. NOTE that if a text_field has a 'before' context, all text_fields before it
 #'                   will automatically also be considered as context. (i.e. context can only occur before of after the coding unit, not within it)
 #' @param after      See 'before' argument
@@ -111,6 +111,10 @@ function() {
 #'
 #' @examples
 set_text <- function(data, column=NULL, before=NULL, after=NULL, label=NULL, ..., offset=0) {
+  if (!is.null(column) && length(column) != 1) stop('Can only choose one column. If you want to add multiple text fields, you can use set_text multiple times')
+  if (!is.null(before) && length(before) != 1) stop('Can only choose one "before" column. If you want to add multiple text fields, you can use set_text multiple times')
+  if (!is.null(after) && length(after) != 1) stop('Can only choose one "after" column. If you want to add multiple text fields, you can use set_text multiple times')
+
   for (col in c(column, before, after, label)) {
     if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
   }
@@ -142,9 +146,16 @@ set_text <- function(data, column=NULL, before=NULL, after=NULL, label=NULL, ...
 
 #' Set meta-data content
 #'
+#' You can select columns to show in the unit as meta data. This will always be displayed at the top-middle of the
+#' unit, with one the left hand a label and on the right hand the value (e.g., "DATE     2010-01-01").
+#' With set_meta you can set multiple columns at once, but if you want different styling for meta fields
+#' you can also use set_meta multiple times
+#'
 #' @param data        A createUnitsBundle object, as created with \code{\link{create_units}}
-#' @param columns     The column with the meta data.
-#' @param label      A character value to label the meta field. If not specified, the column name is used.
+#' @param columns     The columns with the meta data.
+#' @param labels       By default, the column names are used as labels, but in uppercase and underscores replaced by whitespace.
+#'                    You can customize labels by providing a character vector of the same length as the columns argument.
+#'                    We recommend labels in uppercase because it fits the design, but you do you.
 #' @param bold       Meta data by default uses 'bold' style setting.
 #' @param ...        Style settings, passed to \code{\link{style}}
 #'
@@ -152,20 +163,26 @@ set_text <- function(data, column=NULL, before=NULL, after=NULL, label=NULL, ...
 #' @export
 #'
 #' @examples
-set_meta <- function(data, column, label=NULL, bold=TRUE, ...) {
-  if (length(column) != 1) stop('Only one meta item can be set at a time. Note that you can call set_meta multiple times')
-  for (col in column) {
-    if (!column %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
+set_meta <- function(data, columns, labels=NULL, bold=TRUE, ...) {
+  if (!is.null(labels)) {
+    if (length(columns) != length(labels)) stop('Length of the label argument should be the same as the length of the columns argument')
+  } else {
+    labels = gsub('_', ' ', toupper(columns))
   }
 
-  l = list(field = column,
-           style = style(bold=bold, ...),
-           label=label)
+  for (i in 1:length(columns)) {
+    column = columns[i]
+    label = labels[i]
+    if (!column %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
+    l = list(field = column,
+             style = style(bold=bold, ...),
+             label=label)
 
-  if (is.null(data$meta)) data$meta = list()
-  data$meta[[length(data$meta)+1]] = l
-  if (column %in% data$fields) stop(sprintf('field name (%s) already exists', column))
-  data$fields = c(data$fields, column)
+    if (is.null(data$meta)) data$meta = list()
+    data$meta[[length(data$meta)+1]] = l
+    if (column %in% data$fields) stop(sprintf('field name (%s) already exists', column))
+    data$fields = c(data$fields, column)
+  }
   data
 }
 

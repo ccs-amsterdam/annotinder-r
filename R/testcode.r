@@ -5,15 +5,13 @@ library(annotinder)
 backend_connect('http://localhost:5000', 'test@user.com')
 
 ## create codebook
-codebook = create_codebook(
-  sentiment = question('sentiment', 'assign sentiment to words',
-                                  codes = c(Negative = 'red', Positive = 'green', Neutral = 'grey'))
-)
+sentiment = question('sentiment', 'assign sentiment to words',
+                     codes = c(Negative = 'crimson', Neutral = 'grey', Positive = 'lightgreen'))
+codebook = create_codebook(sentiment)
 
-units = create_units(mini_sotu_par, 'id') |>
-  set_meta('name') |>
-  set_meta('year') |>
-  set_meta('paragraph') |>
+
+units = create_units(mini_sotu_par, 'id') %>%
+  set_meta(c('name','year','paragraph')) %>%
   set_text('text')
 
 
@@ -25,11 +23,9 @@ start_annotator(job_db, background = T)
 upload_job('a', units=units, codebook=codebook)
 
 
-
-
 codebook_swipe = create_codebook(
   sentiment = question('sentiment', 'assign sentiment to words', type = 'annotinder',
-                       codes = c(Negative = 'red', Positive = 'green', Neutral = 'grey'))
+                       codes = c(Negative = 'crimson', Positive = 'green', Neutral = 'grey'))
 )
 
 jobsets = list(

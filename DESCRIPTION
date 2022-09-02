@@ -14,7 +14,8 @@ Imports:
     DBI (>= 1.1.1),
     RSQLite (>= 2.2.9),
     getPass,
-    methods
+    methods,
+    magrittr
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

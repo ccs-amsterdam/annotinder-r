@@ -4,22 +4,27 @@
 \alias{set_meta}
 \title{Set meta-data content}
 \usage{
-set_meta(data, column, label = NULL, bold = TRUE, ...)
+set_meta(data, columns, labels = NULL, bold = TRUE, ...)
 }
 \arguments{
 \item{data}{A createUnitsBundle object, as created with \code{\link{create_units}}}
 
-\item{label}{A character value to label the meta field. If not specified, the column name is used.}
+\item{columns}{The columns with the meta data.}
+
+\item{labels}{By default, the column names are used as labels, but in uppercase and underscores replaced by whitespace.
+You can customize labels by providing a character vector of the same length as the columns argument.
+We recommend labels in uppercase because it fits the design, but you do you.}
 
 \item{bold}{Meta data by default uses 'bold' style setting.}
 
 \item{...}{Style settings, passed to \code{\link{style}}}
-
-\item{columns}{The column with the meta data.}
 }
 \value{
 A createUnitsBundle object
 }
 \description{
-Set meta-data content
+You can select columns to show in the unit as meta data. This will always be displayed at the top-middle of the
+unit, with one the left hand a label and on the right hand the value (e.g., "DATE     2010-01-01").
+With set_meta you can set multiple columns at once, but if you want different styling for meta fields
+you can also use set_meta multiple times
 }

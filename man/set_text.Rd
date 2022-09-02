@@ -23,7 +23,7 @@ For example, the data.frame could be a keyword in context listing with the colum
 These could then be set to the "before", "column" and "after" arguments, respectively.}
 
 \item{before}{The text can have a context before and after the coding unit. This context will be shown to coders in grey,
-and they cannot annotate it (in annotate mode). The 'before' argument can be the name of a "character" column. If specified,
+and they cannot annotate it (in annotate mode). The 'before' argument must be the name of a "character" column. If specified,
 the value of this column will be included in the current text_field as context. NOTE that if a text_field has a 'before' context, all text_fields before it
 will automatically also be considered as context. (i.e. context can only occur before of after the coding unit, not within it)}
 
