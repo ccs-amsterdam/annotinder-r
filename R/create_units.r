@@ -61,8 +61,8 @@ function() {
     set_text('text', align='center') |>
     set_image('image', caption='caption') |>
     set_markdown('markdown', align='center') |>
-    set_train('animal', message='# OH NOES!!\n\nThis was a training unit, and it seems you got it wrong!', submessage='animal_hint') |>
-    set_test('animal')
+    set_train('animal', damage=10, message='# OH NOES!!\n\nThis was a training unit, and it seems you got it wrong!', submessage='animal_hint') |>
+    set_test('animal', damage=10)
 
   ## add a set_type or something. Because its not cool that set_train would now need to select for every variable
 

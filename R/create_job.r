@@ -14,7 +14,6 @@
 create_job <- function(title, units, codebook=NULL, pre=NULL, post=NULL) {
   if (!methods::is(units, 'createUnitsBundle')) stop('units has not been created with the create_units function')
   codingjob = list(title=jsonlite::unbox(title),
-                   provenance=list(),
                    codebook=codebook,
                    units=prepare_units(units))
 
