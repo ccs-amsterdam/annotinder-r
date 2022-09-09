@@ -24,7 +24,6 @@ annotator_client <- function(in_browser=FALSE) {
     tf = tempdir()
     url = file.path(tf, 'annotinder_client/build/index.html')
     if (!file.exists(url)) file.copy(react_build, tf, recursive = T, overwrite = T)
-    print(url)
     viewer(url)
   }
 }

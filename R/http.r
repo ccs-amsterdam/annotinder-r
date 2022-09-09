@@ -7,6 +7,7 @@ request_token <- function(conn, passwd) {
   read_response(res)$token
 }
 
+
 #' call API with authentication and specified filters (GET or POST)
 #'
 #' Either provide the branch and param, or provide a full url with param included (ignoring param). If post is used, it is possible to provide the json_data directly (ignoring param)

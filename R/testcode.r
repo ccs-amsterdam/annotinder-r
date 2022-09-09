@@ -19,6 +19,19 @@ job = create_job('test', units, codebook)
 job_db = create_job_db(job, overwrite = T)
 start_annotator(job_db, background = T)
 
+job_db
+
+units = create_units(mini_sotu_par, 'id') %>%
+  set_text('text')
+job = create_job('test2', units, codebook)
+job_db = create_job_db(job, overwrite = T)
+start_annotator(job_db, background = T)
+
+
+file.exists('/home/kasper/projects/annotinder-r/annotinder_jobs/tests.db')
+
+start_annotator('/home/kasper/projects/annotinder-r/annotinder_jobs/test.db', background = T)
+
 
 upload_job('a', units=units, codebook=codebook)
 

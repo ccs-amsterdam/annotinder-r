@@ -32,7 +32,18 @@
 #' start_annotator(job_id)
 #' }
 start_annotator <- function(job_db, background=F, browse=T, port=8000) {
+  job_db = normalizePath(job_db)
+  if (!file.exists(job_db)) stop(sprintf('The database file does not exist (%s)', job_db))
+
   Sys.setenv(ANNOTATION_DB = job_db)
+
+  server_running = tryCatch(httr::GET('localhost:8000/users/me/token')$status == 200, error=function(e) FALSE)
+  if (server_running) {
+    ## if server already running, just replace the db file and restart client
+    httr::POST('localhost:8000/db', body=jsonlite::toJSON(list(db_file=job_db), auto_unbox = T))
+    if (browse) annotator_client(in_browser = !background) ## if not background job, rstudio can't serve it
+    return(invisible(job_db))
+  }
 
   server_script = create_plumber_server_script(job_db)
   if (browse) annotator_client(in_browser = !background) ## if not background job, rstudio can't serve it
@@ -42,9 +53,8 @@ start_annotator <- function(job_db, background=F, browse=T, port=8000) {
   } else {
     run_in_current_session(db_file, server_script)
   }
-  job_db
+  invisible(job_db)
 }
-
 
 
 #' Create a codingjob database
@@ -74,8 +84,7 @@ create_job_db <- function(codingjob, path=getwd(), overwrite=F) {
   if (!file.exists(folder)) dir.create(folder, recursive = T)
   filename = file.path(folder, paste0(codingjob$title, '.db'))
 
-  if (file.exists(filename) && !overwrite) stop(sprintf('A codingjob with this name already exists.
-                                                        If you are sure you want to overwrite is, set overwrite=T', folder))
+  if (file.exists(filename) && !overwrite) stop(sprintf('A codingjob with this name already exists. If you are sure you want to overwrite is, set overwrite=T', folder))
 
 
   db = DBI::dbConnect(RSQLite::SQLite(), filename)
@@ -87,12 +96,10 @@ create_job_db <- function(codingjob, path=getwd(), overwrite=F) {
   return(filename)
 }
 
+
 run_as_job <- function(server_script) {
   pf = create_plumber_file(server_script)
-  #running_job = Sys.getenv('ANNOTATION_RSTUDIO_JOB')
-  #if (running_job != '') tryCatch({rstudioapi::jobRemove(running_job)}, error=function(e) NULL)
-  job = rstudioapi::jobRunScript(pf, workingDir = getwd())
-  Sys.setenv(ANNOTATION_RSTUDIO_JOB = job)
+  job = rstudioapi::jobRunScript(pf, name='AnnoTinder', workingDir = getwd())
   job
 }
 
@@ -113,10 +120,10 @@ create_plumber_server_script <- function(db_file) {
 }
 
 
-
 create_plumber_file <- function(server_script) {
   start_server_file = tempfile(fileext = '.r')
   start_server_script = sprintf("library(annotinder)\ntryCatch(plumber::pr_run(plumber::pr('%s'), docs=F, port=8000), error=function(e) NULL)", server_script)
   writeLines(start_server_script, start_server_file)
   start_server_file
 }
+

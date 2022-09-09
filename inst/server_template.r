@@ -44,8 +44,13 @@ function(res, req) {
 #* @param x ...
 #* @serializer unboxedJSON
 #* @get /codingjob/<job_id>/codebook
-function(job_id) {
-  annotinder:::db_get_codebook(db)
+function(res, req, job_id) {
+  if (!is.null(db)) {
+    annotinder:::db_get_codebook(db)
+  } else {
+    res$status = 401
+    list(error = "Invalid DB")
+  }
 }
 
 #*
@@ -97,3 +102,11 @@ function(req, job_id, unit_id) {
   annotinder:::db_insert_annotation(db, unit_id, body)
 }
 
+#*
+#* @param x ...
+#* @post /db
+function(req, job_id, unit_id) {
+  body = req$argsBody
+  db <<- NULL
+  db <<- DBI::dbConnect(RSQLite::SQLite(), body$db_file)
+}
