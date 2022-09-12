@@ -1,7 +1,7 @@
 #' Connect to an annotator backend API
 #'
 #' Connect to a backend API and request or refresh an authentication token. The typical mode of use is to provide the
-#' 'host' (url) of the server and a 'username' (email adress). The password will then be requested in a separate prompt.
+#' 'host' (url) of the server and a 'username'. The password will then be requested in a separate prompt.
 #'
 #' @param host The hostname, e.g. http://localhost:5000
 #' @param username An existing username on the host server

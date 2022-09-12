@@ -36,7 +36,7 @@ function(res, req) {
     res$status = 401
     list(error = "Invalid token")
   } else {
-    list(email='', is_admin=jsonlite::unbox(F), jobs=list())
+    list(name='', is_admin=jsonlite::unbox(F), jobs=list())
   }
 }
 
