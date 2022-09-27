@@ -27,7 +27,7 @@ cors <- function(req, res) {
 #*
 #* @param x ...
 #* @serializer unboxedJSON
-#* @get /users/me/token
+#* @get /users/me/login
 function(res, req) {
   headers = req$HEADERS
   auth = headers['authorization']
