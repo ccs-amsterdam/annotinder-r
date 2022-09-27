@@ -2,7 +2,7 @@
 function() {
 
 library(annotinder)
-backend_connect('http://localhost:5000', 'test@user.com')
+backend_connect('http://localhost:5000', 'kasperwelbers@gmail.com')
 
 ## create codebook
 sentiment = question('sentiment', 'assign sentiment to words',

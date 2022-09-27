@@ -28,7 +28,7 @@ backend_connect <- function(host, username, token=NULL, .password=NULL) {
 
 login <- function(conn, passwd=NULL) {
   if (!is.null(conn$token)) {
-    res = request(c('users','me','token'), conn=conn, read=F)
+    res = request(c('users','me','login'), conn=conn, read=F)
     if (!res$status_code == 200) {
       message('Token is not valid or expired. Please re-enter password')
       conn$token = NULL
