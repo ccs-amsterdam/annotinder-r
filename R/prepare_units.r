@@ -38,8 +38,9 @@ prepare_units <- function(createUnitsBundle) {
 create_text_fields <- function(rowdict, text_cols) {
   lapply(seq_along(text_cols), function(i) {
     tf = text_cols[[i]]
-    text = if (is.null(tf$coding_unit)) '' else rowdict[[tf$coding_unit]]
-    text_field = list(name=tf$field, value=text, style=tf$style)
+    value = if (is.null(tf$coding_unit)) '' else rowdict[[tf$coding_unit]]
+    if (!is.null(tf$split)) value = stringi::stri_split(value, fixed = split)[[1]]
+    text_field = list(name=tf$field, value=value, style=tf$style)
     if (!is.null(tf$label)) text_field$label = tf$label
     if (!is.null(tf$context_before)) text_field$context_before = rowdict[[tf$context_before]]
     if (!is.null(tf$context_after)) text_field$context_after = rowdict[[tf$context_after]]
@@ -68,7 +69,10 @@ create_image_fields <- function(rowdict, image_cols) {
 create_markdown_fields <- function(rowdict, markdown_cols) {
   lapply(seq_along(markdown_cols), function(i) {
     mf = markdown_cols[[i]]
-    markdown_field = list(name = mf$field, value=rowdict[[mf$field]], style=mf$style)
+    value = rowdict[[mf$field]]
+    if (!is.null(tf$split)) value = stringi::stri_split(value, fixed = split)[[1]]
+
+    markdown_field = list(name = mf$field, value=value, style=mf$style)
     markdown_field
   })
 }

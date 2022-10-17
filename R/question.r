@@ -25,6 +25,11 @@
 #'                     "annotinder" lets users swipe for answers, and can only be used if the number of answers is 2 (left, right) or 3 (left, right, up).
 #'                     "inputs" can create one or multiple open input fields for text and numbers.
 #'                     The direction for each answer is "left" (first answer), "right" (second answer) and "up" (optional third answer).
+#' @param fields       Optionally, an array of field names (i.e. the column names used in set_text, set_markdown and set_image). When the
+#'                     question is asked, these fields will then be focused on.
+#' @param per_field    If a unit has numbered fields, the question can be automatically repeated for each field. For instance, if "per_field" is "comment",
+#'                     and the unit has fields "comment.1", "comment.2", etc., then this question will be repeated for each comment. The easiest way to set this up
+#'                     is to use the "split" argument in set_text and set_markdown, which automatically split a field into numbered fields.
 #' @param color        If no colors are given to specific codes, this sets the default color. Color should be  HEX or a name recognized by browsers (see \url{https://www.w3schools.com/colors/colors_names.asp}).
 #'                     Can also be "random" for random colors
 #' @param single_row   If "buttons" selection is used, this puts all buttons on the same row (just make sure not to have too many buttons)
@@ -42,7 +47,7 @@
 #' @export
 #'
 #' @examples
-question <- function(name, question, codes=NULL, type=c("buttons","dropdown","scale", "annotinder", "inputs"), color='#7fb9eb', single_row=F, same_size=T, items=NULL) {
+question <- function(name, question, codes=NULL, type=c("buttons","dropdown","scale", "annotinder", "inputs"), color='#7fb9eb', fields=NULL, per_field=NULL, single_row=F, same_size=T, items=NULL) {
 
   if (grepl('\\.', name)) stop('Question name is not allowed to contain a "." symbol')
   type = match.arg(type)
@@ -55,6 +60,8 @@ question <- function(name, question, codes=NULL, type=c("buttons","dropdown","sc
   )
   if (single_row) l$single_row=jsonlite::unbox(single_row)
   if (same_size) l$same_size=jsonlite::unbox(same_size)
+  if (!is.null(fields)) l$fields=fields
+  if (!is.null(per_field)) l$perField=per_field
 
 
   if (!is.null(items)) {

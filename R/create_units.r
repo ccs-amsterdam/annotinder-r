@@ -88,29 +88,27 @@ function() {
 
 ## set_survey(position=c('pre','post'))
 
-
 #' Set text content
 #'
 #' @param data        A createUnitsBundle object, as created with \code{\link{create_units}}
-#' @param column      The name of a "character" column in the data that contains coding unit text.
-#'                    Note that this can also be empty if the current text field is only context (before or after the coding unit).
-#'                    For example, the data.frame could be a keyword in context listing with the columns "pre", "keyword" and "post" (see for instance quanteda's kwic function).
-#'                    These could then be set to the "before", "column" and "after" arguments, respectively.
-#' @param before     The text can have a context before and after the coding unit. This context will be shown to coders in grey,
-#'                   and they cannot annotate it (in annotate mode). The 'before' argument must be the name of a "character" column. If specified,
-#'                   the value of this column will be included in the current text_field as context. NOTE that if a text_field has a 'before' context, all text_fields before it
-#'                   will automatically also be considered as context. (i.e. context can only occur before of after the coding unit, not within it)
+#' @param column      The name of a "character" column in the data.
+#' @param before     The text can have a context before and after the coding unit. For example, the data.frame could be a keyword in context listing with the columns "pre", "keyword" and "post" (see for instance quanteda's kwic function).
+#'                    These could then be set to the "before", "column" and "after" arguments, respectively. NOTE that if a before or after context is specified, all other text fields before or after
+#'                    the current will also be considered context.
 #' @param after      See 'before' argument
 #' @param label      A character value to label the text field. Coders will then see this label where this field starts.
+#' @param split      A string for splitting the text. The field will then be split over multiple text fields. See the per_field argument in \code{\link{question}}
+#'                   for a cool way to use this to repeat a question for multiple parts of a text.
+#'                   Note that split will only work on the column. The before/after context will be kept before the first part and after the last
 #' @param ...        Style settings, passed to \code{\link{style}}
-#' @param offset     If the text is a part of a bigger text, you can include the offset for the character position where it starts. This is relevant if you want to import
-#'                   or export span annotations
+#' @param offset     If the text is a part of a bigger, original text, you can include the offset for the character position where it starts. This is relevant if you want to import
+#'                   or export span annotations for which the offset refers to the original text.
 #'
 #' @return A createUnitsBundle object
 #' @export
 #'
 #' @examples
-set_text <- function(data, column=NULL, before=NULL, after=NULL, label=NULL, ..., offset=0) {
+set_text <- function(data, column, before=NULL, after=NULL, label=NULL, split=NULL, ..., offset=0) {
   if (!is.null(column) && length(column) != 1) stop('Can only choose one column. If you want to add multiple text fields, you can use set_text multiple times')
   if (!is.null(before) && length(before) != 1) stop('Can only choose one "before" column. If you want to add multiple text fields, you can use set_text multiple times')
   if (!is.null(after) && length(after) != 1) stop('Can only choose one "after" column. If you want to add multiple text fields, you can use set_text multiple times')
@@ -118,22 +116,14 @@ set_text <- function(data, column=NULL, before=NULL, after=NULL, label=NULL, ...
   for (col in c(column, before, after, label)) {
     if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
   }
-  if (is.null(column)) {
-    if (is.null(before) && is.null(after)) stop('at least one of "column", "before" or "after" needs to be specified')
-    if (!is.null(before) && !is.null(after)) stop('If no "column" is specified, you can only use "before" OR "after" (otherwise there wouldnt be a column at all)')
-  }
 
-  field = column
-  if (is.null(field)) field = before
-  if (is.null(field)) field = after
-  if (length(field) != 1) stop('Only one text field can be set at a time. Note that you can call set_text multiple times')
-
-  l = list(field=field,
+  l = list(field=column,
            coding_unit=column,
            context_before=before,
            context_after = after,
            style = style(...),
            offset=offset,
+           split=split,
            label=label)
 
   if (is.null(data$text)) data$text = list()
@@ -222,13 +212,15 @@ set_image <- function(data, column, base64=FALSE, caption=NULL, ...) {
 #'
 #' @param data        A createUnitsBundle object, as created with \code{\link{create_units}}
 #' @param column      The name of a column in data that contains markdown strings
+#' @param split      A string for splitting the markdown string. The field will then be split over multiple markdown fields. See the per_field argument in \code{\link{question}}
+#'                   for a cool way to use this to repeat a question for multiple parts of a text.
 #' @param ...        Style settings, passed to \code{\link{style}}
 #'
 #' @return A createUnitsBundle object
 #' @export
 #'
 #' @examples
-set_markdown <- function(data, column, ...) {
+set_markdown <- function(data, column, split=NULL, ...) {
   if (length(column) != 1) stop('Only one markdown string can be set at a time. Note that you can call set_markdown multiple times')
 
   for (col in c(column)) {
@@ -236,6 +228,7 @@ set_markdown <- function(data, column, ...) {
   }
 
   l = list(field = column,
+           split=split,
            style = style(...))
 
   if (is.null(data$markdown)) data$markdown = list()

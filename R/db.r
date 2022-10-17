@@ -52,6 +52,10 @@ db_get_unit <- function(db, index) {
   unit$id = jsonlite::unbox(json_df$id)
   unit$status = jsonlite::unbox(json_df$status)
 
+  ## THIS EXPOSES THE CONDITIONALS. This is not a problem if the r client is just for local coding and designing jobs,
+  ## but if we want to also let people host a job we should implement the conditional checking in R
+  unit$unit$conditionals = unit$conditionals
+
   ## add annotation if it had any
   annotation = db_get_annotation(db, unit$id)
   if (!is.null(annotation)) unit$annotation = annotation$annotation
