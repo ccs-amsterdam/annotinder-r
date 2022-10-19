@@ -4,12 +4,15 @@
 \alias{set_markdown}
 \title{Set markdown content}
 \usage{
-set_markdown(data, column, ...)
+set_markdown(data, column, split = NULL, ...)
 }
 \arguments{
 \item{data}{A createUnitsBundle object, as created with \code{\link{create_units}}}
 
 \item{column}{The name of a column in data that contains markdown strings}
+
+\item{split}{A string for splitting the markdown string. The field will then be split over multiple markdown fields. See the per_field argument in \code{\link{question}}
+for a cool way to use this to repeat a question for multiple parts of a text.}
 
 \item{...}{Style settings, passed to \code{\link{style}}}
 }

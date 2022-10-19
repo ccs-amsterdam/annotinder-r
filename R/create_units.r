@@ -113,7 +113,7 @@ set_text <- function(data, column, before=NULL, after=NULL, label=NULL, split=NU
   if (!is.null(before) && length(before) != 1) stop('Can only choose one "before" column. If you want to add multiple text fields, you can use set_text multiple times')
   if (!is.null(after) && length(after) != 1) stop('Can only choose one "after" column. If you want to add multiple text fields, you can use set_text multiple times')
 
-  for (col in c(column, before, after, label)) {
+  for (col in c(column, before, after)) {
     if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
   }
 
@@ -128,9 +128,9 @@ set_text <- function(data, column, before=NULL, after=NULL, label=NULL, split=NU
 
   if (is.null(data$text)) data$text = list()
   data$text[[length(data$text)+1]] = l
-  if (field %in% data$fields) stop(sprintf('field name (%s) already exists', field))
-  data$fields = c(data$fields, field)
-  data$content_order = c(data$content_order, field)
+  if (column %in% data$fields) stop(sprintf('field name (%s) already exists', field))
+  data$fields = c(data$fields, column)
+  data$content_order = c(data$content_order, column)
   data
 }
 
@@ -313,6 +313,29 @@ set_test <- function(data, column, variable=NULL, damage=10, operator='==') {
   data
 }
 
+#' Customize the layout of the unit fields
+#'
+#' By default, the fields are presented in a single column, in the given order (i.e. the order of set_text, set_markdown and set_image functions).
+#'
+#'
+#' @param data
+#' @param areas A list with character vectors to specify the grid-template-areas (see \url{https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-areas}).
+#'              Each item in the list represents a row, and each value in the character vector the column in that row.
+#'              The values need to be the names of fields (i.e. the column names). If you want a position in the grid to be empty, use a dot ".".
+#' @param rows  A numeric vector of the same length as the number of rows. Each value indicates the relative space given to the row. So c(1,2) means that
+#'              the second row will be twice as high as the first row.
+#' @param columns Same as rows, but for columns.
+#'
+#' @return
+#' @export
+#'
+#' @examples
+set_grid <- function(data, areas, rows=NULL, columns=NULL) {
+  data$grid = list(areas=areas)
+  if (!is.null(rows)) data$grid$rows = rows
+  if (!is.null(columns)) data$grid$columns = columns
+  data
+}
 
 #' S3 print method for createUnitsBundle objects
 #'

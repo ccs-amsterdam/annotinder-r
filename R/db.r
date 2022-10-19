@@ -32,22 +32,23 @@ db_create_annotations <- function(db, units) {
 db_get_codebook <- function(db) {
   if (!DBI::dbExistsTable(db, 'codebook')) return(NULL)
   json_df = DBI::dbReadTable(db, 'codebook')
-  codebook = jsonlite::fromJSON(json_df$json[1])
+  codebook = jsonlite::fromJSON(json_df$json[1], simplifyDataFrame = F)
   structure(codebook, class=c('codebook','list'))
 }
 
 db_get_unit <- function(db, index) {
   if (is.na(index) || index < 0) {
-    res = DBI::dbSendQuery(db, 'SELECT * FROM units WHERE status = "" OR status = "IN_PROGRESS" ORDER BY unit_index ASC LIMIT 1')
+    json_df = DBI::dbGetQuery(db, 'SELECT * FROM units WHERE status = "" OR status = "IN_PROGRESS" ORDER BY unit_index ASC LIMIT 1')
   } else {
-    res = DBI::dbSendQuery(db, sprintf("SELECT * FROM units WHERE unit_index = %s", index))
+    json_df = DBI::dbGetQuery(db, sprintf("SELECT * FROM units WHERE unit_index = %s", index))
   }
 
-  json_df = DBI::dbFetch(res)
-  DBI::dbClearResult(res)
-  if (nrow(json_df) != 1) return(NULL)
+  if (nrow(json_df) != 1) {
+    n_total = DBI::dbGetQuery(db, 'SELECT count(*) FROM units')
+    return(list(index=as.numeric(n_total)))
+  }
 
-  unit = jsonlite::fromJSON(json_df$json[1])
+  unit = jsonlite::fromJSON(json_df$json[1], simplifyDataFrame = F)
   unit$index = json_df$unit_index
   unit$id = jsonlite::unbox(json_df$id)
   unit$status = jsonlite::unbox(json_df$status)
@@ -64,9 +65,7 @@ db_get_unit <- function(db, index) {
 }
 
 db_get_annotation <- function(db, unit_id) {
-  res = DBI::dbSendQuery(db, sprintf("SELECT * FROM annotations WHERE unit_id = '%s'", unit_id))
-  json_df = DBI::dbFetch(res)
-  DBI::dbClearResult(res)
+  json_df = DBI::dbGetQuery(db, sprintf("SELECT * FROM annotations WHERE unit_id = '%s'", unit_id))
   if (nrow(json_df) != 1) return(NULL)
   if (json_df$json[1] == '') return(NULL)
   jsonlite::fromJSON(json_df$json[1])
@@ -74,13 +73,9 @@ db_get_annotation <- function(db, unit_id) {
 
 
 db_get_progress <- function(db) {
-  res = DBI::dbSendQuery(db, 'SELECT count(*) FROM units')
-  n_total = as.numeric(DBI::dbFetch(res))
-  DBI::dbClearResult(res)
-  res = DBI::dbSendQuery(db,'SELECT count(*) FROM units WHERE status = "DONE" OR status = "SKIPPED"')
-  n_coded = as.numeric(DBI::dbFetch(res))
-  DBI::dbClearResult(res)
-  l = list(n_coded = n_coded, n_total=n_total, seek_forwards=F, seek_backwards=T)
+  n_total = DBI::dbGetQuery(db, 'SELECT count(*) FROM units')
+  n_coded = DBI::dbGetQuery(db,'SELECT count(*) FROM units WHERE status = "DONE" OR status = "SKIPPED"')
+  l = list(n_coded = as.numeric(n_coded), n_total=as.numeric(n_total), seek_forwards=F, seek_backwards=T)
   l = lapply(l, jsonlite::unbox)
   l
 }

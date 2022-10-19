@@ -83,9 +83,7 @@ create_job_db <- function(codingjob, path=getwd(), overwrite=F) {
   folder = if (!is.null(path)) file.path(path, 'annotinder_jobs') else 'annotinder_jobs'
   if (!file.exists(folder)) dir.create(folder, recursive = T)
   filename = file.path(folder, paste0(codingjob$title, '.db'))
-
   if (file.exists(filename) && !overwrite) stop(sprintf('A codingjob with this name already exists. If you are sure you want to overwrite is, set overwrite=T', folder))
-
 
   db = DBI::dbConnect(RSQLite::SQLite(), filename)
   db_write_codebook(db, codingjob$codebook)

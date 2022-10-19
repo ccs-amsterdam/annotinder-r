@@ -6,10 +6,11 @@
 \usage{
 set_text(
   data,
-  column = NULL,
+  column,
   before = NULL,
   after = NULL,
   label = NULL,
+  split = NULL,
   ...,
   offset = 0
 )
@@ -17,24 +18,24 @@ set_text(
 \arguments{
 \item{data}{A createUnitsBundle object, as created with \code{\link{create_units}}}
 
-\item{column}{The name of a "character" column in the data that contains coding unit text.
-Note that this can also be empty if the current text field is only context (before or after the coding unit).
-For example, the data.frame could be a keyword in context listing with the columns "pre", "keyword" and "post" (see for instance quanteda's kwic function).
-These could then be set to the "before", "column" and "after" arguments, respectively.}
+\item{column}{The name of a "character" column in the data.}
 
-\item{before}{The text can have a context before and after the coding unit. This context will be shown to coders in grey,
-and they cannot annotate it (in annotate mode). The 'before' argument must be the name of a "character" column. If specified,
-the value of this column will be included in the current text_field as context. NOTE that if a text_field has a 'before' context, all text_fields before it
-will automatically also be considered as context. (i.e. context can only occur before of after the coding unit, not within it)}
+\item{before}{The text can have a context before and after the coding unit. For example, the data.frame could be a keyword in context listing with the columns "pre", "keyword" and "post" (see for instance quanteda's kwic function).
+These could then be set to the "before", "column" and "after" arguments, respectively. NOTE that if a before or after context is specified, all other text fields before or after
+the current will also be considered context.}
 
 \item{after}{See 'before' argument}
 
 \item{label}{A character value to label the text field. Coders will then see this label where this field starts.}
 
+\item{split}{A string for splitting the text. The field will then be split over multiple text fields. See the per_field argument in \code{\link{question}}
+for a cool way to use this to repeat a question for multiple parts of a text.
+Note that split will only work on the column. The before/after context will be kept before the first part and after the last}
+
 \item{...}{Style settings, passed to \code{\link{style}}}
 
-\item{offset}{If the text is a part of a bigger text, you can include the offset for the character position where it starts. This is relevant if you want to import
-or export span annotations}
+\item{offset}{If the text is a part of a bigger, original text, you can include the offset for the character position where it starts. This is relevant if you want to import
+or export span annotations for which the offset refers to the original text.}
 }
 \value{
 A createUnitsBundle object

@@ -10,6 +10,8 @@ question(
   codes = NULL,
   type = c("buttons", "dropdown", "scale", "annotinder", "inputs"),
   color = "#7fb9eb",
+  fields = NULL,
+  per_field = NULL,
   single_row = F,
   same_size = T,
   items = NULL
@@ -26,6 +28,13 @@ For most control, codes can be a list of 'code' objects created with \code{\link
 
 \item{color}{If no colors are given to specific codes, this sets the default color. Color should be  HEX or a name recognized by browsers (see \url{https://www.w3schools.com/colors/colors_names.asp}).
 Can also be "random" for random colors}
+
+\item{fields}{Optionally, an array of field names (i.e. the column names used in set_text, set_markdown and set_image). When the
+question is asked, these fields will then be focused on.}
+
+\item{per_field}{If a unit has numbered fields, the question can be automatically repeated for each field. For instance, if "per_field" is "comment",
+and the unit has fields "comment.1", "comment.2", etc., then this question will be repeated for each comment. The easiest way to set this up
+is to use the "split" argument in set_text and set_markdown, which automatically split a field into numbered fields.}
 
 \item{single_row}{If "buttons" selection is used, this puts all buttons on the same row (just make sure not to have too many buttons)}
 

@@ -4,6 +4,16 @@ function() {
 library(annotinder)
 backend_connect('https://kasperwelbers.com/annotinder', 'kasperwelbers@gmail.com')
 
+## thread coding
+
+
+
+
+
+
+
+
+
 ## create codebook
 sentiment = question('sentiment', 'assign sentiment to words',
                      codes = c(Negative = 'crimson', Neutral = 'grey', Positive = 'lightgreen'))

@@ -39,6 +39,7 @@ create_text_fields <- function(rowdict, text_cols) {
   lapply(seq_along(text_cols), function(i) {
     tf = text_cols[[i]]
     value = if (is.null(tf$coding_unit)) '' else rowdict[[tf$coding_unit]]
+    if (methods::is(value, 'list')) value = value[[1]]
     if (!is.null(tf$split)) value = stringi::stri_split(value, fixed = split)[[1]]
     text_field = list(name=tf$field, value=value, style=tf$style)
     if (!is.null(tf$label)) text_field$label = tf$label
@@ -60,7 +61,9 @@ create_meta_fields <- function(rowdict, meta_cols) {
 create_image_fields <- function(rowdict, image_cols) {
   lapply(seq_along(image_cols), function(i) {
     rf = image_cols[[i]]
-    image_field = list(name = rf$field, value=rowdict[[rf$field]], base64=rf$base64, style=rf$style)
+    value = rowdict[[rf$field]]
+    if (methods::is(value, 'list')) value = value[[1]]
+    image_field = list(name = rf$field, value=value, base64=rf$base64, style=rf$style)
     if (!is.null(rf$caption)) image_field$caption = rowdict[[rf$caption]]
     image_field
   })
@@ -70,6 +73,7 @@ create_markdown_fields <- function(rowdict, markdown_cols) {
   lapply(seq_along(markdown_cols), function(i) {
     mf = markdown_cols[[i]]
     value = rowdict[[mf$field]]
+    if (methods::is(value, 'list')) value = value[[1]]
     if (!is.null(tf$split)) value = stringi::stri_split(value, fixed = split)[[1]]
 
     markdown_field = list(name = mf$field, value=value, style=mf$style)
