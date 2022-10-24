@@ -19,12 +19,11 @@
 #'                     A named character vector uses the names as codes and the values as colors, either as HEX or a name recognized by browsers (see \url{https://www.w3schools.com/colors/colors_names.asp}).
 #'                     A data.frame must have a code column, and can use certain special columns (see details).
 #'                     For most control, codes can be a list of 'code' objects created with \code{\link{code}}.
-#' @param types        The type of question. Can be "buttons", "dropdown", "scale", "annotinder" or "inputs".
+#' @param type        The type of question. Can be "buttons", "dropdown", "scale", "annotinder" or "inputs".
 #'                     "buttons" shows all answers as buttons, "dropdown" gives a dropdown menu with a search bar.
 #'                     "scale" is for ordered buttons, and multiple items can be specified to answer this question for each.
 #'                     "annotinder" lets users swipe for answers, and can only be used if the number of answers is 2 (left, right) or 3 (left, right, up).
 #'                     "inputs" can create one or multiple open input fields for text and numbers.
-#'                     The direction for each answer is "left" (first answer), "right" (second answer) and "up" (optional third answer).
 #' @param fields       Optionally, an array of field names (i.e. the column names used in set_text, set_markdown and set_image). When the
 #'                     question is asked, these fields will then be focused on.
 #' @param per_field    If a unit has numbered fields, the question can be automatically repeated for each field. For instance, if "per_field" is "comment",
@@ -94,6 +93,7 @@ question <- function(name, question, codes=NULL, type=c("buttons","dropdown","sc
 
   structure(l, class=c('codebookQuestion', 'list'))
 }
+
 
 
 #' S3 print method for codebookQuestion objects

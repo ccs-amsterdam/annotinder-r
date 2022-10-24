@@ -23,18 +23,19 @@ create_job <- function(title, units, codebook=NULL, pre=NULL, post=NULL) {
     ## for every question, grep [.*], then setdiff with units$variables
   }
 
-  pre = set_special_id(pre, 'pre')
-  post = set_special_id(post, 'post')
+  pre = prepare_position_unit(pre, 'pre')
+  post = prepare_position_unit(post, 'post')
   codingjob$units = c(pre, codingjob$units, post)
 
   structure(codingjob, class=c('codingjob', 'list'))
 }
 
-set_special_id <- function(units, what) {
+prepare_position_unit <- function(units, what) {
   if (is.null(units)) return(NULL)
   if (!is.null(units$id)) units = list(units)  ## if it has an $id, it's a single unit
   for (i in 1:length(units)) {
     units[[i]]$id = paste(what, i, sep='.')
+    units[[i]]$position = what
   }
   units
 }

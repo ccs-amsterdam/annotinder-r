@@ -50,9 +50,8 @@ get_job <- function(job_id, annotations=T) {
 upload_job <- function(title, units, codebook=NULL, annotations=NULL, rules = rules_fixedset(), jobsets=NULL, debrief=NULL, pre=NULL, post=NULL) {
   codingjob = create_job(title, units, codebook, annotations)
 
-
-  pre = set_special_id(pre, 'pre')
-  post = set_special_id(post, 'post')
+  pre = prepare_position_unit(pre, 'pre')
+  post = prepare_position_unit(post, 'post')
   codingjob$units = c(pre, codingjob$units, post)
 
   codingjob$rules = rules
@@ -74,7 +73,6 @@ upload_job <- function(title, units, codebook=NULL, annotations=NULL, rules = ru
   cj_data = request('codingjob', post = T, json_data = jsonlite::toJSON(codingjob, auto_unbox = T))
   cj_data$id
 }
-
 
 #' Download annotation for a given job_id
 #'

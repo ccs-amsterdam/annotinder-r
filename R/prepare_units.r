@@ -74,7 +74,7 @@ create_markdown_fields <- function(rowdict, markdown_cols) {
     mf = markdown_cols[[i]]
     value = rowdict[[mf$field]]
     if (methods::is(value, 'list')) value = value[[1]]
-    if (!is.null(tf$split)) value = stringi::stri_split(value, fixed = split)[[1]]
+    if (!is.null(mf$split)) value = stringi::stri_split(value, fixed = split)[[1]]
 
     markdown_field = list(name = mf$field, value=value, style=mf$style)
     markdown_field
