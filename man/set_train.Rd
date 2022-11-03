@@ -10,6 +10,7 @@ set_train(
   message = NULL,
   submessage = NULL,
   variable = column,
+  field = NULL,
   damage = 0,
   operator = "=="
 )
@@ -28,6 +29,8 @@ for units with multiple questions) you can use the set_train function multiple t
 This message will be displayed beneath the on_wrong message.}
 
 \item{variable}{The name of the variable as used in the codebook. If not specified, the name of the column will be used.}
+
+\item{field}{Optionally, the name of a specific field.}
 
 \item{damage}{The amount of damage a coder should receive.}
 

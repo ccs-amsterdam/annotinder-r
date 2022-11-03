@@ -25,6 +25,6 @@ A createUnitsBundle object
 \description{
 You can select columns to show in the unit as meta data. This will always be displayed at the top-middle of the
 unit, with one the left hand a label and on the right hand the value (e.g., "DATE     2010-01-01").
-With set_meta you can set multiple columns at once, but if you want different styling for meta fields
-you can also use set_meta multiple times
+With set_meta you can set multiple columns at once. Meta data cannot be grouped, so duplicate ids need to have the
+same values in the meta columns.
 }

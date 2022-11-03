@@ -4,14 +4,23 @@
 \alias{create_units}
 \title{Create units for the cssAnnotator}
 \usage{
-create_units(data, id = "id", type = NULL, variables = NULL)
+create_units(
+  data,
+  id = "id",
+  type = NULL,
+  use_groups = FALSE,
+  variables = NULL
+)
 }
 \arguments{
 \item{data}{A data.frame}
 
-\item{id}{A column in the data.frame with unique values.}
+\item{id}{Name of a column in the data.frame with unique values.}
 
-\item{type}{A column in the data.frame with types. Valid types are: "code", "train", "test" and "survey"}
+\item{type}{Name of a column in the data.frame with types. Valid types are: "code", "train", "test" and "survey"}
+
+\item{use_groups}{If there are duplicate id's, should these be grouped together as units? If FALSE, duplicate ids
+will throw an error. Having to set group_ids to TRUE is just a failsafe to prevent accidental grouping.}
 
 \item{variables}{A vector of column names. These column names can then be referenced from the codebook.
 For example, if there is a column "topic", you could ask the question: "is this sentence about {topic}".

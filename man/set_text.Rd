@@ -26,7 +26,7 @@ the current will also be considered context.}
 
 \item{after}{See 'before' argument}
 
-\item{label}{A character value to label the text field. Coders will then see this label where this field starts.}
+\item{label}{An expression or character value to label the text field. Coders will then see this label where this field starts.}
 
 \item{split}{A string for splitting the text. The field will then be split over multiple text fields. See the per_field argument in \code{\link{question}}
 for a cool way to use this to repeat a question for multiple parts of a text.
@@ -34,7 +34,7 @@ Note that split will only work on the column. The before/after context will be k
 
 \item{...}{Style settings, passed to \code{\link{style}}}
 
-\item{offset}{If the text is a part of a bigger, original text, you can include the offset for the character position where it starts. This is relevant if you want to import
+\item{offset}{An expression (most likely a column). If the text is a part of a bigger, original text, you can include the offset for the character position where it starts. This is relevant if you want to import
 or export span annotations for which the offset refers to the original text.}
 }
 \value{

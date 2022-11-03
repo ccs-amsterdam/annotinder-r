@@ -4,7 +4,14 @@
 \alias{set_test}
 \title{Set test units}
 \usage{
-set_test(data, column, variable = NULL, damage = 10, operator = "==")
+set_test(
+  data,
+  column,
+  variable = NULL,
+  field = NULL,
+  damage = 10,
+  operator = "=="
+)
 }
 \arguments{
 \item{data}{A createUnitsBundle object, as created with \code{\link{create_units}}}
@@ -14,6 +21,8 @@ in the codebook, or alternatively use the 'variable' argument. If you need to se
 for units with multiple questions) you can use the set_test function multiple times.}
 
 \item{variable}{The name of the variable as used in the codebook. If not specified, the name of the column will be used.}
+
+\item{field}{Optionally, the name of a specific field}
 
 \item{damage}{The amount of damage a coder should receive for getting a value wrong.}
 

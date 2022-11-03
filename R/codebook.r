@@ -27,7 +27,6 @@ create_codebook <- function(...) {
     x
   })
 
-
   ##### TO ADD:
   ####### process branching
 
@@ -36,18 +35,14 @@ create_codebook <- function(...) {
   structure(cb, class=c('codebook', 'list'))
 }
 
+
 codes_df_to_list <- function(codes_df) {
   rownames(codes_df) = NULL  ## (otherwise can be come an object instead of an array in json)
   apply(codes_df, 1, function(x) {
     codes_l = as.list(x)
-    codes_l = codes_l[!is.na(codes_l)]
     lapply(codes_l, jsonlite::unbox)
   })
 }
-
-
-
-
 
 #' S3 print method for codebook objects
 #'

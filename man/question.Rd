@@ -26,6 +26,12 @@ A named character vector uses the names as codes and the values as colors, eithe
 A data.frame must have a code column, and can use certain special columns (see details).
 For most control, codes can be a list of 'code' objects created with \code{\link{code}}.}
 
+\item{type}{The type of question. Can be "buttons", "dropdown", "scale", "annotinder" or "inputs".
+"buttons" shows all answers as buttons, "dropdown" gives a dropdown menu with a search bar.
+"scale" is for ordered buttons, and multiple items can be specified to answer this question for each.
+"annotinder" lets users swipe for answers, and can only be used if the number of answers is 2 (left, right) or 3 (left, right, up).
+"inputs" can create one or multiple open input fields for text and numbers.}
+
 \item{color}{If no colors are given to specific codes, this sets the default color. Color should be  HEX or a name recognized by browsers (see \url{https://www.w3schools.com/colors/colors_names.asp}).
 Can also be "random" for random colors}
 
@@ -43,13 +49,6 @@ is to use the "split" argument in set_text and set_markdown, which automatically
 \item{items}{Can be used for "scale" and "inputs" type questions. Should be a named list where the names are the item names, and value is a list with parameters.}
 
 \item{instruction}{A short (think 1 or 2 sentences) question.}
-
-\item{types}{The type of question. Can be "buttons", "dropdown", "scale", "annotinder" or "inputs".
-"buttons" shows all answers as buttons, "dropdown" gives a dropdown menu with a search bar.
-"scale" is for ordered buttons, and multiple items can be specified to answer this question for each.
-"annotinder" lets users swipe for answers, and can only be used if the number of answers is 2 (left, right) or 3 (left, right, up).
-"inputs" can create one or multiple open input fields for text and numbers.
-The direction for each answer is "left" (first answer), "right" (second answer) and "up" (optional third answer).}
 }
 \value{
 A question object, to be used within the \code{\link{create_codebook}} function

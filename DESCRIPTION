@@ -15,7 +15,8 @@ Imports:
     RSQLite (>= 2.2.9),
     getPass,
     methods,
-    magrittr
+    magrittr,
+    rlang
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

@@ -4,8 +4,10 @@
 #' designed in a pipe of \code{\link{set_text}}, \code{\link{set_meta}}, \code{\link{set_image}} and \code{\link{set_markdown}} functions
 #'
 #' @param data  A data.frame
-#' @param id    A column in the data.frame with unique values.
-#' @param type  A column in the data.frame with types. Valid types are: "code", "train", "test" and "survey"
+#' @param id    Name of a column in the data.frame with unique values.
+#' @param type  Name of a column in the data.frame with types. Valid types are: "code", "train", "test" and "survey"
+#' @param use_groups  If there are duplicate id's, should these be grouped together as units? If FALSE, duplicate ids
+#'                   will throw an error. Having to set group_ids to TRUE is just a failsafe to prevent accidental grouping.
 #' @param variables A vector of column names. These column names can then be referenced from the codebook.
 #'                  For example, if there is a column "topic", you could ask the question: "is this sentence about {topic}".
 #'                  The {topic} part will then be replaced in the question with the value for this unit in the "topic" column.
@@ -14,14 +16,24 @@
 #' @export
 #'
 #' @examples
-create_units <- function(data, id='id', type=NULL, variables=NULL) {
+create_units <- function(data, id='id', type=NULL, use_groups=FALSE, variables=NULL) {
   if (!id %in% colnames(data)) stop(sprintf('"%s" is not a column name in d', id))
-  if (!is.null(type) && !type %in% colnames(data)) stop(sprintf('"%s" is not a column name in d', type))
   if ('.TYPE' %in% colnames(data)) stop('data cannot have a column called ".TYPE" (what a coincidence, right?)')
   if ('.POSITION' %in% colnames(data)) stop('data cannot have a column called ".POSITION" (what a coincidence, right?)')
-  if (anyDuplicated(data[[id]])) stop(sprintf('The id column (%s) needs to have unique values', id))
+
+  if (anyDuplicated(data[[id]])) {
+    if (!use_groups) stop(sprintf('The id column (%s) needs to have unique values. If you intend to group rows with the same id together as a unit, explicitly set use_groups to TRUE', id))
+  }
+  if (!is.null(type)) {
+    if( !type %in% colnames(data)) stop(sprintf('"%s" is not a column name in d', type))
+    n_unique_values = nrow(unique(data.frame(id=data[[id]], value=data[[type]])))
+    if (n_unique_values != length(unique(data[[id]]))) stop('Duplicate ids need to have the same type.')
+  }
+
   for (variable in variables) {
     if (!variable %in% colnames(data)) stop(sprintf('"%s" is not a column name in d', variable))
+    n_unique_values = nrow(unique(data.frame(id=data[[id]], value=data[[variable]])))
+    if (n_unique_values != length(unique(data[[id]]))) stop('Duplicate ids need to have the same values for variables.')
   }
 
   l = list(df = dplyr::as_tibble(data), id=id, fields=c(), content_order=c(), variables=variables)
@@ -33,6 +45,12 @@ create_units <- function(data, id='id', type=NULL, variables=NULL) {
 
 function() {
   library(annotinder)
+
+  d = data.frame(id = c(1,1,2,3), date=c(2,2,3,4))
+  create_units(d, use_groups = T) |>
+    set_meta('date')
+
+
   data = data.frame(id = c(1,2,3,4,5),
                     type = c('train','code','test','code','test'),
                     letter = letters[1:5],
@@ -57,7 +75,7 @@ function() {
   units = create_units(data, 'id', 'type') |>
     set_meta('source') |>
     set_meta('date') |>
-    set_text('title', size=2, bold=T, align='center') |>
+    set_text('title', text_size=2, bold=T, align='center') |>
     set_text('text', align='center') |>
     set_image('image', caption='caption') |>
     set_markdown('markdown', align='center') |>
@@ -96,12 +114,12 @@ function() {
 #'                    These could then be set to the "before", "column" and "after" arguments, respectively. NOTE that if a before or after context is specified, all other text fields before or after
 #'                    the current will also be considered context.
 #' @param after      See 'before' argument
-#' @param label      A character value to label the text field. Coders will then see this label where this field starts.
+#' @param label      An expression or character value to label the text field. Coders will then see this label where this field starts.
 #' @param split      A string for splitting the text. The field will then be split over multiple text fields. See the per_field argument in \code{\link{question}}
 #'                   for a cool way to use this to repeat a question for multiple parts of a text.
 #'                   Note that split will only work on the column. The before/after context will be kept before the first part and after the last
 #' @param ...        Style settings, passed to \code{\link{style}}
-#' @param offset     If the text is a part of a bigger, original text, you can include the offset for the character position where it starts. This is relevant if you want to import
+#' @param offset     An expression (most likely a column). If the text is a part of a bigger, original text, you can include the offset for the character position where it starts. This is relevant if you want to import
 #'                   or export span annotations for which the offset refers to the original text.
 #'
 #' @return A createUnitsBundle object
@@ -117,14 +135,15 @@ set_text <- function(data, column, before=NULL, after=NULL, label=NULL, split=NU
     if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
   }
 
+
   l = list(field=column,
            coding_unit=column,
            context_before=before,
            context_after = after,
            style = style(...),
-           offset=offset,
+           offset = substitute(offset),
            split=split,
-           label=label)
+           label=substitute(label))
 
   if (is.null(data$text)) data$text = list()
   data$text[[length(data$text)+1]] = l
@@ -138,8 +157,8 @@ set_text <- function(data, column, before=NULL, after=NULL, label=NULL, split=NU
 #'
 #' You can select columns to show in the unit as meta data. This will always be displayed at the top-middle of the
 #' unit, with one the left hand a label and on the right hand the value (e.g., "DATE     2010-01-01").
-#' With set_meta you can set multiple columns at once, but if you want different styling for meta fields
-#' you can also use set_meta multiple times
+#' With set_meta you can set multiple columns at once. Meta data cannot be grouped, so duplicate ids need to have the
+#' same values in the meta columns.
 #'
 #' @param data        A createUnitsBundle object, as created with \code{\link{create_units}}
 #' @param columns     The columns with the meta data.
@@ -160,10 +179,16 @@ set_meta <- function(data, columns, labels=NULL, bold=TRUE, ...) {
     labels = gsub('_', ' ', toupper(columns))
   }
 
+  ids = data$df[[data$id]]
   for (i in 1:length(columns)) {
     column = columns[i]
     label = labels[i]
     if (!column %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
+
+    ## duplicate ids need to have the same meta values
+    n_unique_values = nrow(unique(data.frame(id=ids, value=data$df[[column]])))
+    if (n_unique_values != length(unique(ids))) stop(sprintf('Duplicate ids need to have the same values in meta columns. This is not the case for "%s"', column))
+
     l = list(field = column,
              style = style(bold=bold, ...),
              label=label)
@@ -181,7 +206,7 @@ set_meta <- function(data, columns, labels=NULL, bold=TRUE, ...) {
 #' @param data        A createUnitsBundle object, as created with \code{\link{create_units}}
 #' @param column      The name of a column in data that contains paths/urls to image files
 #' @param base64      If TRUE, store the image as a base64 in the codingjob json file
-#' @param caption     The name of a column in data that contains the image caption
+#' @param caption     An expression (most likely a column name) or character value to use as image caption.
 #' @param ...        Style settings, passed to \code{\link{style}}
 #'
 #' @return A createUnitsBundle object
@@ -198,7 +223,7 @@ set_image <- function(data, column, base64=FALSE, caption=NULL, ...) {
   l = list(field = column,
            base64=base64,
            style = style(...))
-  if (!is.null(caption)) l$caption = caption
+  if (!is.null(caption)) l$caption = substitute(caption)
 
   if (is.null(data$image)) data$image = list()
   data$image[[length(data$image)+1]] = l
@@ -250,6 +275,7 @@ set_markdown <- function(data, column, split=NULL, ...) {
 #'                    in the codebook, or alternatively use the 'variable' argument. If you need to set training answers for multiple columns (e.g.,
 #'                    for units with multiple questions) you can use the set_train function multiple times.
 #' @param variable The name of the variable as used in the codebook. If not specified, the name of the column will be used.
+#' @param field    Optionally, the name of a specific field.
 #' @param damage   The amount of damage a coder should receive.
 #' @param operator How should the annotation value be compared to the column value? Default is "==" (equals). Alternatives are "!=" (not equals),
 #'                 "<=", "<", ">=" or ">".
@@ -262,7 +288,7 @@ set_markdown <- function(data, column, split=NULL, ...) {
 #' @export
 #'
 #' @examples
-set_train <- function(data, column, message=NULL, submessage=NULL, variable=column, damage=0, operator='==') {
+set_train <- function(data, column, message=NULL, submessage=NULL, variable=column, field=NULL, damage=0, operator='==') {
   if (!any(data$df$.TYPE == 'train')) stop('There are no train units specified. You can do this in the "create_units" function with the "type" argument')
   if (!operator %in% c('==','<=','<','>=','>','!=')) stop("invalid operator. Has to be one of: '==','<=','<','>=','>','!='")
 
@@ -271,7 +297,7 @@ set_train <- function(data, column, message=NULL, submessage=NULL, variable=colu
   }
 
   if (is.null(data$train)) data$train = list()
-  data$train[[length(data$train)+1]] = list(column=column, variable=variable,
+  data$train[[length(data$train)+1]] = list(column=column, variable=variable, field=field,
                                             damage=damage, operator=operator, message=message, submessage=submessage)
 
   data
@@ -288,6 +314,7 @@ set_train <- function(data, column, message=NULL, submessage=NULL, variable=colu
 #'                    in the codebook, or alternatively use the 'variable' argument. If you need to set training answers for multiple columns (e.g.,
 #'                    for units with multiple questions) you can use the set_test function multiple times.
 #' @param variable    The name of the variable as used in the codebook. If not specified, the name of the column will be used.
+#' @param field       Optionally, the name of a specific field
 #' @param damage      The amount of damage a coder should receive for getting a value wrong.
 #' @param operator    How should the annotation value be compared to the column value? Default is "==" (equals).
 #'                    But to screen on age you could for instance use "<=".
@@ -297,7 +324,7 @@ set_train <- function(data, column, message=NULL, submessage=NULL, variable=colu
 #' @export
 #'
 #' @examples
-set_test <- function(data, column, variable=NULL, damage=10, operator='==') {
+set_test <- function(data, column, variable=NULL, field=NULL, damage=10, operator='==') {
   if (!any(data$df$.TYPE == 'test')) stop('There are no test units specified. You can do this in the "create_units" function with the "type" argument')
   if (is.null(variable)) variable = column
   if (!operator %in% c('==','<=','<','>=','>','!=')) stop("invalid operator. Has to be one of: '==','<=','<','>=','>','!='")
@@ -346,7 +373,7 @@ set_grid <- function(data, areas, rows=NULL, columns=NULL) {
 #' @examples
 #' @export
 print.createUnitsBundle <- function(x, ...){
-  units = table(x$df$.TYPE)
+  units = table(x$df$.TYPE[!duplicated(x$df[[x$id]])])
   units = units[match(unique(x$df$.TYPE), names(units))] # sort by occurence
   cat(sprintf('units:'), paste(paste0(names(units), ' (', units, ')'), collapse=', '))
   cat(sprintf('\nfields: %s', paste(x$fields, collapse=', ')))
@@ -359,7 +386,7 @@ print.createUnitsBundle <- function(x, ...){
 #' @param text_size   The text size as a ratio. The default 1 means use the standard size. 0.5 means half this size, 2 means twice this size, etc.
 #' @param bold        If True, make text bold
 #' @param italic      If True, make test italic
-#' @param align       How to align the text
+#' @param align       How to align the text. Can be 'justify','center','left' or 'right'
 #' @param ...         Any CSS inline style element can be used. Note that some style settings might not play nicely with certain annotator features
 #'                    (such as colors in combination with span annotations)
 #'
@@ -369,11 +396,13 @@ print.createUnitsBundle <- function(x, ...){
 #' @examples
 #' # nice setting for titles
 #' style(text_size = 1.4, bold=T)
-style <- function(text_size=1, bold=F, italic=F, align=c('justify','center','left','right'), ...) {
-  align = match.arg(align)
-  s = list(textAlign = align, ...)
-  if (class(text_size) == 'numeric' && text_size != 1) s$fontSize = paste0(text_size, 'em')
-  if (bold) s$fontWeight = 'bold'
-  if (italic) s$fontStyle = 'italic'
+style <- function(text_size=NULL, bold=NULL, italic=NULL, align=NULL, ...) {
+  s = list(textAlign = substitute(align),
+           text_size=substitute(text_size),
+           bold=substitute(bold),
+           italic=substitute(italic))
+  s = s[!sapply(s, is.null)]
+  expressions = rlang::exprs(...)
+  if (length(expressions) > 0) s = c(s, expressions)
   s
 }

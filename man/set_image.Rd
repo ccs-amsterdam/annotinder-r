@@ -13,7 +13,7 @@ set_image(data, column, base64 = FALSE, caption = NULL, ...)
 
 \item{base64}{If TRUE, store the image as a base64 in the codingjob json file}
 
-\item{caption}{The name of a column in data that contains the image caption}
+\item{caption}{An expression (most likely a column name) or character value to use as image caption.}
 
 \item{...}{Style settings, passed to \code{\link{style}}}
 }
