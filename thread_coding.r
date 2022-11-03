@@ -1,24 +1,31 @@
 library(annotinder)
 library(tidyverse)
 
+
+
+
+
+
+
 tweets = data.frame(conversation = c(1,1,1,1,2,2),
                tweet = c('heeeeejj', 'Owh hey!', 'Daar ben ik het niet mee eens!', 'Goed punt', 'Ik ben jarig','Gefeliciteerd!'),
+               author = c('Author','Comment','Author','Comment','Author','Comment'),
                type = c('tweet','comment','comment','comment','tweet','comment'))
 
-conversations = tweets %>%
-  group_by(conversation, type) %>%
-  summarize(tweet = list(tweet)) %>%
-  pivot_wider(conversation, names_from=type, values_from=tweet)
+first_tweet = tweets %>% filter(type == 'tweet') %>% select(conversation, tweet)
+comments = tweets %>% filter(type == 'comment') %>% select(conversation, comment = tweet, author)
+d = first_tweet %>% full_join(comments, by='conversation')
 
-units = create_units(conversations, id='conversation') %>%
-  set_text('tweet', label='TWEET', fontWeight='bold', borderBottom= '1px solid black', marginBottom= '5px') %>%
-  set_text('comment', label='REACTIE') %>%
-  set_grid(list(c('tweet', 'tweet'),
-                c('.'    , 'comment')), columns = c(1,6))
+units = create_units(d, id='conversation', subfields='comment') %>%
+  set_text('tweet',
+           margin = '10px 25% 10px 10px') %>%
+  set_text('comment',
+           align= ifelse(author == 'Author', 'left','right'),
+           margin = ifelse(author == 'Author', '10px 25%px 10px 10px', '10px 10px 10px 25%'))
 
 codebook = create_codebook(
-  test = question('klimaatverandering', 'Gaat deze tweet over klimaatverandering?', type='buttons',
-            fields='tweet',
+  test = question('klimaatverandering', 'Is het eerste bericht in deze conversatie blablabla?', type='buttons',
+            field='tweet',
             codes = c('Nee','Ja')),
   dit = question('reactie', 'Wat is de toon van deze reactie?', type='buttons',
             per_field = 'comment',
@@ -31,3 +38,7 @@ create_job('Thread coding', units, codebook) %>%
 
 
 
+x = prepare_units(units)
+
+jsonlite::toJSON(x[[1]], pretty = T)
+names(x[[1]]$unit$text_fields[[2]]$value) = NULL

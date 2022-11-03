@@ -6,46 +6,34 @@ prepare_units <- function(createUnitsBundle) {
   unique_ids = unique(ids)
 
   units = vector('list', length(unique_ids))
-  for (id in unique_ids) {
+  for (i in 1:length(unique_ids)) {
+    id = unique_ids[i]
     rows = d[groups[[id]],]
-    #rowdict = as.list(d[i,])
-    #id = rowdict[[createUnitsBundle$id]]
-
-
-    ## first check if id exists in units
-    ## if not, do regular create
-    ## if it does exist, add
-    ## or maybe see if we can make rowdict a df of optionally multiple rows
-    ## (and just use rowdict[1,] for meta)
+    firstrow = rows[1,]  ## for values that should be unique anyway
 
     meta_fields = create_meta_fields(rows[1,], createUnitsBundle$meta)
     variables = create_variables(rows[1,], createUnitsBundle$variables)
 
-    text_fields = create_text_fields(rows, createUnitsBundle$text)
-    image_fields = create_image_fields(rows, createUnitsBundle$image)
-    markdown_fields = create_markdown_fields(rows, createUnitsBundle$markdown)
+    subfields = createUnitsBundle$subfields
+    text_fields = create_text_fields(rows, createUnitsBundle$text, subfields)
+    image_fields = create_image_fields(rows, createUnitsBundle$image, subfields)
+    markdown_fields = create_markdown_fields(rows, createUnitsBundle$markdown, subfields)
     grid = create_field_grid(createUnitsBundle$grid, createUnitsBundle$content_order)
 
     conditionals = NULL
-    if (rowdict$.TYPE == 'train') conditionals = create_conditionals(rowdict, createUnitsBundle$train)
-    if (rowdict$.TYPE == 'test') conditionals = create_conditionals(rowdict, createUnitsBundle$test)
+    if (firstrow$.TYPE == 'train') conditionals = create_conditionals(rows, createUnitsBundle$train, subfields)
+    if (firstrow$.TYPE == 'test') conditionals = create_conditionals(rows, createUnitsBundle$test, subfields)
     #importedAnnotations = create_imported_annotations(ann_list[[i]])
 
-    if (is.null(units[[id]])) {
-      units[[id]] = list(id = id,
-                         type = rowdict$.TYPE,
-                         unit = list(text_fields=text_fields,
-                                     meta_fields=meta_fields,
-                                     image_fields=image_fields,
-                                     markdown_fields=markdown_fields,
-                                     variables=variables))
-    } else {
-      ## group ids
+    units[[i]] = list(id = id,
+                      type = firstrow$.TYPE,
+                      unit = list(text_fields=text_fields,
+                                  meta_fields=meta_fields,
+                                  image_fields=image_fields,
+                                  markdown_fields=markdown_fields,
+                                  variables=variables))
 
-    }
-
-
-    if (!is.null(rowdict$.POSITION) && !is.na(rowdict$.POSITION)) units[[i]]$position = rowdict$.POSITION
+    if (!is.null(firstrow$.POSITION) && !is.na(firstrow$.POSITION)) units[[i]]$position = firstrow$.POSITION
     if (!is.null(conditionals)) units[[i]]$conditionals = conditionals
     if (!is.null(grid)) units[[i]]$unit$grid = grid
     #if (!is.null(importedAnnotations)) units[[i]]$unit$importedAnnotations = importedAnnotations
@@ -73,7 +61,7 @@ create_variables <- function(rowdict, variable_cols) {
   l
 }
 
-create_text_fields <- function(rows, text_cols) {
+create_text_fields <- function(rows, text_cols, subfields) {
   lapply(seq_along(text_cols), function(i) {
     tf = text_cols[[i]]
 
@@ -84,7 +72,7 @@ create_text_fields <- function(rows, text_cols) {
     if (!is.null(tf$context_before)) text_field$context_before = firstrow[[tf$context_before]]
     if (!is.null(tf$context_after)) text_field$context_after = firstrow[[tf$context_after]]
 
-    if (nrow(rows) > 1 || !is.null(tf$split)) {
+    if (text_field$name %in% subfields || !is.null(tf$split)) {
       text_field$value = list()
       for (row_i in 1:nrow(rows)) {
         values = rows[[tf$coding_unit]][row_i]
@@ -99,10 +87,11 @@ create_text_fields <- function(rows, text_cols) {
           )
         }
       }
-      names(text_field$values) = NULL  ## otherwise jsonlite will think its an object
+      names(text_field$value) = NULL  ## otherwise jsonlite will think its an object
     } else {
-      text_field$value = rows[[tf$coding_unit]]
-      text_field$style = eval_style(rows, tf$style)
+      row = rows[1,]
+      text_field$value = row[[tf$coding_unit]]
+      text_field$style = eval_style(row, tf$style)
     }
 
     text_field
@@ -110,13 +99,13 @@ create_text_fields <- function(rows, text_cols) {
 }
 
 
-create_image_fields <- function(rows, image_cols) {
+create_image_fields <- function(rows, image_cols, subfields) {
   lapply(seq_along(image_cols), function(i) {
     rf = image_cols[[i]]
 
     image_field = list(name = rf$field, base64=rf$base64)
 
-    if (nrow(rows) > 1) {
+    if (image_field$name %in% subfields) {
       image_field$value = list()
       for (row_i in 1:nrow(rows)) {
         rowdict = rows[row_i,]
@@ -127,24 +116,24 @@ create_image_fields <- function(rows, image_cols) {
         if (!is.null(rf$caption)) value$caption = eval(rf$caption, rowdict)
         image_field$value[['']] = value
       }
-      names(image_field$values) = NULL  # otherwise jsonlite will think its an object
+      names(image_field$value) = NULL  # otherwise jsonlite will think its an object
     } else {
-      image_field$value = rows[[rf$field]]
-      image_field$style = eval_style(rows, rf$style)
-      if (!is.null(rf$caption)) image_field$caption = eval(rf$caption, rows)
+      row = rows[1,]
+      image_field$value = row[[rf$field]]
+      image_field$style = eval_style(row, rf$style)
+      if (!is.null(rf$caption)) image_field$caption = eval(rf$caption, row)
     }
 
     image_field
   })
 }
 
-create_markdown_fields <- function(rows, markdown_cols) {
+create_markdown_fields <- function(rows, markdown_cols, subfields) {
   lapply(seq_along(markdown_cols), function(i) {
     mf = markdown_cols[[i]]
 
-    markdown_field = list(name = mf$name)
-
-    if (nrow(rows) > 1 || !is.null(mf$split)) {
+    markdown_field = list(name = mf$field)
+    if (markdown_field$name %in% subfields || !is.null(mf$split)) {
       markdown_field$value = list()
       for (row_i in 1:nrow(rows)) {
         values = rows[[mf$field]][row_i]
@@ -158,16 +147,16 @@ create_markdown_fields <- function(rows, markdown_cols) {
       }
       names(markdown_field$value) = NULL # otherwise jsonlite will think its an object
     } else {
-      markdown_field$value = rowdict[[mf$field]]
-      markdown_field$style = eval_style(rowdict, mf$style)
+      row = rows[1,]
+      markdown_field$value = row[[mf$field]]
+      markdown_field$style = eval_style(row, mf$style)
     }
     markdown_field
   })
 }
 
 
-
-create_conditionals <- function(rows, conditional_settings) {
+create_conditionals <- function(rows, conditional_settings, subfields) {
   conditionals = list()
   for (i in seq_along(conditional_settings)) {
     cs = conditional_settings[[i]]
@@ -176,16 +165,15 @@ create_conditionals <- function(rows, conditional_settings) {
       conditionals[[i]] = list(variable = cs$column,
                                conditions = list(list(value = rowdict[[cs$column]],
                                                       operator=cs$operator)),
-                               damage=cs$damage,
-                               message=cs$message)
+                               damage = eval(cs$damage, rowdict),
+                               message= cs$message, rowdict)
 
       if (!is.null(conditional_settings$field)) {
         field = rowdict[[conditional_settings$field]]
-        if (nrow(rows) > 1) field = paste(field, row_i, sep='.')
+        if (cs$column %in% subfields) field = paste(field, row_i, sep='.')
         conditionals[[i]]$field = field
       }
-      if (nrow(rows) > 1) conditionals[[i]]$field =
-      if (!is.null(cs$message)) conditionals[[i]]$conditions[[1]]$submessage = rowdict[[cs$submessage]]
+      if (!is.null(cs$message)) conditionals[[i]]$conditions[[1]]$submessage = eval(cs$submessge, rowdict)
     }
   }
   if (length(conditionals) == 0) return(NULL)
@@ -206,7 +194,9 @@ create_imported_annotations <- function(ann) {
 }
 
 create_field_grid <- function(grid, content_order) {
-  if (is.null(grid) && length(content_order) > 1) grid = content_order
+  if (is.null(grid) && length(content_order) > 1) {
+    grid = list(areas=as.list(content_order))
+  }
   grid
 }
 

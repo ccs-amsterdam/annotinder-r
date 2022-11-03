@@ -1,7 +1,8 @@
-#' Create a special unit for asking questions
+#' Create a single question unit
 #'
 #' Sometimes you don't want to ask a coder about a unit, but rather about themselves, or something.
 #' For instance, to include some basic survey questions at the start of a coding set.
+#' Or you might want to create a training example.
 #'
 #' @param ...     Questions to ask, created with \code{\link{question}}. Can be multiple (just as in \code{\link{create_codebook}}.
 #' @param markdown You can add a unit above the question by providing a markdown string. If empty. the coder will only see the question, See \url{https://commonmark.org/help/} for help.
@@ -14,9 +15,11 @@
 #' @export
 #'
 #' @examples
-create_question_unit <- function(..., markdown='', text_window_size=NULL) {
-  units = create_units(data.frame(id=NA, markdown=markdown), id='id')
-  units = set_markdown(units, 'markdown')
+create_question_unit <- function(..., markdown=NULL, text_window_size=NULL) {
+  df = data.frame(id='id')
+  if (!is.null(markdown)) df$markdown = markdown
+  units = create_units(df)
+  if (!is.null(markdown)) units = set_markdown(units, 'markdown')
   units = prepare_units(units)
   unit = units[[1]]
   unit$unit$codebook = create_codebook(...)
@@ -30,9 +33,12 @@ create_question_unit <- function(..., markdown='', text_window_size=NULL) {
   unit
 }
 
+
+#answer_action <- function(variable, value, operator='==', message=NULL, damage=0)
+
+
 #' Create a special unit for informing coders
 #'
-#' @param id      A unique id for the unit
 #' @param title   A title
 #' @param text    The information text
 #' @param markdown Alternatively, provide the content as a markdown string. If used, title+text are ignored.
@@ -43,13 +49,6 @@ create_question_unit <- function(..., markdown='', text_window_size=NULL) {
 #' @export
 #'
 #' @examples
-create_info_unit <- function(id, markdown='', button="Continue") {
-  units = create_units(data.frame(id=NA, markdown=markdown), id='id')
-  units = set_markdown(units, 'markdown')
-  units = prepare_units(units)
-  unit = units[[1]]
-
-
-  unit$unit$codebook = list(type='questions', questions=list(list(name='confirm', type='confirm', button=button)))
-  unit
+create_info_unit <- function(markdown, button="Continue") {
+  create_question_unit(markdown=markdown, question('info_unit', type='confirm', codes=button))
 }

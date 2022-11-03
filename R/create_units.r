@@ -6,8 +6,8 @@
 #' @param data  A data.frame
 #' @param id    Name of a column in the data.frame with unique values.
 #' @param type  Name of a column in the data.frame with types. Valid types are: "code", "train", "test" and "survey"
-#' @param use_groups  If there are duplicate id's, should these be grouped together as units? If FALSE, duplicate ids
-#'                   will throw an error. Having to set group_ids to TRUE is just a failsafe to prevent accidental grouping.
+#' @param use_subfields Rows with duplicate ids can be grouped together as units with subfields. To use this feature you must
+#'                      explicitly set use_subfields to TRUE, and set is_subfield = TRUE in all the fields that are subfields.
 #' @param variables A vector of column names. These column names can then be referenced from the codebook.
 #'                  For example, if there is a column "topic", you could ask the question: "is this sentence about {topic}".
 #'                  The {topic} part will then be replaced in the question with the value for this unit in the "topic" column.
@@ -16,27 +16,25 @@
 #' @export
 #'
 #' @examples
-create_units <- function(data, id='id', type=NULL, use_groups=FALSE, variables=NULL) {
+create_units <- function(data, id='id', type=NULL, subfields=NULL, variables=NULL) {
   if (!id %in% colnames(data)) stop(sprintf('"%s" is not a column name in d', id))
   if ('.TYPE' %in% colnames(data)) stop('data cannot have a column called ".TYPE" (what a coincidence, right?)')
   if ('.POSITION' %in% colnames(data)) stop('data cannot have a column called ".POSITION" (what a coincidence, right?)')
 
   if (anyDuplicated(data[[id]])) {
-    if (!use_groups) stop(sprintf('The id column (%s) needs to have unique values. If you intend to group rows with the same id together as a unit, explicitly set use_groups to TRUE', id))
+    if (is.null(subfields)) stop(sprintf('The id column (%s) needs to have unique values. Alternatively, use the subfields argument if you want to group fields from duplicate ids together', id))
   }
   if (!is.null(type)) {
     if( !type %in% colnames(data)) stop(sprintf('"%s" is not a column name in d', type))
-    n_unique_values = nrow(unique(data.frame(id=data[[id]], value=data[[type]])))
-    if (n_unique_values != length(unique(data[[id]]))) stop('Duplicate ids need to have the same type.')
+    if (!unique_in_groups(data[[id]], data[[type]])) stop('Duplicate ids need to have the same type.')
   }
 
   for (variable in variables) {
     if (!variable %in% colnames(data)) stop(sprintf('"%s" is not a column name in d', variable))
-    n_unique_values = nrow(unique(data.frame(id=data[[id]], value=data[[variable]])))
-    if (n_unique_values != length(unique(data[[id]]))) stop('Duplicate ids need to have the same values for variables.')
+    if (!unique_in_groups(data[[id]], data[[variable]])) stop('Duplicate ids need to have the same values for variables.')
   }
 
-  l = list(df = dplyr::as_tibble(data), id=id, fields=c(), content_order=c(), variables=variables)
+  l = list(df = dplyr::as_tibble(data), id=id, fields=c(), content_order=c(), variables=variables, subfields=subfields)
   l$df$.TYPE = if (!is.null(type)) l$df[[type]] else 'code'
   l$df$.POSITION = NA
 
@@ -46,8 +44,9 @@ create_units <- function(data, id='id', type=NULL, use_groups=FALSE, variables=N
 function() {
   library(annotinder)
 
-  d = data.frame(id = c(1,1,2,3), date=c(2,2,3,4))
-  create_units(d, use_groups = T) |>
+  d = data.frame(id = c(1,1,2,3), text = c('a','b','c','d'), date=c(2,2,3,4))
+  create_units(d, subfields='banaan') |>
+    set_text('text') |>
     set_meta('date')
 
 
@@ -134,7 +133,7 @@ set_text <- function(data, column, before=NULL, after=NULL, label=NULL, split=NU
   for (col in c(column, before, after)) {
     if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
   }
-
+  check_subfield(data, column)
 
   l = list(field=column,
            coding_unit=column,
@@ -186,8 +185,7 @@ set_meta <- function(data, columns, labels=NULL, bold=TRUE, ...) {
     if (!column %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
 
     ## duplicate ids need to have the same meta values
-    n_unique_values = nrow(unique(data.frame(id=ids, value=data$df[[column]])))
-    if (n_unique_values != length(unique(ids))) stop(sprintf('Duplicate ids need to have the same values in meta columns. This is not the case for "%s"', column))
+    if (!unique_in_group(ids, data$df[[column]])) stop(sprintf('Invalid values for META field "%s". Duplicate ids need to have the same values', column))
 
     l = list(field = column,
              style = style(bold=bold, ...),
@@ -219,6 +217,7 @@ set_image <- function(data, column, base64=FALSE, caption=NULL, ...) {
   for (col in c(column, caption)) {
     if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
   }
+  check_subfield(data, column)
 
   l = list(field = column,
            base64=base64,
@@ -251,6 +250,8 @@ set_markdown <- function(data, column, split=NULL, ...) {
   for (col in c(column)) {
     if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
   }
+  check_subfield(data, column)
+
 
   l = list(field = column,
            split=split,
@@ -276,13 +277,13 @@ set_markdown <- function(data, column, split=NULL, ...) {
 #'                    for units with multiple questions) you can use the set_train function multiple times.
 #' @param variable The name of the variable as used in the codebook. If not specified, the name of the column will be used.
 #' @param field    Optionally, the name of a specific field.
-#' @param damage   The amount of damage a coder should receive.
+#' @param damage   The amount of damage a coder should receive. Can be a number or an expression that returns a number.
 #' @param operator How should the annotation value be compared to the column value? Default is "==" (equals). Alternatives are "!=" (not equals),
 #'                 "<=", "<", ">=" or ">".
 #' @param message     A markdown string that will be displayed when a coder gives an incorrect answer. If not given, the message will be:
 #'                    \code{"### You gave an incorrect answer.\n\nThis is a **training** unit. \nPlease have another look and select a different answer"}.
-#' @param submessage  Optionally, The name of a column in data with a specific markdown string to display when this condition is not met.
-#'                 This message will be displayed beneath the on_wrong message.
+#' @param submessage  Optionally, an expression (e.g., the name of a column) in data with a specific markdown string to display when this condition is not met.
+#'                    Use this to give specific feedback/hints.
 #'
 #' @return
 #' @export
@@ -297,8 +298,10 @@ set_train <- function(data, column, message=NULL, submessage=NULL, variable=colu
   }
 
   if (is.null(data$train)) data$train = list()
-  data$train[[length(data$train)+1]] = list(column=column, variable=variable, field=field,
-                                            damage=damage, operator=operator, message=message, submessage=submessage)
+  data$train[[length(data$train)+1]] = list(column=column, variable=variable, field=field, operator=operator,
+                                            damage=substitute(damage),
+                                            message=message,
+                                            submessage=substitute(submessage))
 
   data
 }
@@ -358,11 +361,14 @@ set_test <- function(data, column, variable=NULL, field=NULL, damage=10, operato
 #'
 #' @examples
 set_grid <- function(data, areas, rows=NULL, columns=NULL) {
-  data$grid = list(areas=areas)
-  if (!is.null(rows)) data$grid$rows = rows
-  if (!is.null(columns)) data$grid$columns = columns
-  data
+  data$grid = list(areas=lapply(areas, as.list))
+  if (!is.null(rows)) data$grid$rows = as.list(rows)
+  if (!is.null(columns)) data$grid$columns = as.list(columns)
 }
+
+areas = list(c('test','dit'),
+             c('feestje'))
+areas = lapply(areas, as.list)
 
 #' S3 print method for createUnitsBundle objects
 #'
@@ -405,4 +411,15 @@ style <- function(text_size=NULL, bold=NULL, italic=NULL, align=NULL, ...) {
   expressions = rlang::exprs(...)
   if (length(expressions) > 0) s = c(s, expressions)
   s
+}
+
+check_subfield <- function(data, column) {
+  if (!is.null(data$subfields) && !column %in% data$subfields) {
+    if (!unique_in_group(data$df[[data$id]], data$df[[column]])) stop(sprintf('Invalid values for "%s". Fields that are not marked as subfields must have unique values across rows with the same id.', column))
+  }
+}
+
+unique_in_group <- function(ids, values) {
+  n_unique_values = nrow(unique(data.frame(id=ids, value=values)))
+  n_unique_values == length(unique(ids))
 }

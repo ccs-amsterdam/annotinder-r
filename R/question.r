@@ -46,17 +46,17 @@
 #' @export
 #'
 #' @examples
-question <- function(name, question, codes=NULL, type=c("buttons","dropdown","scale", "annotinder", "inputs"), color='#7fb9eb', fields=NULL, per_field=NULL, single_row=F, same_size=T, items=NULL) {
+question <- function(name, question=NULL, codes=NULL, type=c("buttons","dropdown","scale", "annotinder", "inputs", "confirm"), color='#7fb9eb', fields=NULL, per_field=NULL, single_row=F, same_size=T, items=NULL) {
 
   if (grepl('\\.', name)) stop('Question name is not allowed to contain a "." symbol')
   type = match.arg(type)
 
   l = list(
-    name = jsonlite::unbox(name),
-    question = jsonlite::unbox(question),
+    name = name,
     codes = codes,
     type= jsonlite::unbox(switch(type, buttons='select code', dropdown='search code', scale='scale', annotinder='annotinder', inputs="inputs", confirm="confirm"))
   )
+  if (!is.null(question)) l$question = question
   if (single_row) l$single_row=jsonlite::unbox(single_row)
   if (same_size) l$same_size=jsonlite::unbox(same_size)
   if (!is.null(fields)) l$fields=fields
