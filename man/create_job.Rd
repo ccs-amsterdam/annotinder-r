@@ -4,7 +4,7 @@
 \alias{create_job}
 \title{Create a CCS Annotator codingjob}
 \usage{
-create_job(title, units, codebook = NULL, pre = NULL, post = NULL)
+create_job(title, units = NULL, codebook = NULL, pre = NULL, post = NULL)
 }
 \arguments{
 \item{title}{A character string, for the title of the codingjob}

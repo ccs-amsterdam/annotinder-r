@@ -37,7 +37,7 @@ start_annotator <- function(job_db, background=F, browse=T, port=8000) {
 
   Sys.setenv(ANNOTATION_DB = job_db)
 
-  server_running = tryCatch(httr::GET('localhost:8000/users/me/token')$status == 200, error=function(e) FALSE)
+  server_running = tryCatch(httr::GET('localhost:8000/users/me/login')$status == 200, error=function(e) FALSE)
   if (server_running) {
     ## if server already running, just replace the db file and restart client
     httr::POST('localhost:8000/db', body=jsonlite::toJSON(list(db_file=job_db), auto_unbox = T))

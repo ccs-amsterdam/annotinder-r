@@ -5,31 +5,28 @@
 \title{Set test units}
 \usage{
 set_test(
-  data,
-  column,
-  variable = NULL,
+  variable,
+  value,
   field = NULL,
-  damage = 10,
+  damage = 0,
+  on_wrong = NULL,
   operator = "=="
 )
 }
 \arguments{
-\item{data}{A createUnitsBundle object, as created with \code{\link{create_units}}}
-
-\item{column}{The name of a column in data that has the correct annotation values. The name of the column needs to correspond to a variable/question
-in the codebook, or alternatively use the 'variable' argument. If you need to set training answers for multiple columns (e.g.,
-for units with multiple questions) you can use the set_test function multiple times.}
-
 \item{variable}{The name of the variable as used in the codebook. If not specified, the name of the column will be used.}
 
-\item{field}{Optionally, the name of a specific field}
+\item{value}{The value to which the given answer will be compared. Either a single string or the name of a column (in create_units).}
 
-\item{damage}{The amount of damage a coder should receive for getting a value wrong.}
+\item{field}{Optionally, the name of a field (in case of a field specific annotation).}
 
-\item{operator}{How should the annotation value be compared to the column value? Default is "==" (equals).
-But to screen on age you could for instance use "<=".}
+\item{damage}{The amount of damage a coder should receive. Can be a number or an expression that returns a number.}
 
-\item{on_wrong}{A markdown string that will be displayed when a coder gives an incorrect answer. If not given, no message will be displayed.}
+\item{on_wrong}{A markdown string that will be displayed when a coder gives an incorrect answer. If not given, no message will be displayed.
+Can also be the name of a column (in create_units) for unit specific messages.}
+
+\item{operator}{How should the annotation value be compared to the column value? Default is "==" (equals). Alternatives are "!=" (not equals),
+"<=", "<", ">=" or ">".}
 }
 \value{
 

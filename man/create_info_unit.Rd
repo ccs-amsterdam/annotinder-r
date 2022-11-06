@@ -4,11 +4,9 @@
 \alias{create_info_unit}
 \title{Create a special unit for informing coders}
 \usage{
-create_info_unit(id, markdown = "", button = "Continue")
+create_info_unit(markdown, button = "Continue")
 }
 \arguments{
-\item{id}{A unique id for the unit}
-
 \item{markdown}{Alternatively, provide the content as a markdown string. If used, title+text are ignored.
 See \url{https://commonmark.org/help/} for help.}
 

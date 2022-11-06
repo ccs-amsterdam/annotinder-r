@@ -12,11 +12,11 @@
 #'
 #' @examples
 create_job <- function(title, units=NULL, codebook=NULL, pre=NULL, post=NULL) {
-  if (!is.null(units) && !methods::is(units, 'createUnitsBundle')) stop('units has not been created with the create_units function')
+  if (!is.null(units) && !methods::is(units, 'codingjobUnits')) stop('units has to be a codingjobUnits list')
 
   codingjob = list(title=jsonlite::unbox(title),
                    codebook=codebook,
-                   units= if (!is.null(units)) prepare_units(units) else list())
+                   units=units)
 
   ##### TO ADD:
   ####### check whether variables used in questions are present in units

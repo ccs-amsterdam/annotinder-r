@@ -6,25 +6,45 @@
 \usage{
 create_units(
   data,
+  ...,
   id = "id",
   type = NULL,
-  use_groups = FALSE,
-  variables = NULL
+  subfields = NULL,
+  variables = NULL,
+  meta = NULL,
+  grid_areas = NULL,
+  grid_cols = NULL
 )
 }
 \arguments{
 \item{data}{A data.frame}
 
-\item{id}{Name of a column in the data.frame with unique values.}
+\item{...}{Name-function pairs for creating fields. If data has a column called header, and you want to create a title using this column,
+use: `title = set_text(header, bold=T, text_size=1.3)`}
 
-\item{type}{Name of a column in the data.frame with types. Valid types are: "code", "train", "test" and "survey"}
+\item{id}{Name of a column in data with unique values. These ids will be used to link annotation to units.}
 
-\item{use_groups}{If there are duplicate id's, should these be grouped together as units? If FALSE, duplicate ids
-will throw an error. Having to set group_ids to TRUE is just a failsafe to prevent accidental grouping.}
+\item{type}{Name of a column in data with types. Valid types are: "code", "train", "test" and "survey"}
 
-\item{variables}{A vector of column names. These column names can then be referenced from the codebook.
+\item{subfields}{Selected fields (text/image/markdown) of rows with identical id's can be grouped together into a single unit.
+The subfields arguments should then be a character vector indicating which fields need to be grouped.
+Fields that are not grouped should have identical values across all rows (with the same id).
+When fields are grouped, they are enumerated as field.1, field.2, etc.
+This is particularly usefull when combined with the per_field argument in \code{\link{question}}}
+
+\item{variables}{A vector of column names in data. These column names can then be referenced from the codebook.
 For example, if there is a column "topic", you could ask the question: "is this sentence about {topic}".
 The {topic} part will then be replaced in the question with the value for this unit in the "topic" column.}
+
+\item{meta}{A vector of column names in data. These names and their values will be shown at the top of a unit.
+Can also be a named vector, in which case the names will be used as the labels that coders get to see.}
+
+\item{grid_areas}{A list with character vectors to specify the grid-template-areas (see \url{https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-areas}).
+Each item in the list represents a row, and each value in the character vector the column in that row.
+The values need to be the names of fields (i.e. the column names). If you want a position in the grid to be empty, use a dot ".".}
+
+\item{grid_cols}{A numeric vector of the same length as the number of columns in areas. Each value indicates the relative space given to the column. So c(1,2) means that
+the second column will be twice as wide as the first column.}
 }
 \value{
 

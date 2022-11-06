@@ -2,37 +2,33 @@
 % Please edit documentation in R/create_units.r
 \name{set_train}
 \alias{set_train}
-\title{Set test units}
+\title{Set training units}
 \usage{
 set_train(
-  data,
-  column,
+  variable,
+  value,
+  field = NULL,
   message = NULL,
   submessage = NULL,
-  variable = column,
-  field = NULL,
   damage = 0,
   operator = "=="
 )
 }
 \arguments{
-\item{data}{A createUnitsBundle object, as created with \code{\link{create_units}}}
-
-\item{column}{The name of a column in data that has the correct annotation values. The name of the column needs to correspond to a variable/question
-in the codebook, or alternatively use the 'variable' argument. If you need to set training answers for multiple columns (e.g.,
-for units with multiple questions) you can use the set_train function multiple times.}
-
-\item{message}{A markdown string that will be displayed when a coder gives an incorrect answer. If not given, the message will be:
-\code{"### You gave an incorrect answer.\n\nThis is a **training** unit. \nPlease have another look and select a different answer"}.}
-
-\item{submessage}{Optionally, The name of a column in data with a specific markdown string to display when this condition is not met.
-This message will be displayed beneath the on_wrong message.}
-
 \item{variable}{The name of the variable as used in the codebook. If not specified, the name of the column will be used.}
 
-\item{field}{Optionally, the name of a specific field.}
+\item{value}{The value to which the given answer will be compared. Either a single string or the name of a column (in create_units).}
 
-\item{damage}{The amount of damage a coder should receive.}
+\item{field}{Optionally, the name of a field (in case of a field specific annotation).}
+
+\item{message}{A markdown string that will be displayed when the given answer does not match value. If not given, the message will be:
+\code{"### You gave an incorrect answer.\n\nThis is a **training** unit. \nPlease have another look and select a different answer"}.}
+
+\item{submessage}{An additional unit-specific message to display beneath the general message.
+This argument takes an expression, so you can refer to a column in the data (in create_units),
+and use other columns to create a custom message.}
+
+\item{damage}{The amount of damage a coder should receive. Can be a number or an expression that returns a number.}
 
 \item{operator}{How should the annotation value be compared to the column value? Default is "==" (equals). Alternatives are "!=" (not equals),
 "<=", "<", ">=" or ">".}

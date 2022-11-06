@@ -4,306 +4,233 @@
 #' designed in a pipe of \code{\link{set_text}}, \code{\link{set_meta}}, \code{\link{set_image}} and \code{\link{set_markdown}} functions
 #'
 #' @param data  A data.frame
-#' @param id    Name of a column in the data.frame with unique values.
-#' @param type  Name of a column in the data.frame with types. Valid types are: "code", "train", "test" and "survey"
-#' @param use_subfields Rows with duplicate ids can be grouped together as units with subfields. To use this feature you must
-#'                      explicitly set use_subfields to TRUE, and set is_subfield = TRUE in all the fields that are subfields.
-#' @param variables A vector of column names. These column names can then be referenced from the codebook.
+#' @param ...   Name-function pairs for creating fields. If data has a column called header, and you want to create a title using this column,
+#'              use: `title = set_text(header, bold=T, text_size=1.3)`
+#' @param id    Name of a column in data with unique values. These ids will be used to link annotation to units.
+#' @param type  Name of a column in data with types. Valid types are: "code", "train", "test" and "survey"
+#' @param subfields Selected fields (text/image/markdown) of rows with identical id's can be grouped together into a single unit.
+#'                  The subfields arguments should then be a character vector indicating which fields need to be grouped.
+#'                  Fields that are not grouped should have identical values across all rows (with the same id).
+#'                  When fields are grouped, they are enumerated as field.1, field.2, etc.
+#'                  This is particularly usefull when combined with the per_field argument in \code{\link{question}}
+#' @param variables A vector of column names in data. These column names can then be referenced from the codebook.
 #'                  For example, if there is a column "topic", you could ask the question: "is this sentence about {topic}".
 #'                  The {topic} part will then be replaced in the question with the value for this unit in the "topic" column.
+#' @param meta A vector of column names in data. These names and their values will be shown at the top of a unit.
+#'             Can also be a named vector, in which case the names will be used as the labels that coders get to see.
+#' @param grid_areas A list with character vectors to specify the grid-template-areas (see \url{https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-areas}).
+#'              Each item in the list represents a row, and each value in the character vector the column in that row.
+#'              The values need to be the names of fields (i.e. the column names). If you want a position in the grid to be empty, use a dot ".".
+#' @param grid_cols A numeric vector of the same length as the number of columns in areas. Each value indicates the relative space given to the column. So c(1,2) means that
+#'              the second column will be twice as wide as the first column.
+
 #'
 #' @return
 #' @export
 #'
 #' @examples
-create_units <- function(data, id='id', type=NULL, subfields=NULL, variables=NULL) {
-  if (!id %in% colnames(data)) stop(sprintf('"%s" is not a column name in d', id))
-  if ('.TYPE' %in% colnames(data)) stop('data cannot have a column called ".TYPE" (what a coincidence, right?)')
-  if ('.POSITION' %in% colnames(data)) stop('data cannot have a column called ".POSITION" (what a coincidence, right?)')
-
-  if (anyDuplicated(data[[id]])) {
+create_units <- function(data, ..., id='id', type=NULL, subfields=NULL, variables=NULL, meta=NULL, grid_areas=NULL, grid_cols=NULL) {
+  if (!id %in% colnames(data)) stop(sprintf('"%s" is not a column name in data', id))
+  ids = data[[id]]
+  if (anyDuplicated(ids)) {
     if (is.null(subfields)) stop(sprintf('The id column (%s) needs to have unique values. Alternatively, use the subfields argument if you want to group fields from duplicate ids together', id))
   }
   if (!is.null(type)) {
-    if( !type %in% colnames(data)) stop(sprintf('"%s" is not a column name in d', type))
-    if (!unique_in_groups(data[[id]], data[[type]])) stop('Duplicate ids need to have the same type.')
+    if( !type %in% colnames(data)) stop(sprintf('"%s" is not a column name in data', type))
+    if (!unique_in_groups(ids, data[[type]])) stop('Duplicate ids need to have the same type.')
   }
-
   for (variable in variables) {
-    if (!variable %in% colnames(data)) stop(sprintf('"%s" is not a column name in d', variable))
-    if (!unique_in_groups(data[[id]], data[[variable]])) stop('Duplicate ids need to have the same values for variables.')
+    if (!variable %in% colnames(data)) stop(sprintf('"%s" is not a column name in data', variable))
+    if (!unique_in_groups(ids, data[[variable]])) stop('Duplicate ids need to have the same values for variables.')
+  }
+  for (metafield in meta) {
+    if (!metafield %in% colnames(data)) stop(sprintf('"%s" is not a column name in data', metafield))
+    if (!unique_in_groups(ids, data[[metafield]])) stop('Duplicate ids need to have the same values for meta columns.')
   }
 
-  l = list(df = dplyr::as_tibble(data), id=id, fields=c(), content_order=c(), variables=variables, subfields=subfields)
-  l$df$.TYPE = if (!is.null(type)) l$df[[type]] else 'code'
-  l$df$.POSITION = NA
+  calls = process_create_unit_calls(...)
 
-  structure(l, class = c('createUnitsBundle', 'list'))
+  groups = split(1:nrow(data), ids)
+  unique_ids = unique(ids)
+  units = vector('list', length(unique_ids))
+  for (i in 1:length(unique_ids)) {
+    id = unique_ids[i]
+    rows = data[groups[[id]],]
+    firstrow = rows[1,]  ## for values that should be unique anyway
+
+    text_fields = create_fields(rows, calls$text, subfields)
+    image_fields = create_fields(rows, calls$image, subfields)
+    markdown_fields = create_fields(rows, calls$markdown, subfields)
+
+    meta_fields = create_meta_fields(firstrow, meta)
+    variables = create_variables(firstrow, variables)
+
+    grid = create_field_grid(grid_areas, grid_cols, calls$field_order)
+    if (!is.null(subfields)) grid = expand_grid(grid, nrow(rows), subfields)
+
+    conditionals = NULL
+    if (!is.null(type)) {
+      if (firstrow[[type]] == 'train') conditionals = create_conditionals(rows, calls$train, subfields)
+      if (firstrow[[type]] == 'test') conditionals = create_conditionals(rows, calls$test, subfields)
+    } else {
+      if (length(calls$train) > 0 || length(calls$test)> 0) stop('set_test and set_train only work if the type argument is set')
+    }
+    #importedAnnotations = create_imported_annotations(ann_list[[i]])
+    units[[i]] = list(id = id,
+                      type = if (!is.null(type)) firstrow[[type]] else 'text',
+                      unit = list(text_fields=text_fields,
+                                  meta_fields=meta_fields,
+                                  image_fields=image_fields,
+                                  markdown_fields=markdown_fields,
+                                  variables=variables))
+
+    if (!is.null(conditionals)) units[[i]]$conditionals = conditionals
+    if (!is.null(grid)) units[[i]]$unit$grid = grid
+    #if (!is.null(importedAnnotations)) units[[i]]$unit$importedAnnotations = importedAnnotations
+  }
+
+  structure(units, class=c('codingjobUnits', 'list'))
+
 }
 
-function() {
-  library(annotinder)
+process_create_unit_calls <- function(...) {
+  text = list()
+  image = list()
+  markdown = list()
+  field_order = c()
 
-  d = data.frame(id = c(1,1,2,3), text = c('a','b','c','d'), date=c(2,2,3,4))
-  create_units(d, subfields='banaan') |>
-    set_text('text') |>
-    set_meta('date')
+  train = list()
+  test = list()
 
-
-  data = data.frame(id = c(1,2,3,4,5),
-                    type = c('train','code','test','code','test'),
-                    letter = letters[1:5],
-                    date=c('2020-01-01','2020-01-02','2020-01-03','2020-01-04','2020-01-05'),
-                    source=c('imagination'),
-                    title=c('Cat','Cat','Dog','Dog','Car'),
-                    text= c('I like cats.',
-                            "Cats are awesome.",
-                            "Some people like dogs.",
-                            "Dogs are pretty awesome too.",
-                            "Other people like cars"),
-                    image=c('https://cdn.pixabay.com/photo/2017/07/25/01/22/cat-2536662_960_720.jpg',
-                            'https://cdn.pixabay.com/photo/2014/04/13/20/49/cat-323262_960_720.jpg',
-                            'https://cdn.pixabay.com/photo/2018/01/09/11/04/dog-3071334_960_720.jpg',
-                            'https://cdn.pixabay.com/photo/2017/09/25/13/14/dog-2785077_960_720.jpg',
-                            'https://cdn.pixabay.com/photo/2016/11/29/09/32/auto-1868726_960_720.jpg'),
-                    caption=c('Cat!','Caaaaaat','Doggie!!','Dog','Crrr'),
-                    markdown=c('**useless markdown text**'),
-                    animal=c('Cat',NA,'Dog',NA, 'Neither :('),
-                    animal_hint=c("Hint: look closely at those ears and paws.", NA, NA, NA,NA))
-
-  units = create_units(data, 'id', 'type') |>
-    set_meta('source') |>
-    set_meta('date') |>
-    set_text('title', text_size=2, bold=T, align='center') |>
-    set_text('text', align='center') |>
-    set_image('image', caption='caption') |>
-    set_markdown('markdown', align='center') |>
-    set_train('animal', damage=10, message='# OH NOES!!\n\nThis was a training unit, and it seems you got it wrong!', submessage='animal_hint') |>
-    set_test('animal', damage=10)
-
-  ## add a set_type or something. Because its not cool that set_train would now need to select for every variable
-
-  codebook = create_codebook(
-    sentiment = question('animal', 'What animal is this?', type = 'annotinder',
-                         codes = c('Cat','Dog','Neither :('))
-  )
-
-  backend_connect('http://localhost:5000', 'test@user.com')
-  job = create_job('test', units, codebook)
-
-  js = list(
-    jobset())
-
-  upload_job('5', units=units, codebook=codebook, rules=rules_fixedset(randomize=T))
+  #fields = rlang::exprs(...)
+  fields = list(...)
+  for (i in seq_along(fields)) {
+    name = names(fields)[i]
+    field = fields[[i]]
+    #if (class(field) != 'list' && class(field) != 'call') next
+    field_content = field
+    field_content$name = name
+    print(field)
 
 
-  u = prepare_units(units)
-  jsonlite::toJSON(u[[1]], pretty = T, auto_unbox = T)
+    if (field_content$type == 'text')
+      text[[length(text) + 1]] = field_content
+    if (field_content$type == 'image')
+      image[[length(image) + 1]] = field_content
+    if (field_content$type == 'markdown')
+      markdown[[length(markdown) + 1]] = field_content
+    if (field_content$type %in% c('text','image','markdown'))
+      field_order = c(field_order, name)
+
+    if (field_content$type == 'train')
+      train[[length(train) + 1]] = field_content
+    if (field_content$type == 'test')
+      test[[length(test) + 1]] = field_content
+
+  }
+
+  list(text=text,
+       image=image,
+       markdown=markdown,
+       field_order=field_order,
+       train=train,
+       test=test)
 }
 
 
-
-## set_survey(position=c('pre','post'))
 
 #' Set text content
 #'
-#' @param data        A createUnitsBundle object, as created with \code{\link{create_units}}
-#' @param column      The name of a "character" column in the data.
+#' @param field      The content of the field. Can be given as a single string, the name of a column in data (for create_units), or any expression.
 #' @param before     The text can have a context before and after the coding unit. For example, the data.frame could be a keyword in context listing with the columns "pre", "keyword" and "post" (see for instance quanteda's kwic function).
 #'                    These could then be set to the "before", "column" and "after" arguments, respectively. NOTE that if a before or after context is specified, all other text fields before or after
 #'                    the current will also be considered context.
 #' @param after      See 'before' argument
 #' @param label      An expression or character value to label the text field. Coders will then see this label where this field starts.
-#' @param split      A string for splitting the text. The field will then be split over multiple text fields. See the per_field argument in \code{\link{question}}
-#'                   for a cool way to use this to repeat a question for multiple parts of a text.
-#'                   Note that split will only work on the column. The before/after context will be kept before the first part and after the last
 #' @param ...        Style settings, passed to \code{\link{style}}
 #' @param offset     An expression (most likely a column). If the text is a part of a bigger, original text, you can include the offset for the character position where it starts. This is relevant if you want to import
 #'                   or export span annotations for which the offset refers to the original text.
 #'
-#' @return A createUnitsBundle object
+#' @return Only meant to be used inside of \code{\link{create_units}} or \code{\link{create_unit}}.
 #' @export
 #'
 #' @examples
-set_text <- function(data, column, before=NULL, after=NULL, label=NULL, split=NULL, ..., offset=0) {
-  if (!is.null(column) && length(column) != 1) stop('Can only choose one column. If you want to add multiple text fields, you can use set_text multiple times')
-  if (!is.null(before) && length(before) != 1) stop('Can only choose one "before" column. If you want to add multiple text fields, you can use set_text multiple times')
-  if (!is.null(after) && length(after) != 1) stop('Can only choose one "after" column. If you want to add multiple text fields, you can use set_text multiple times')
-
-  for (col in c(column, before, after)) {
-    if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
-  }
-  check_subfield(data, column)
-
-  l = list(field=column,
-           coding_unit=column,
-           context_before=before,
-           context_after = after,
-           style = style(...),
-           offset = substitute(offset),
-           split=split,
-           label=substitute(label))
-
-  if (is.null(data$text)) data$text = list()
-  data$text[[length(data$text)+1]] = l
-  if (column %in% data$fields) stop(sprintf('field name (%s) already exists', field))
-  data$fields = c(data$fields, column)
-  data$content_order = c(data$content_order, column)
-  data
-}
-
-#' Set meta-data content
-#'
-#' You can select columns to show in the unit as meta data. This will always be displayed at the top-middle of the
-#' unit, with one the left hand a label and on the right hand the value (e.g., "DATE     2010-01-01").
-#' With set_meta you can set multiple columns at once. Meta data cannot be grouped, so duplicate ids need to have the
-#' same values in the meta columns.
-#'
-#' @param data        A createUnitsBundle object, as created with \code{\link{create_units}}
-#' @param columns     The columns with the meta data.
-#' @param labels       By default, the column names are used as labels, but in uppercase and underscores replaced by whitespace.
-#'                    You can customize labels by providing a character vector of the same length as the columns argument.
-#'                    We recommend labels in uppercase because it fits the design, but you do you.
-#' @param bold       Meta data by default uses 'bold' style setting.
-#' @param ...        Style settings, passed to \code{\link{style}}
-#'
-#' @return A createUnitsBundle object
-#' @export
-#'
-#' @examples
-set_meta <- function(data, columns, labels=NULL, bold=TRUE, ...) {
-  if (!is.null(labels)) {
-    if (length(columns) != length(labels)) stop('Length of the label argument should be the same as the length of the columns argument')
-  } else {
-    labels = gsub('_', ' ', toupper(columns))
-  }
-
-  ids = data$df[[data$id]]
-  for (i in 1:length(columns)) {
-    column = columns[i]
-    label = labels[i]
-    if (!column %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
-
-    ## duplicate ids need to have the same meta values
-    if (!unique_in_group(ids, data$df[[column]])) stop(sprintf('Invalid values for META field "%s". Duplicate ids need to have the same values', column))
-
-    l = list(field = column,
-             style = style(bold=bold, ...),
-             label=label)
-
-    if (is.null(data$meta)) data$meta = list()
-    data$meta[[length(data$meta)+1]] = l
-    if (column %in% data$fields) stop(sprintf('field name (%s) already exists', column))
-    data$fields = c(data$fields, column)
-  }
-  data
+text_field <- function(field, before=NULL, after=NULL, label=NULL, ..., offset=0) {
+  list(type = 'text',
+       field=substitute(field),
+       context_before= substitute(before),
+       context_after = substitute(after),
+       offset = substitute(offset),
+       label=substitute(label),
+       style = style(...))
 }
 
 #' Set image content
 #'
-#' @param data        A createUnitsBundle object, as created with \code{\link{create_units}}
-#' @param column      The name of a column in data that contains paths/urls to image files
-#' @param base64      If TRUE, store the image as a base64 in the codingjob json file
-#' @param caption     An expression (most likely a column name) or character value to use as image caption.
+#' @param field      The content of the field. Can be given as a single filename, the name of a column in data (for create_units) that has filenames, or an expression.
+#' @param base64     If TRUE, store the image as a base64 in the codingjob json file
+#' @param caption    The image caption. Can be a single string, or a column in data (for create_units), or an expression.
 #' @param ...        Style settings, passed to \code{\link{style}}
 #'
-#' @return A createUnitsBundle object
+#' @return Only meant to be used inside of \code{\link{create_units}} or \code{\link{create_unit}}.
 #' @export
 #'
 #' @examples
-set_image <- function(data, column, base64=FALSE, caption=NULL, ...) {
-  if (length(column) != 1) stop('Only one image can be set at a time. Note that you can call set_image multiple times')
-
-  for (col in c(column, caption)) {
-    if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
-  }
-  check_subfield(data, column)
-
-  l = list(field = column,
-           base64=base64,
+image_field <- function(field, base64=FALSE, caption=NULL, ...) {
+  l = list(type = 'image',
+           field = substitute(field),
+           base64 = base64,
            style = style(...))
-  if (!is.null(caption)) l$caption = substitute(caption)
-
-  if (is.null(data$image)) data$image = list()
-  data$image[[length(data$image)+1]] = l
-  if (column %in% data$fields) stop(sprintf('field name (%s) already exists', column))
-  data$fields = c(data$fields, column)
-  data$content_order = c(data$content_order, column)
-  data
+  caption = substitute(caption)
+  if (!is.null(caption)) l$caption = caption
+  l
 }
 
 #' Set markdown content
 #'
-#' @param data        A createUnitsBundle object, as created with \code{\link{create_units}}
-#' @param column      The name of a column in data that contains markdown strings
-#' @param split      A string for splitting the markdown string. The field will then be split over multiple markdown fields. See the per_field argument in \code{\link{question}}
-#'                   for a cool way to use this to repeat a question for multiple parts of a text.
+#' @param field      The content of the field. Can be given as a single string, the name of a column in data (for create_units), or any expression.
 #' @param ...        Style settings, passed to \code{\link{style}}
 #'
-#' @return A createUnitsBundle object
+#' @return Only meant to be used inside of \code{\link{create_units}} or \code{\link{create_unit}}.
 #' @export
 #'
 #' @examples
-set_markdown <- function(data, column, split=NULL, ...) {
-  if (length(column) != 1) stop('Only one markdown string can be set at a time. Note that you can call set_markdown multiple times')
-
-  for (col in c(column)) {
-    if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
-  }
-  check_subfield(data, column)
-
-
-  l = list(field = column,
-           split=split,
-           style = style(...))
-
-  if (is.null(data$markdown)) data$markdown = list()
-  data$markdown[[length(data$markdown)+1]] = l
-  if (column %in% data$fields) stop(sprintf('field name (%s) already exists', column))
-  data$fields = c(data$fields, column)
-  data$content_order = c(data$content_order, column)
-  data
+markdown_field <- function(field, ...) {
+  list(type='markdown',
+       field = substitute(field),
+       style = style(...))
 }
 
-#' Set test units
+#' Set training units
 #'
 #' Setup training units, and provide the correct answers/annotations for these units.
 #' If the answer/annotation is wrong, coders will see a message and need to retry.
 #' Note that which units are train units needs to be indicated with the 'type' argument in \code{\link{create_units}}
 #'
-#' @param data        A createUnitsBundle object, as created with \code{\link{create_units}}
-#' @param column      The name of a column in data that has the correct annotation values. The name of the column needs to correspond to a variable/question
-#'                    in the codebook, or alternatively use the 'variable' argument. If you need to set training answers for multiple columns (e.g.,
-#'                    for units with multiple questions) you can use the set_train function multiple times.
-#' @param variable The name of the variable as used in the codebook. If not specified, the name of the column will be used.
-#' @param field    Optionally, the name of a specific field.
+#' @param variable  The name of the variable as used in the codebook. If not specified, the name of the column will be used.
+#' @param value     The value to which the given answer will be compared. Either a single string or the name of a column (in create_units).
+#' @param field     Optionally, the name of a field (in case of a field specific annotation).
+#' @param message     A markdown string that will be displayed when the given answer does not match value. If not given, the message will be:
+#'                    \code{"### You gave an incorrect answer.\n\nThis is a **training** unit. \nPlease have another look and select a different answer"}.
+#' @param submessage  An additional unit-specific message to display beneath the general message.
+#'                    This argument takes an expression, so you can refer to a column in the data (in create_units),
+#'                    and use other columns to create a custom message.
 #' @param damage   The amount of damage a coder should receive. Can be a number or an expression that returns a number.
 #' @param operator How should the annotation value be compared to the column value? Default is "==" (equals). Alternatives are "!=" (not equals),
 #'                 "<=", "<", ">=" or ">".
-#' @param message     A markdown string that will be displayed when a coder gives an incorrect answer. If not given, the message will be:
-#'                    \code{"### You gave an incorrect answer.\n\nThis is a **training** unit. \nPlease have another look and select a different answer"}.
-#' @param submessage  Optionally, an expression (e.g., the name of a column) in data with a specific markdown string to display when this condition is not met.
-#'                    Use this to give specific feedback/hints.
 #'
 #' @return
 #' @export
 #'
 #' @examples
-set_train <- function(data, column, message=NULL, submessage=NULL, variable=column, field=NULL, damage=0, operator='==') {
-  if (!any(data$df$.TYPE == 'train')) stop('There are no train units specified. You can do this in the "create_units" function with the "type" argument')
+set_train <- function(variable, value, field=NULL, message=NULL, submessage=NULL, damage=0, operator='==') {
   if (!operator %in% c('==','<=','<','>=','>','!=')) stop("invalid operator. Has to be one of: '==','<=','<','>=','>','!='")
 
-  for (col in c(column, submessage)) {
-    if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
-  }
-
-  if (is.null(data$train)) data$train = list()
-  data$train[[length(data$train)+1]] = list(column=column, variable=variable, field=field, operator=operator,
-                                            damage=substitute(damage),
-                                            message=message,
-                                            submessage=substitute(submessage))
-
-  data
+  list(type='train',
+       variable=variable, value=substitute(value), field=field, operator=operator,
+       damage=substitute(damage),
+       message=message,
+       submessage=substitute(submessage))
 }
 
 #' Set test units
@@ -312,78 +239,27 @@ set_train <- function(data, column, message=NULL, submessage=NULL, variable=colu
 #' If the answer/annotation is wrong, coders receive damage.
 #' Note that which units are test units needs to be indicated with the 'type' argument in \code{\link{create_units}}
 #'
-#' @param data        A createUnitsBundle object, as created with \code{\link{create_units}}
-#' @param column      The name of a column in data that has the correct annotation values. The name of the column needs to correspond to a variable/question
-#'                    in the codebook, or alternatively use the 'variable' argument. If you need to set training answers for multiple columns (e.g.,
-#'                    for units with multiple questions) you can use the set_test function multiple times.
-#' @param variable    The name of the variable as used in the codebook. If not specified, the name of the column will be used.
-#' @param field       Optionally, the name of a specific field
-#' @param damage      The amount of damage a coder should receive for getting a value wrong.
-#' @param operator    How should the annotation value be compared to the column value? Default is "==" (equals).
-#'                    But to screen on age you could for instance use "<=".
-#' @param on_wrong    A markdown string that will be displayed when a coder gives an incorrect answer. If not given, no message will be displayed.
+#' @param variable  The name of the variable as used in the codebook. If not specified, the name of the column will be used.
+#' @param value     The value to which the given answer will be compared. Either a single string or the name of a column (in create_units).
+#' @param field     Optionally, the name of a field (in case of a field specific annotation).
+#' @param damage    The amount of damage a coder should receive. Can be a number or an expression that returns a number.
+#' @param on_wrong  A markdown string that will be displayed when a coder gives an incorrect answer. If not given, no message will be displayed.
+#'                  Can also be the name of a column (in create_units) for unit specific messages.
+#' @param operator How should the annotation value be compared to the column value? Default is "==" (equals). Alternatives are "!=" (not equals),
+#'                 "<=", "<", ">=" or ">".
 #'
 #' @return
 #' @export
 #'
 #' @examples
-set_test <- function(data, column, variable=NULL, field=NULL, damage=10, operator='==') {
-  if (!any(data$df$.TYPE == 'test')) stop('There are no test units specified. You can do this in the "create_units" function with the "type" argument')
-  if (is.null(variable)) variable = column
+set_test <- function(variable, value, field=NULL, damage=0, on_wrong=NULL, operator='==') {
   if (!operator %in% c('==','<=','<','>=','>','!=')) stop("invalid operator. Has to be one of: '==','<=','<','>=','>','!='")
 
-  for (col in c(column)) {
-    if (!col %in% colnames(data$df)) stop(sprintf('"%s" is not a column name in data', col))
-  }
-
-  if (is.null(data$test)) data$test = list()
-  data$test[[length(data$test)+1]] = list(column=column, variable=variable,
-                                          damage=damage, operator=operator)
-
-  data
+  list(type='test',
+       variable=variable, value=substitute(value), field=field, operator=operator,
+       damage=substitute(damage), on_wrong=substitute(on_wrong))
 }
 
-#' Customize the layout of the unit fields
-#'
-#' By default, the fields are presented in a single column, in the given order (i.e. the order of set_text, set_markdown and set_image functions).
-#'
-#'
-#' @param data
-#' @param areas A list with character vectors to specify the grid-template-areas (see \url{https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-areas}).
-#'              Each item in the list represents a row, and each value in the character vector the column in that row.
-#'              The values need to be the names of fields (i.e. the column names). If you want a position in the grid to be empty, use a dot ".".
-#' @param rows  A numeric vector of the same length as the number of rows. Each value indicates the relative space given to the row. So c(1,2) means that
-#'              the second row will be twice as high as the first row.
-#' @param columns Same as rows, but for columns.
-#'
-#' @return
-#' @export
-#'
-#' @examples
-set_grid <- function(data, areas, rows=NULL, columns=NULL) {
-  data$grid = list(areas=lapply(areas, as.list))
-  if (!is.null(rows)) data$grid$rows = as.list(rows)
-  if (!is.null(columns)) data$grid$columns = as.list(columns)
-}
-
-areas = list(c('test','dit'),
-             c('feestje'))
-areas = lapply(areas, as.list)
-
-#' S3 print method for createUnitsBundle objects
-#'
-#' @param x an createUnitsBundle object, created with \link{create_units}
-#' @param ... not used
-#'
-#' @method print createUnitsBundle
-#' @examples
-#' @export
-print.createUnitsBundle <- function(x, ...){
-  units = table(x$df$.TYPE[!duplicated(x$df[[x$id]])])
-  units = units[match(unique(x$df$.TYPE), names(units))] # sort by occurence
-  cat(sprintf('units:'), paste(paste0(names(units), ' (', units, ')'), collapse=', '))
-  cat(sprintf('\nfields: %s', paste(x$fields, collapse=', ')))
-}
 
 #' Set styling
 #'
@@ -419,7 +295,175 @@ check_subfield <- function(data, column) {
   }
 }
 
-unique_in_group <- function(ids, values) {
+unique_in_groups <- function(ids, values) {
   n_unique_values = nrow(unique(data.frame(id=ids, value=values)))
   n_unique_values == length(unique(ids))
 }
+
+
+create_meta_fields <- function(rowdict, meta_cols) {
+  labels = names(meta_cols)
+  values = as.character(meta_cols)
+  lapply(seq_along(values), function(i) {
+    meta_field = list(name = values[i], value=rowdict[[values[i]]])
+    if (!is.null(names(meta_cols))) meta_field$label = names(meta_cols)[i]
+    meta_field
+  })
+}
+
+create_variables <- function(rowdict, variable_cols) {
+  l = list()
+  for (vc in variable_cols) {
+    l[[vc]] = rowdict[[vc]]
+  }
+  l
+}
+
+create_fields <- function(rows, field_cols, subfields) {
+  fields = list()
+  for (f in field_cols) {
+    is_subfield = f$name %in% subfields
+    for (i in 1:nrow(rows)) {
+      if (!is_subfield && i > 1) break
+      rowdict = rows[i,]
+
+      field = list(name= if (is_subfield) paste(f$name, i, sep='.') else f$name,
+                   value = eval_value(rowdict, f$field),
+                   style = eval_style(rowdict, f$style))
+      for (attr in names(f)) {
+        if (attr %in% c('name','field','style')) next
+        field[[attr]] = eval_value(rowdict, f[[attr]])
+      }
+      fields[[length(fields) + 1]] = field
+    }
+  }
+  fields
+}
+
+
+
+create_conditionals <- function(rows, conditional_settings, subfields) {
+  conditionals = list()
+  for (i in seq_along(conditional_settings)) {
+    cs = conditional_settings[[i]]
+    for_subfield = if (is.null(cs$field)) FALSE else cs$field %in% subfields
+    for (row_i in 1:nrow(rows)) {
+      if (!for_subfield && row_i > 1) break
+
+      rowdict = rows[row_i,]
+      con_i = length(conditionals) + 1
+      conditionals[[con_i]] = list(variable = cs$variable,
+                               conditions = list(list(value = eval_value(rowdict, cs$value),
+                                                      operator=cs$operator)),
+                               damage = eval_value(rowdict, cs$damage),
+                               message= cs$message,
+                               submessage = eval_value(rowdict, cs$submessage))
+
+      if (!is.null(cs$field)) {
+        field = cs$field
+        if (field %in% subfields) field = paste(field, row_i, sep='.')
+        conditionals[[con_i]]$field = field
+      }
+      if (!is.null(cs$submessage)) conditionals[[con_i]]$conditions[[1]]$submessage = eval_value(rowdict, cs$submessage)
+
+    }
+  }
+  if (length(conditionals) == 0) return(NULL)
+  conditionals
+}
+
+create_imported_annotations <- function(ann) {
+  if (is.null(ann) || nrow(ann) == 0) return(NULL)
+  ann = ann[,c('field','variable','value','offset','length')]
+  ann = apply(ann, 1, function(x) {
+    l = as.list(x)
+    l$offset = as.numeric(l$offset)
+    l$length = as.numeric(l$length)
+    l = lapply(l, jsonlite::unbox)
+  })
+  names(ann) = NULL
+  ann
+}
+
+create_field_grid <- function(grid_areas, grid_cols, content_order) {
+  if (is.null(grid_areas)) {
+    grid_areas = as.list(content_order)
+  } else {
+    used_fields = unique(unlist(grid_areas))
+    missing = used_fields[!used_fields %in% content_order]
+    if (length(missing) > 0) {
+      stop(sprintf('Invalid field names used in grid_areas (%s)', paste(missing, collapse=',')))
+    }
+  }
+
+  ## use list to make sure json sees it as array of arrays (not array of strings)
+  grid_areas = lapply(grid_areas, as.list)
+  grid = list(areas = grid_areas)
+  if (!is.null(grid_cols)) grid$columns = as.list(grid_cols)
+  grid
+}
+
+expand_grid <- function(grid, n_rows, subfields) {
+  if (is.null(subfields) || length(subfields) == 0) return(grid)
+  newgrid = list()
+  for (row in grid$areas) {
+    has_subfield = sapply(row, `%in%`, subfields)
+    if (!any(has_subfield)) {
+      newgrid[[length(newgrid) + 1]] = row
+      next
+    }
+    for (i in 1:n_rows) {
+      newrow = row
+      newrow[has_subfield] = paste(newrow[has_subfield], i, sep='.')
+      newgrid[[length(newgrid) + 1]] = newrow
+    }
+  }
+  newgrid
+}
+
+eval_style <- function(rowdict, style) {
+  CSS_style = list()
+  for (property in names(style)) {
+    value = eval(style[[property]], envir = rowdict)
+    if (is.null(value)) next
+
+    if (property == 'text_size') {
+      CSS_style$fontSize = paste0(value, 'em')
+      next
+    }
+    if (property == 'bold' && value == TRUE) {
+      CSS_style$fontWeight = 'bold'
+      next
+    }
+    if (property == 'italic' && value == TRUE) {
+      CSS_style$fontStyle = 'italic'
+      next
+    }
+    if (property == 'align') {
+      CSS_style$textAlign = value
+      next
+    }
+    CSS_style[[property]] = value
+  }
+  CSS_style
+}
+
+eval_value <- function(rowdict, e) {
+  ## evaluate the expression using only the environment of the row dictionary
+  #eval(e, envir = rowdict, enclos = NULL)
+  ## evaluate also allowing objects from the global env
+  eval(e, envir = rowdict)
+}
+
+#' S3 print method for codingjobUnits objects
+#'
+#' @param x an codingjobUnits object, created with \link{create_units}
+#' @param ... not used
+#'
+#' @method print codingjobUnits
+#' @examples
+#' @export
+print.codingjobUnits <- function(x, ...){
+  cat('List of', length(x), 'units\n')
+}
+

@@ -6,9 +6,9 @@
 \usage{
 question(
   name,
-  question,
+  question = NULL,
   codes = NULL,
-  type = c("buttons", "dropdown", "scale", "annotinder", "inputs"),
+  type = c("buttons", "dropdown", "scale", "annotinder", "inputs", "confirm"),
   color = "#7fb9eb",
   fields = NULL,
   per_field = NULL,

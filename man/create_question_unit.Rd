@@ -2,9 +2,9 @@
 % Please edit documentation in R/special_units.r
 \name{create_question_unit}
 \alias{create_question_unit}
-\title{Create a special unit for asking questions}
+\title{Create a single question unit}
 \usage{
-create_question_unit(..., markdown = "", text_window_size = NULL)
+create_question_unit(..., markdown = NULL, text_window_size = NULL)
 }
 \arguments{
 \item{...}{Questions to ask, created with \code{\link{question}}. Can be multiple (just as in \code{\link{create_codebook}}.}
@@ -22,4 +22,5 @@ Can also be set to 'auto' so the annotator tries a nice fi (but be sure to test 
 \description{
 Sometimes you don't want to ask a coder about a unit, but rather about themselves, or something.
 For instance, to include some basic survey questions at the start of a coding set.
+Or you might want to create a training example.
 }

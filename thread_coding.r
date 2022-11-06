@@ -1,12 +1,6 @@
 library(annotinder)
 library(tidyverse)
 
-
-
-
-
-
-
 tweets = data.frame(conversation = c(1,1,1,1,2,2),
                tweet = c('heeeeejj', 'Owh hey!', 'Daar ben ik het niet mee eens!', 'Goed punt', 'Ik ben jarig','Gefeliciteerd!'),
                author = c('Author','Comment','Author','Comment','Author','Comment'),
@@ -16,12 +10,12 @@ first_tweet = tweets %>% filter(type == 'tweet') %>% select(conversation, tweet)
 comments = tweets %>% filter(type == 'comment') %>% select(conversation, comment = tweet, author)
 d = first_tweet %>% full_join(comments, by='conversation')
 
-units = create_units(d, id='conversation', subfields='comment') %>%
-  set_text('tweet',
-           margin = '10px 25% 10px 10px') %>%
-  set_text('comment',
-           align= ifelse(author == 'Author', 'left','right'),
-           margin = ifelse(author == 'Author', '10px 25%px 10px 10px', '10px 10px 10px 25%'))
+testdit = text_field(tweet, margin = '10px 25% 10px 10px')
+
+units = create_units(d, id='conversation', subfields='comment',
+  tweet = testdit,
+  comment = text_field(comment, align= ifelse(author == 'Author', 'left','right'), margin = ifelse(author == 'Author', '10px 25%px 10px 10px', '10px 10px 10px 25%'))
+)
 
 codebook = create_codebook(
   test = question('klimaatverandering', 'Is het eerste bericht in deze conversatie blablabla?', type='buttons',

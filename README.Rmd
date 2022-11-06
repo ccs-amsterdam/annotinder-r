@@ -37,18 +37,17 @@ To create a codingjob you need to key components: A set of units and a codebook.
 
 ## Units
 
-To create units we first pass a data.frame to the `create_units` function, and then use a set of functions in a pipe to specify how to build our units from the columns of this data.frame. Here we use a set of State of the Union speech paragraphs included in this package. 
+To create units we use the `create_units` function. For this example we use a set of State of the Union speech paragraphs included in this package. 
 
 In this data we have an `id` column with a unique id. It is mandatory in AnnoTinder to explicitly provide unique id's for all your units, because you'll want to do this properly to later on link annotations back to units.
 
-For now, the only data we'll include in our unit is the `text`, which we'll do with the `set_text` function. 
+For now, the only data we'll include in our unit is the text column in the mini_sotu_par data.frame. We do so by providing a named argument that assigns a text_field. In the current example this might look overkill, but later on you'll see how this allows us to add multiple fields with custom styling. 
 
 ```{r}
-units = create_units(mini_sotu_par, id = 'id') %>%
-  set_text('text')
+units = create_units(mini_sotu_par, id = 'id', text = text_field(text)) 
 ```
 
-You can check the units object, which should now simply tell you the number of units and what fields you included.
+You can check the units object, which simply tells you that this is a list of n units (at some point we'll add some more usefull details).
 
 ```{r}
 units
@@ -82,7 +81,7 @@ Now we can create a codingjob! When coding locally from R, we first create a job
 
 ```{r}
 job = create_job('simple_example', units, codebook)
-job_db = create_job_db(job)
+job_db = create_job_db(job, overwrite=T)
 job_db
 ```
 
@@ -106,9 +105,9 @@ gimme_annotations(job_db)
 Now let's look at some more interesting codebooks. We'll use the same simple units as above (though we'll add some meta data, because we can).
 
 ```{r}
-units = create_units(mini_sotu_par, id = 'id') %>%
-  set_meta(c('name','year')) %>%
-  set_text('text')
+units = create_units(mini_sotu_par, id = 'id', 
+                     text = text_field(text), 
+                     meta=c('name','year'))
 ```
 
 ## Annotation mode
@@ -162,7 +161,7 @@ This is basically the same codebook, but now you can swipe to code. In R this is
 
 You can actually go pretty wild in designing the units. Next to text you can also add images and markdown. Using markdown makes it easier to add some styling, but the downside is that you can't use it for labeling in annotation mode. You can also create training and testing units in which you provide the 'correct' answers. Anyway, here's an example of combining a lot of stuff. 
 
-!! The train and test units don't yet work in R. (note to self: this should just be passing on the 'conditionals' key correctly)
+!! the test units don't really make sense for a local R server, and it will just print the amount of damage a coder would receive. When using the Annotinder server, this damage will be processed silently and can be used to disqualify annotators.
 
 ```{r}
 data = data.frame(id = c(1,2,3,4,5),
@@ -186,17 +185,15 @@ data = data.frame(id = c(1,2,3,4,5),
                     animal=c('Cat',NA,'Dog',NA, 'Neither :('),
                     animal_hint=c("Hint: look closely at those ears and paws.", NA, NA, NA,NA))
 
-units = create_units(data, 'id', 'type') |>
-  set_meta('source') |>
-  set_meta('date') |>
-  set_text('title', size=2, bold=T, align='center') |>
-  set_text('text', align='center') |>
-  set_image('image', caption='caption') |>
-  set_markdown('markdown', align='center') |>
-  set_train('animal', message='# OH NOES!!\n\nThis was a training unit, and it seems you got it wrong!', submessage='animal_hint') |>
-  set_test('animal', damage=10)
-
-
+units = create_units(data, id='id', type='type', meta=c('date','source'),
+  title =  text_field(title, text_size=2, bold=T, align='center'),
+  text  =  text_field(text, align='center'),
+  image = image_field(image, caption=caption),
+  markdown = markdown_field(markdown, align='center'),
+  set_train('animal', animal, message='# OH NOES!!\n\nThis was a training unit, and it seems you got it wrong!', 
+            submessage=animal_hint),
+  set_test('animal', animal, damage=10)
+)
 
 animal = question('animal', 'What animal is this?', type = 'annotinder', codes = c('Cat','Dog','Neither :('))
 codebook = create_codebook(animal)
