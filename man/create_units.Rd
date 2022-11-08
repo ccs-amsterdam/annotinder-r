@@ -19,8 +19,9 @@ create_units(
 \arguments{
 \item{data}{A data.frame}
 
-\item{...}{Name-function pairs for creating fields. If data has a column called header, and you want to create a title using this column,
-use: `title = set_text(header, bold=T, text_size=1.3)`}
+\item{...}{Unit content is specified using the set_ functions (set_text, set_markdown, set_image, etc.).
+For example, if data has a column called header, and you want to create a title using this column,
+use: `set_text('title', header, bold=T, text_size=1.3)`}
 
 \item{id}{Name of a column in data with unique values. These ids will be used to link annotation to units.}
 
@@ -45,9 +46,6 @@ The values need to be the names of fields (i.e. the column names). If you want a
 
 \item{grid_cols}{A numeric vector of the same length as the number of columns in areas. Each value indicates the relative space given to the column. So c(1,2) means that
 the second column will be twice as wide as the first column.}
-}
-\value{
-
 }
 \description{
 Create the basis for a units object. The content of the units can then be

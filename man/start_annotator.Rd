@@ -31,14 +31,14 @@ server in the background of the current session. To use this, set background = T
 }
 \examples{
 sentiment = annotation_variable('sentiment', 'assign sentiment to words',
-     codes = c(Negative = 'red', Neutral = 'grey', Positive = 'green'))
+     codes = c(red = 'Negative', grey = 'Neutral', green = 'Positive'))
 codingjob = create_job('Sotu sentiment',
-                       create_units(mini_sotu, id='id', text='text', meta=c('name','year')),
+                       create_units(mini_sotu, id='id', set_text('text',text), meta=c('name','year')),
                        create_codebook(sentiment))
 
 job_db = create_job_db(codingjob)
 
 \dontrun{
-start_annotator(job_id)
+start_annotator(job_db)
 }
 }

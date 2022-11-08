@@ -2,13 +2,13 @@
 ## INITIALIZE
 
 db_write_codebook <- function(db, codebook) {
-  json = jsonlite::toJSON(codebook)
+  json = jsonlite::toJSON(codebook, auto_unbox = T)
   json_df = dplyr::tibble(json = json)
   DBI::dbWriteTable(db, 'codebook', json_df, overwrite=T)
 }
 
 db_write_units <- function(db, units) {
-  json_list = sapply(units, jsonlite::toJSON)
+  json_list = sapply(units, jsonlite::toJSON, auto_unbox=T)
   index = (1:length(units)) - 1  ## start at zero to match js client indexing
   id = sapply(units, function(x) as.character(x$id))
   json_df = dplyr::tibble(unit_index=index, id=id, status="", json=json_list) ## (db field name cannot be index)
@@ -84,7 +84,7 @@ db_get_progress <- function(db) {
 ## POST
 
 db_insert_annotation <- function(db, unit_id, annotation) {
-  annotation_json = jsonlite::toJSON(annotation)
+  annotation_json = jsonlite::toJSON(annotation, auto_unbox = T)
   safe_annotation = DBI::dbQuoteIdentifier(db, annotation_json)
   DBI::dbExecute(db, sprintf("UPDATE annotations SET json=%s WHERE unit_id = '%s'",
                      safe_annotation, unit_id))

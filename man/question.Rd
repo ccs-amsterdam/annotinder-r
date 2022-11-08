@@ -9,6 +9,7 @@ question(
   question = NULL,
   codes = NULL,
   type = c("buttons", "dropdown", "scale", "annotinder", "inputs", "confirm"),
+  instruction = NULL,
   color = "#7fb9eb",
   fields = NULL,
   per_field = NULL,
@@ -22,7 +23,7 @@ question(
 
 \item{codes}{The codes that the coder can choose from. Can be a character vector, named character vector or data.frame.
 An unnamed character vector creates simple codes.
-A named character vector uses the names as codes and the values as colors, either as HEX or a name recognized by browsers (see \url{https://www.w3schools.com/colors/colors_names.asp}).
+A named character vector uses the names as colors, either as HEX or a name recognized by browsers (see \url{https://www.w3schools.com/colors/colors_names.asp}).
 A data.frame must have a code column, and can use certain special columns (see details).
 For most control, codes can be a list of 'code' objects created with \code{\link{code}}.}
 
@@ -31,6 +32,8 @@ For most control, codes can be a list of 'code' objects created with \code{\link
 "scale" is for ordered buttons, and multiple items can be specified to answer this question for each.
 "annotinder" lets users swipe for answers, and can only be used if the number of answers is 2 (left, right) or 3 (left, right, up).
 "inputs" can create one or multiple open input fields for text and numbers.}
+
+\item{instruction}{Optionally, a markdown string with instructions for this specific question. Coders can see these instructions by clicking on the questionmark symbol before the question.}
 
 \item{color}{If no colors are given to specific codes, this sets the default color. Color should be  HEX or a name recognized by browsers (see \url{https://www.w3schools.com/colors/colors_names.asp}).
 Can also be "random" for random colors}
@@ -47,8 +50,6 @@ is to use the "split" argument in set_text and set_markdown, which automatically
 \item{same_size}{If "buttons" selection is used, make all buttons the same size.}
 
 \item{items}{Can be used for "scale" and "inputs" type questions. Should be a named list where the names are the item names, and value is a list with parameters.}
-
-\item{instruction}{A short (think 1 or 2 sentences) question.}
 }
 \value{
 A question object, to be used within the \code{\link{create_codebook}} function

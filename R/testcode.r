@@ -2,6 +2,24 @@ function() {
   library(annotinder)
 
 
+  data = data.frame(id = c(1,2,3),
+                    instruction = '# Topic intrusion\n\nBelow you see five words. Four of these words are related to the same topic, but one word is an "imposter". Please select the imposter word',
+                    w1 = c('some','example','words'),
+                    w2 = c('more','beautiful','terms'),
+                    w3 = c('I','am','getting'),
+                    w4 = c('really','tired','off'),
+                    w5 = c('coming','up','with'))
+  data
+
+  units = create_units(data, id='id',
+                       text = set_markdown(instruction),
+                       set_question('question', codes=c(w1,w2,w3,w4,w5)))
+
+
+  create_job('test', units) %>%
+    create_job_db(overwrite=T) %>%
+    start_annotator(background=T)
+
 
   data = data.frame(id = c(1,2,3,4,5),
                     type = c('train','code','test','code','test'),
@@ -26,10 +44,10 @@ function() {
 
 
   units = create_units(data, id='id', type='type', meta=c('date','source'),
-    title = text_field(title, text_size=2, bold=T, align='center'),
-    text = text_field(text, align='center'),
-    image = image_field(image, caption=caption),
-    markdown = markdown_field(markdown, align='center'),
+    set_text('title', title, text_size=2, bold=T, align='center'),
+    set_text('text', text, align='center'),
+    set_image('image', image, caption=caption),
+    set_markdown('markdown', markdown, align='center'),
     set_train('animal', animal,
               message='# OH NOES!!\n\nThis was a training unit, and it seems you got it wrong!',
               submessage=animal_hint),

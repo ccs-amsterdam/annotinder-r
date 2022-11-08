@@ -4,8 +4,9 @@
 #' designed in a pipe of \code{\link{set_text}}, \code{\link{set_meta}}, \code{\link{set_image}} and \code{\link{set_markdown}} functions
 #'
 #' @param data  A data.frame
-#' @param ...   Name-function pairs for creating fields. If data has a column called header, and you want to create a title using this column,
-#'              use: `title = set_text(header, bold=T, text_size=1.3)`
+#' @param ...   Unit content is specified using the set_ functions (set_text, set_markdown, set_image, etc.).
+#'              For example, if data has a column called header, and you want to create a title using this column,
+#'              use: `set_text('title', header, bold=T, text_size=1.3)`
 #' @param id    Name of a column in data with unique values. These ids will be used to link annotation to units.
 #' @param type  Name of a column in data with types. Valid types are: "code", "train", "test" and "survey"
 #' @param subfields Selected fields (text/image/markdown) of rows with identical id's can be grouped together into a single unit.
@@ -55,15 +56,18 @@ create_units <- function(data, ..., id='id', type=NULL, subfields=NULL, variable
   units = vector('list', length(unique_ids))
   for (i in 1:length(unique_ids)) {
     id = unique_ids[i]
-    rows = data[groups[[id]],]
-    firstrow = rows[1,]  ## for values that should be unique anyway
+    rows = data[groups[[id]],,drop=F]
+    firstrow = rows[1,,drop=F]  ## for values that should be unique anyway
 
-    text_fields = create_fields(rows, calls$text, subfields)
-    image_fields = create_fields(rows, calls$image, subfields)
-    markdown_fields = create_fields(rows, calls$markdown, subfields)
+    text_fields = create_content_fields(rows, calls$text, subfields)
+    image_fields = create_content_fields(rows, calls$image, subfields)
+    markdown_fields = create_content_fields(rows, calls$markdown, subfields)
 
     meta_fields = create_meta_fields(firstrow, meta)
     variables = create_variables(firstrow, variables)
+
+    codebook = NULL
+    if (length(calls$questions) > 0) codebook = create_questions(firstrow, calls$questions)
 
     grid = create_field_grid(grid_areas, grid_cols, calls$field_order)
     if (!is.null(subfields)) grid = expand_grid(grid, nrow(rows), subfields)
@@ -76,22 +80,57 @@ create_units <- function(data, ..., id='id', type=NULL, subfields=NULL, variable
       if (length(calls$train) > 0 || length(calls$test)> 0) stop('set_test and set_train only work if the type argument is set')
     }
     #importedAnnotations = create_imported_annotations(ann_list[[i]])
-    units[[i]] = list(id = id,
-                      type = if (!is.null(type)) firstrow[[type]] else 'text',
-                      unit = list(text_fields=text_fields,
-                                  meta_fields=meta_fields,
-                                  image_fields=image_fields,
-                                  markdown_fields=markdown_fields,
-                                  variables=variables))
 
+    unit = list()
+    if (length(text_fields) > 0) unit$text_fields = text_fields
+    if (length(image_fields) > 0) unit$image_fields = image_fields
+    if (length(markdown_fields) > 0) unit$markdown_fields = markdown_fields
+    if (length(meta_fields) > 0) unit$meta_fields = meta_fields
+    if (length(variables) > 0) unit$variables = variables
+
+    units[[i]] = list(id = id,
+                      type = if (!is.null(type)) firstrow[[type]] else 'code',
+                      unit = unit)
     if (!is.null(conditionals)) units[[i]]$conditionals = conditionals
     if (!is.null(grid)) units[[i]]$unit$grid = grid
+    if (!is.null(codebook)) units[[i]]$unit$codebook = codebook
+
+    units[[i]] = structure(units[[i]], class=c('codingjobUnit','list'))
     #if (!is.null(importedAnnotations)) units[[i]]$unit$importedAnnotations = importedAnnotations
   }
 
   structure(units, class=c('codingjobUnits', 'list'))
-
 }
+
+#' Create a single unit
+#'
+#' Works like \code{\link{create_units}}, but for a single unit.
+#' The values can then directly be provided in the set_ functions.
+#'
+#' @param id   A unique id
+#' @param type The unit type. Can be 'code', 'test', 'train' or 'survey'
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' create_unit('id',
+#'    set_text('text','This is the unit text'),
+#' )
+#'
+#' ## this is also a good way to create custom training units
+#' create_unit('id', type='train',
+#'    set_text('text', This is the unit text'),
+#'    set_question('variable', question = "Is this a text?", codes=c('yes','no')),
+#'    set_train('variable', 'yes', message='WRONG!!\n\ntry again')
+#' )
+create_unit <- function(id, ..., type='code') {
+  d = data.frame(id=id, type=type)
+  create_units(d, type='type', ...)[[1]]
+}
+
+
 
 process_create_unit_calls <- function(...) {
   text = list()
@@ -99,33 +138,31 @@ process_create_unit_calls <- function(...) {
   markdown = list()
   field_order = c()
 
+  questions = list()
   train = list()
   test = list()
 
-  #fields = rlang::exprs(...)
   fields = list(...)
-  for (i in seq_along(fields)) {
-    name = names(fields)[i]
-    field = fields[[i]]
-    #if (class(field) != 'list' && class(field) != 'call') next
-    field_content = field
-    field_content$name = name
-    print(field)
+  for (field in fields) {
 
+    if (field$type %in% c('text','image','markdown')) {
+      if (field$name %in% field_order) stop(sprintf('Duplicate field name: %s', field$name))
 
-    if (field_content$type == 'text')
-      text[[length(text) + 1]] = field_content
-    if (field_content$type == 'image')
-      image[[length(image) + 1]] = field_content
-    if (field_content$type == 'markdown')
-      markdown[[length(markdown) + 1]] = field_content
-    if (field_content$type %in% c('text','image','markdown'))
-      field_order = c(field_order, name)
+      field_order = c(field_order, field$name)
+      if (field$type == 'text')
+        text[[length(text) + 1]] = field
+      if (field$type == 'image')
+        image[[length(image) + 1]] = field
+      if (field$type == 'markdown')
+        markdown[[length(markdown) + 1]] = field
+    }
 
-    if (field_content$type == 'train')
-      train[[length(train) + 1]] = field_content
-    if (field_content$type == 'test')
-      test[[length(test) + 1]] = field_content
+    if (field$type == 'question')
+      questions[[length(questions) + 1]] = field
+    if (field$type == 'train')
+      train[[length(train) + 1]] = field
+    if (field$type == 'test')
+      test[[length(test) + 1]] = field
 
   }
 
@@ -133,6 +170,7 @@ process_create_unit_calls <- function(...) {
        image=image,
        markdown=markdown,
        field_order=field_order,
+       questions=questions,
        train=train,
        test=test)
 }
@@ -141,7 +179,8 @@ process_create_unit_calls <- function(...) {
 
 #' Set text content
 #'
-#' @param field      The content of the field. Can be given as a single string, the name of a column in data (for create_units), or any expression.
+#' @param name       The name of the field. Must be unique within a unit.
+#' @param value      The content of the field. Can be given as a single string, the name of a column in data (for create_units), or any expression.
 #' @param before     The text can have a context before and after the coding unit. For example, the data.frame could be a keyword in context listing with the columns "pre", "keyword" and "post" (see for instance quanteda's kwic function).
 #'                    These could then be set to the "before", "column" and "after" arguments, respectively. NOTE that if a before or after context is specified, all other text fields before or after
 #'                    the current will also be considered context.
@@ -155,9 +194,10 @@ process_create_unit_calls <- function(...) {
 #' @export
 #'
 #' @examples
-text_field <- function(field, before=NULL, after=NULL, label=NULL, ..., offset=0) {
+set_text <- function(name, value, before=NULL, after=NULL, label=NULL, ..., offset=0) {
   list(type = 'text',
-       field=substitute(field),
+       name=name,
+       value=substitute(value),
        context_before= substitute(before),
        context_after = substitute(after),
        offset = substitute(offset),
@@ -167,7 +207,8 @@ text_field <- function(field, before=NULL, after=NULL, label=NULL, ..., offset=0
 
 #' Set image content
 #'
-#' @param field      The content of the field. Can be given as a single filename, the name of a column in data (for create_units) that has filenames, or an expression.
+#' @param name       The name of the field. Must be unique within a unit.
+#' @param value      The filename of the image. Can be given as a single filename, the name of a column in data (for create_units) that has filenames, or an expression.
 #' @param base64     If TRUE, store the image as a base64 in the codingjob json file
 #' @param caption    The image caption. Can be a single string, or a column in data (for create_units), or an expression.
 #' @param ...        Style settings, passed to \code{\link{style}}
@@ -176,9 +217,10 @@ text_field <- function(field, before=NULL, after=NULL, label=NULL, ..., offset=0
 #' @export
 #'
 #' @examples
-image_field <- function(field, base64=FALSE, caption=NULL, ...) {
+set_image <- function(name, value, base64=FALSE, caption=NULL, ...) {
   l = list(type = 'image',
-           field = substitute(field),
+           name = name,
+           value = substitute(value),
            base64 = base64,
            style = style(...))
   caption = substitute(caption)
@@ -195,10 +237,36 @@ image_field <- function(field, base64=FALSE, caption=NULL, ...) {
 #' @export
 #'
 #' @examples
-markdown_field <- function(field, ...) {
+set_markdown <- function(name, value, ...) {
   list(type='markdown',
-       field = substitute(field),
+       name = name,
+       value = substitute(value),
        style = style(...))
+}
+
+
+#' Create a unit specific codebook
+#'
+#' Codebooks can be defined at different levels: codingjob > jobset > unit. The most specific codebook will be used.
+#' This allows creating special units that have their own codebook (e.g., for survey-like questions), or using codebooks
+#' with dynamic codes.
+#'
+#' @param name      A character value indicating the name of the question. This will also be the variable name in annotations. Coders won't see this name.
+#' @param question_txt  The question text. Can either be a character value, or an expression (e.g., to use a column in the data)
+#' @param codes     The codes that the coder can choose from. See \code{\link{question}} for more details. Note that with set_question you can refer
+#'                  to columns in the data to create dynamic questions.
+#' @param ...       Other arguments passed to \code{\link{question}}
+#'
+#' @return Only meant to be used inside of \code{\link{create_units}} or \code{\link{create_unit}}.
+#' @export
+#'
+#' @examples
+set_question <- function(name, question=NULL, codes=NULL, ...) {
+  list(type = 'question',
+       name = name,
+       question = substitute(question),
+       codes = substitute(codes),
+       ell = list(...))
 }
 
 #' Set training units
@@ -311,6 +379,25 @@ create_meta_fields <- function(rowdict, meta_cols) {
   })
 }
 
+create_questions <- function(rowdict, questions) {
+  codebook_items = list(q)
+
+  codebook = list()
+  for (i in seq_along(questions)) {
+    ci = questions[[i]]
+
+    args = list(
+      name = ci$name,
+      question = eval_value(rowdict, ci$question),
+      codes = eval_value(rowdict, ci$codes)
+    )
+
+    codebook[[length(codebook)+1]] = do.call(question, args = c(args, ci$ell))
+  }
+  if (length(codebook) == 0) return(NULL)
+  do.call(create_codebook, args=codebook)
+}
+
 create_variables <- function(rowdict, variable_cols) {
   l = list()
   for (vc in variable_cols) {
@@ -319,19 +406,22 @@ create_variables <- function(rowdict, variable_cols) {
   l
 }
 
-create_fields <- function(rows, field_cols, subfields) {
+create_content_fields <- function(rows, field_cols, subfields) {
   fields = list()
   for (f in field_cols) {
     is_subfield = f$name %in% subfields
     for (i in 1:nrow(rows)) {
       if (!is_subfield && i > 1) break
-      rowdict = rows[i,]
+      rowdict = rows[i,,drop=F]
 
       field = list(name= if (is_subfield) paste(f$name, i, sep='.') else f$name,
-                   value = eval_value(rowdict, f$field),
-                   style = eval_style(rowdict, f$style))
+                   value = eval_value(rowdict, f$value))
+
+      style = eval_style(rowdict, f$style)
+      if (length(style) > 0) field$style = style
+
       for (attr in names(f)) {
-        if (attr %in% c('name','field','style')) next
+        if (attr %in% c('name','value','style')) next
         field[[attr]] = eval_value(rowdict, f[[attr]])
       }
       fields[[length(fields) + 1]] = field
@@ -350,7 +440,7 @@ create_conditionals <- function(rows, conditional_settings, subfields) {
     for (row_i in 1:nrow(rows)) {
       if (!for_subfield && row_i > 1) break
 
-      rowdict = rows[row_i,]
+      rowdict = rows[row_i,,drop=F]
       con_i = length(conditionals) + 1
       conditionals[[con_i]] = list(variable = cs$variable,
                                conditions = list(list(value = eval_value(rowdict, cs$value),
@@ -405,20 +495,21 @@ create_field_grid <- function(grid_areas, grid_cols, content_order) {
 
 expand_grid <- function(grid, n_rows, subfields) {
   if (is.null(subfields) || length(subfields) == 0) return(grid)
-  newgrid = list()
+  newareas = list()
   for (row in grid$areas) {
     has_subfield = sapply(row, `%in%`, subfields)
     if (!any(has_subfield)) {
-      newgrid[[length(newgrid) + 1]] = row
+      newareas[[length(newareas) + 1]] = row
       next
     }
     for (i in 1:n_rows) {
       newrow = row
       newrow[has_subfield] = paste(newrow[has_subfield], i, sep='.')
-      newgrid[[length(newgrid) + 1]] = newrow
+      newareas[[length(newareas) + 1]] = newrow
     }
   }
-  newgrid
+  grid$areas = newareas
+  grid
 }
 
 eval_style <- function(rowdict, style) {
@@ -453,17 +544,5 @@ eval_value <- function(rowdict, e) {
   #eval(e, envir = rowdict, enclos = NULL)
   ## evaluate also allowing objects from the global env
   eval(e, envir = rowdict)
-}
-
-#' S3 print method for codingjobUnits objects
-#'
-#' @param x an codingjobUnits object, created with \link{create_units}
-#' @param ... not used
-#'
-#' @method print codingjobUnits
-#' @examples
-#' @export
-print.codingjobUnits <- function(x, ...){
-  cat('List of', length(x), 'units\n')
 }
 

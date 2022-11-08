@@ -16,7 +16,7 @@
 #' @param instruction  A short (think 1 or 2 sentences) question.
 #' @param codes        The codes that the coder can choose from. Can be a character vector, named character vector or data.frame.
 #'                     An unnamed character vector creates simple codes.
-#'                     A named character vector uses the names as codes and the values as colors, either as HEX or a name recognized by browsers (see \url{https://www.w3schools.com/colors/colors_names.asp}).
+#'                     A named character vector uses the names as colors, either as HEX or a name recognized by browsers (see \url{https://www.w3schools.com/colors/colors_names.asp}).
 #'                     A data.frame must have a code column, and can use certain special columns (see details).
 #'                     For most control, codes can be a list of 'code' objects created with \code{\link{code}}.
 #' @param type        The type of question. Can be "buttons", "dropdown", "scale", "annotinder" or "inputs".
@@ -24,6 +24,7 @@
 #'                     "scale" is for ordered buttons, and multiple items can be specified to answer this question for each.
 #'                     "annotinder" lets users swipe for answers, and can only be used if the number of answers is 2 (left, right) or 3 (left, right, up).
 #'                     "inputs" can create one or multiple open input fields for text and numbers.
+#' @param instruction  Optionally, a markdown string with instructions for this specific question. Coders can see these instructions by clicking on the questionmark symbol before the question.
 #' @param fields       Optionally, an array of field names (i.e. the column names used in set_text, set_markdown and set_image). When the
 #'                     question is asked, these fields will then be focused on.
 #' @param per_field    If a unit has numbered fields, the question can be automatically repeated for each field. For instance, if "per_field" is "comment",
@@ -46,7 +47,8 @@
 #' @export
 #'
 #' @examples
-question <- function(name, question=NULL, codes=NULL, type=c("buttons","dropdown","scale", "annotinder", "inputs", "confirm"), color='#7fb9eb', fields=NULL, per_field=NULL, single_row=F, same_size=T, items=NULL) {
+question <- function(name, question=NULL, codes=NULL, type=c("buttons","dropdown","scale", "annotinder", "inputs", "confirm"),
+                     instruction=NULL, color='#7fb9eb', fields=NULL, per_field=NULL, single_row=F, same_size=T, items=NULL) {
 
   if (grepl('\\.', name)) stop('Question name is not allowed to contain a "." symbol')
   type = match.arg(type)
@@ -61,6 +63,7 @@ question <- function(name, question=NULL, codes=NULL, type=c("buttons","dropdown
   if (same_size) l$same_size=jsonlite::unbox(same_size)
   if (!is.null(fields)) l$fields=fields
   if (!is.null(per_field)) l$perField=per_field
+  if (!is.null(instruction)) l$instruction = instruction
 
 
   if (!is.null(items)) {
@@ -73,7 +76,7 @@ question <- function(name, question=NULL, codes=NULL, type=c("buttons","dropdown
 
   if (methods::is(l$codes, 'character')) {
     if (!is.null(names(l$codes))) {
-      l$codes = data.frame(code = names(l$codes), color=l$codes)
+      l$codes = data.frame(code = l$codes, color = names(l$codes))
     } else l$codes = data.frame(code = l$codes)
   }
   if (methods::is(l$codes, 'list')) {

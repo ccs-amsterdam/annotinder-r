@@ -41,10 +41,11 @@ To create units we use the `create_units` function. For this example we use a se
 
 In this data we have an `id` column with a unique id. It is mandatory in AnnoTinder to explicitly provide unique id's for all your units, because you'll want to do this properly to later on link annotations back to units.
 
-For now, the only data we'll include in our unit is the text column in the mini_sotu_par data.frame. We do so by providing a named argument that assigns a text_field. In the current example this might look overkill, but later on you'll see how this allows us to add multiple fields with custom styling. 
+For now, the only data we'll include in our unit is the text column in the mini_sotu_par data.frame. We do so by providing a named argument that assigns a text field. In the current example this might look overkill, but later on you'll see why this pays off in terms of flexibility. 
 
 ```{r}
-units = create_units(mini_sotu_par, id = 'id', text = text_field(text)) 
+units = create_units(mini_sotu_par, id = 'id', 
+                     set_text('text', text)) 
 ```
 
 You can check the units object, which simply tells you that this is a list of n units (at some point we'll add some more usefull details).
@@ -66,7 +67,7 @@ We'll start with a simple codebook with a single question about sentiment. We ne
 
 ```{r}
 sentiment = question('sentiment', 'What is the sentiment of this text?',
-                     codes = c(Negative = 'crimson', Neutral = 'grey', Positive = 'lightgreen'))
+                     codes = c(crimson = 'Negative', grey = 'Neutral', lightgreen = 'Positive'))
 ```
 
 Now we can add this to the codebook.
@@ -105,9 +106,8 @@ gimme_annotations(job_db)
 Now let's look at some more interesting codebooks. We'll use the same simple units as above (though we'll add some meta data, because we can).
 
 ```{r}
-units = create_units(mini_sotu_par, id = 'id', 
-                     text = text_field(text), 
-                     meta=c('name','year'))
+units = create_units(mini_sotu_par, id = 'id', meta=c('name','year'),
+                     set_text('text', text))
 ```
 
 ## Annotation mode
@@ -115,7 +115,7 @@ units = create_units(mini_sotu_par, id = 'id',
 Let's first look at the other annotation mode. We'll use roughly the same question, but this time for labeling.
 
 ```{r}
-sentiment = annotation_variable('sentiment', 'Select words or phrases and label their sentiment',                     codes = c(Negative = 'crimson', Neutral = 'grey', Positive = 'lightgreen'))
+sentiment = annotation_variable('sentiment', 'Select words or phrases and label their sentiment',                     codes = c(crimson = 'Negative', gre = 'Neutral', lightgreen = 'Positive'))
 codebook = create_codebook(sentiment)
 ```
 
@@ -143,8 +143,9 @@ gimme_annotations()
 There are various alternative types of questions you can ask, including open text, searchable dropdowns (for long codebooks) and scales. We'll discuss scales and open text later when we get to the option to include survey units. Let's first focus on the AnnoTinder feature.
 
 ```{r}
-sentiment = question('sentiment', 'Swipe left for negative, right for positive, and up for neutral', type = 'annotinder',
-                     codes = c(Negative = 'crimson', Positive = 'lightgreen', Neutral = 'grey'))
+sentiment = question('sentiment', 'Swipe left for negative, right for positive, and up for neutral', 
+                     type = 'annotinder',
+                     codes = c(crimson = 'Negative', grey = 'Neutral', lightgreen = 'Positive'))
 codebook = create_codebook(sentiment)
 
 create_job('example', units, codebook) %>%
@@ -186,10 +187,10 @@ data = data.frame(id = c(1,2,3,4,5),
                     animal_hint=c("Hint: look closely at those ears and paws.", NA, NA, NA,NA))
 
 units = create_units(data, id='id', type='type', meta=c('date','source'),
-  title =  text_field(title, text_size=2, bold=T, align='center'),
-  text  =  text_field(text, align='center'),
-  image = image_field(image, caption=caption),
-  markdown = markdown_field(markdown, align='center'),
+  set_text('title', title, text_size=2, bold=T, align='center'),
+  set_text('text', text, align='center'),
+  set_image('image', image, caption=caption),
+  set_markdown('markdown', markdown, align='center'),
   set_train('animal', animal, message='# OH NOES!!\n\nThis was a training unit, and it seems you got it wrong!', 
             submessage=animal_hint),
   set_test('animal', animal, damage=10)
