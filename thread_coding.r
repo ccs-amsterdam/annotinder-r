@@ -1,21 +1,35 @@
 library(annotinder)
 library(tidyverse)
 
-tweets = data.frame(conversation = c(1,1,1,1,2,2),
-               tweet = c('heeeeejj', 'Owh hey!', 'Daar ben ik het niet mee eens!', 'Goed punt', 'Ik ben jarig','Gefeliciteerd!'),
-               author = c('Author','Comment','Author','Comment','Author','Comment'),
-               type = c('tweet','comment','comment','comment','tweet','comment'))
+tweets = read_csv('~/Downloads/klimaatgesprekken-clean.csv') %>%
+  mutate(type = ifelse(tweetorder == 0, 'tweet','comment'),
+         author = ifelse(tweetorder %% 2 == 0, 'Author','Comment')) %>%
+  arrange(conversationid, tweetorder) %>%
+  select(conversation = conversationid, type, author, tweet=text) %>%
+  mutate(tweet = gsub('@USER','',tweet)) %>%
+  mutate(tweet = gsub('\n+',' ', tweet)) %>%
+  mutate(tweet = stringi::stri_trim(tweet))
+
 
 first_tweet = tweets %>% filter(type == 'tweet') %>% select(conversation, tweet)
 comments = tweets %>% filter(type == 'comment') %>% select(conversation, comment = tweet, author)
 d = first_tweet %>% full_join(comments, by='conversation')
-
-testdit = text_field(tweet, margin = '10px 25% 10px 10px')
+d
 
 units = create_units(d, id='conversation', subfields='comment',
-  tweet = testdit,
-  comment = text_field(comment, align= ifelse(author == 'Author', 'left','right'), margin = ifelse(author == 'Author', '10px 25%px 10px 10px', '10px 10px 10px 25%'))
+  set_markdown('tweet', tweet,
+           border= '5px solid grey',
+           borderColor = 'teal',
+           borderRadius = '10px',
+           margin = '10px 25% 10px 10px'),
+  set_markdown('comment', comment,
+             align= 'justify',
+             border= '5px solid grey',
+             borderColor=ifelse(author == 'Author', 'teal', 'maroon'),
+             borderRadius = '10px',
+             margin = ifelse(author == 'Author', '10px 25% 10px 10px', '10px 10px 10px 25%'))
 )
+
 
 codebook = create_codebook(
   test = question('klimaatverandering', 'Is het eerste bericht in deze conversatie blablabla?', type='buttons',

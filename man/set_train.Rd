@@ -33,6 +33,9 @@ and use other columns to create a custom message.}
 \item{operator}{How should the annotation value be compared to the column value? Default is "==" (equals). Alternatives are "!=" (not equals),
 "<=", "<", ">=" or ">".}
 }
+\value{
+
+}
 \description{
 Setup training units, and provide the correct answers/annotations for these units.
 If the answer/annotation is wrong, coders will see a message and need to retry.

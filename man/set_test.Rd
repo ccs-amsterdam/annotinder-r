@@ -28,6 +28,9 @@ Can also be the name of a column (in create_units) for unit specific messages.}
 \item{operator}{How should the annotation value be compared to the column value? Default is "==" (equals). Alternatives are "!=" (not equals),
 "<=", "<", ">=" or ">".}
 }
+\value{
+
+}
 \description{
 Setup test units (also known as gold units).
 If the answer/annotation is wrong, coders receive damage.

@@ -55,7 +55,7 @@ create_units <- function(data, ..., id='id', type=NULL, subfields=NULL, variable
   unique_ids = unique(ids)
   units = vector('list', length(unique_ids))
   for (i in 1:length(unique_ids)) {
-    id = unique_ids[i]
+    id = as.character(unique_ids[i])
     rows = data[groups[[id]],,drop=F]
     firstrow = rows[1,,drop=F]  ## for values that should be unique anyway
 

@@ -16,6 +16,9 @@ See \url{https://commonmark.org/help/} for help.}
 
 \item{text}{The information text}
 }
+\value{
+
+}
 \description{
 Create a special unit for informing coders
 }
