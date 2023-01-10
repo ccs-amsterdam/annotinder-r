@@ -48,7 +48,7 @@
 #'
 #' @examples
 question <- function(name, question=NULL, codes=NULL, type=c("buttons","dropdown","scale", "annotinder", "inputs", "confirm"),
-                     instruction=NULL, color='#7fb9eb', fields=NULL, per_field=NULL, single_row=F, same_size=T, items=NULL) {
+                     instruction=NULL, color='#7fb9eb', fields=NULL, per_field=NULL, vertical=F, same_size=T, items=NULL) {
 
   if (grepl('\\.', name)) stop('Question name is not allowed to contain a "." symbol')
   type = match.arg(type)
@@ -59,7 +59,7 @@ question <- function(name, question=NULL, codes=NULL, type=c("buttons","dropdown
     type= jsonlite::unbox(switch(type, buttons='select code', dropdown='search code', scale='scale', annotinder='annotinder', inputs="inputs", confirm="confirm"))
   )
   if (!is.null(question)) l$question = question
-  if (single_row) l$single_row=jsonlite::unbox(single_row)
+  if (vertical) l$vertical=jsonlite::unbox(vertical)
   if (same_size) l$same_size=jsonlite::unbox(same_size)
   if (!is.null(fields)) l$fields=fields
   if (!is.null(per_field)) l$perField=per_field

@@ -13,7 +13,7 @@ question(
   color = "#7fb9eb",
   fields = NULL,
   per_field = NULL,
-  single_row = F,
+  vertical = F,
   same_size = T,
   items = NULL
 )
@@ -45,11 +45,11 @@ question is asked, these fields will then be focused on.}
 and the unit has fields "comment.1", "comment.2", etc., then this question will be repeated for each comment. The easiest way to set this up
 is to use the "split" argument in set_text and set_markdown, which automatically split a field into numbered fields.}
 
-\item{single_row}{If "buttons" selection is used, this puts all buttons on the same row (just make sure not to have too many buttons)}
-
 \item{same_size}{If "buttons" selection is used, make all buttons the same size.}
 
 \item{items}{Can be used for "scale" and "inputs" type questions. Should be a named list where the names are the item names, and value is a list with parameters.}
+
+\item{single_row}{If "buttons" selection is used, this puts all buttons on the same row (just make sure not to have too many buttons)}
 }
 \value{
 A question object, to be used within the \code{\link{create_codebook}} function

@@ -10,8 +10,13 @@ db_write_codebook <- function(db, codebook) {
 db_write_units <- function(db, units) {
   json_list = sapply(units, jsonlite::toJSON, auto_unbox=T)
   index = (1:length(units)) - 1  ## start at zero to match js client indexing
-  id = sapply(units, function(x) as.character(x$id))
-  json_df = dplyr::tibble(unit_index=index, id=id, status="", json=json_list) ## (db field name cannot be index)
+  id = 1:length(units)
+  external_id = sapply(units, function(x) as.character(x$id))
+  json_df = dplyr::tibble(unit_index=index,
+                          id=id,
+                          external_id=external_id,
+                          status="",
+                          json=json_list) ## (db field name cannot be index)
   DBI::dbWriteTable(db, 'units', json_df, overwrite=T)
   DBI::dbExecute(db, 'CREATE INDEX unit_index_index ON units (unit_index)')
   DBI::dbExecute(db, 'CREATE INDEX id_index ON units (id)')
@@ -20,8 +25,9 @@ db_write_units <- function(db, units) {
 }
 
 db_create_annotations <- function(db, units) {
-  unit_id = sapply(units, function(x) as.character(x$id))
-  dummy_df = dplyr::tibble(unit_id=unit_id, json='')
+  unit_id = 1:length(units)
+  external_id = sapply(units, function(x) as.character(x$id))
+  dummy_df = dplyr::tibble(unit_id=unit_id, external_id=external_id, json='')
   DBI::dbWriteTable(db, 'annotations', dummy_df, overwrite=T)
   DBI::dbExecute(db, 'CREATE INDEX unit_id_index ON annotations (unit_id)')
 }

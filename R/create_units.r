@@ -50,10 +50,10 @@ create_units <- function(data, ..., id='id', type=NULL, subfields=NULL, variable
   }
 
   calls = process_create_unit_calls(...)
-
   groups = split(1:nrow(data), ids)
   unique_ids = unique(ids)
   units = vector('list', length(unique_ids))
+  i=1
   for (i in 1:length(unique_ids)) {
     id = as.character(unique_ids[i])
     rows = data[groups[[id]],,drop=F]

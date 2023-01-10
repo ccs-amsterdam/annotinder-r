@@ -13,9 +13,6 @@ create_unit(id, ..., type = "code")
 
 \item{type}{The unit type. Can be 'code', 'test', 'train' or 'survey'}
 }
-\value{
-
-}
 \description{
 Works like \code{\link{create_units}}, but for a single unit.
 The values can then directly be provided in the set_ functions.

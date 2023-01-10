@@ -15,9 +15,6 @@ debrief(message, link = NULL, link_text = NULL, qr = FALSE)
 
 \item{qr}{If TRUE, show QR code for creating a new job coder at the end, so coders can share the job with others}
 }
-\value{
-
-}
 \description{
 Debrief a coder when a job is finished.
 }

@@ -47,9 +47,6 @@ The values need to be the names of fields (i.e. the column names). If you want a
 \item{grid_cols}{A numeric vector of the same length as the number of columns in areas. Each value indicates the relative space given to the column. So c(1,2) means that
 the second column will be twice as wide as the first column.}
 }
-\value{
-
-}
 \description{
 Create the basis for a units object. The content of the units can then be
 designed in a pipe of \code{\link{set_text}}, \code{\link{set_meta}}, \code{\link{set_image}} and \code{\link{set_markdown}} functions

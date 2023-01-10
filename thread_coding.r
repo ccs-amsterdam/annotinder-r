@@ -44,6 +44,8 @@ create_job('Thread coding', units, codebook) %>%
   create_job_db(overwrite=T) %>%
   start_annotator(background = T)
 
+backend_connect('http://localhost:5000', 'kasperwelbers@gmail.com')
+upload_job('test', units, codebook)
 
 
 x = prepare_units(units)

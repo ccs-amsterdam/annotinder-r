@@ -65,7 +65,6 @@ function() {
     create_job_db(overwrite=T) %>%
     start_annotator(background=T)
 
-
   js = list(
     jobset())
 
