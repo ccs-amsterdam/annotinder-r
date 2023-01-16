@@ -18,36 +18,38 @@ library(annotinder)
 We’ll first look at how to make a local codingjob (on your own device),
 that you can code in R or in a browser. This is useful for two reasons:
 
--   1.  It let’s you annotate stuff with a nice interface.
+- 1.  It let’s you annotate stuff with a nice interface.
 
--   2.  You can use this to test unit and codebook settings, before you
-        deploy codingjobs to a server.
+- 2.  You can use this to test unit and codebook settings, before you
+      deploy codingjobs to a server.
 
 To create a codingjob you need to key components: A set of units and a
 codebook.
 
 ## Units
 
-To create units we first pass a data.frame to the `create_units`
-function, and then use a set of functions in a pipe to specify how to
-build our units from the columns of this data.frame. Here we use a set
-of State of the Union speech paragraphs included in this package.
+To create units we use the `create_units` function. For this example we
+use a set of State of the Union speech paragraphs included in this
+package.
 
 In this data we have an `id` column with a unique id. It is mandatory in
 AnnoTinder to explicitly provide unique id’s for all your units, because
 you’ll want to do this properly to later on link annotations back to
 units.
 
-For now, the only data we’ll include in our unit is the `text`, which
-we’ll do with the `set_text` function.
+For now, the only data we’ll include in our unit is the text column in
+the mini_sotu_par data.frame. We do so by providing a named argument
+that assigns a text field. In the current example this might look
+overkill, but later on you’ll see why this pays off in terms of
+flexibility.
 
 ``` r
-units = create_units(mini_sotu_par, id = 'id') %>%
-  set_text('text')
+units = create_units(mini_sotu_par, id = 'id', 
+                     set_text('text', text)) 
 ```
 
-You can check the units object, which should now simply tell you the
-number of units and what fields you included.
+You can check the units object, which simply tells you that this is a
+list of n units (at some point we’ll add some more usefull details).
 
 ``` r
 units
@@ -58,10 +60,10 @@ units
 The codebook describes what you want to code. There are (currently) two
 general modes of annotations:
 
--   In the `questions` mode, coders will see the unit and then have to
-    answer one or multiple questions.
--   In the `annotation` mode, coders will be able to select specific
-    words and phrases in the unit to label them.
+- In the `questions` mode, coders will see the unit and then have to
+  answer one or multiple questions.
+- In the `annotation` mode, coders will be able to select specific words
+  and phrases in the unit to label them.
 
 The two modes cannot be combined in the same codebook (but you can use
 multiple codebooks in a codingjob, which we’ll address later).
@@ -75,7 +77,7 @@ colored codes by using a named vector.
 
 ``` r
 sentiment = question('sentiment', 'What is the sentiment of this text?',
-                     codes = c(Negative = 'crimson', Neutral = 'grey', Positive = 'lightgreen'))
+                     codes = c(crimson = 'Negative', grey = 'Neutral', lightgreen = 'Positive'))
 ```
 
 Now we can add this to the codebook.
@@ -92,7 +94,7 @@ default the database will be stored in your working directory.
 
 ``` r
 job = create_job('simple_example', units, codebook)
-job_db = create_job_db(job)
+job_db = create_job_db(job, overwrite=T)
 job_db
 ```
 
@@ -124,9 +126,8 @@ Now let’s look at some more interesting codebooks. We’ll use the same
 simple units as above (though we’ll add some meta data, because we can).
 
 ``` r
-units = create_units(mini_sotu_par, id = 'id') %>%
-  set_meta(c('name','year')) %>%
-  set_text('text')
+units = create_units(mini_sotu_par, id = 'id', meta=c('name','year'),
+                     set_text('text', text))
 ```
 
 ## Annotation mode
@@ -135,7 +136,7 @@ Let’s first look at the other annotation mode. We’ll use roughly the
 same question, but this time for labeling.
 
 ``` r
-sentiment = annotation_variable('sentiment', 'Select words or phrases and label their sentiment',                     codes = c(Negative = 'crimson', Neutral = 'grey', Positive = 'lightgreen'))
+sentiment = annotation_variable('sentiment', 'Select words or phrases and label their sentiment',                     codes = c(crimson = 'Negative', gre = 'Neutral', lightgreen = 'Positive'))
 codebook = create_codebook(sentiment)
 ```
 
@@ -178,8 +179,9 @@ discuss scales and open text later when we get to the option to include
 survey units. Let’s first focus on the AnnoTinder feature.
 
 ``` r
-sentiment = question('sentiment', 'Swipe left for negative, right for positive, and up for neutral', type = 'annotinder',
-                     codes = c(Negative = 'crimson', Positive = 'lightgreen', Neutral = 'grey'))
+sentiment = question('sentiment', 'Swipe left for negative, right for positive, and up for neutral', 
+                     type = 'annotinder',
+                     codes = c(crimson = 'Negative', grey = 'Neutral', lightgreen = 'Positive'))
 codebook = create_codebook(sentiment)
 
 create_job('example', units, codebook) %>%
@@ -202,8 +204,10 @@ annotation mode. You can also create training and testing units in which
 you provide the ‘correct’ answers. Anyway, here’s an example of
 combining a lot of stuff.
 
-!! The train and test units don’t yet work in R. (note to self: this
-should just be passing on the ‘conditionals’ key correctly)
+!! the test units don’t really make sense for a local R server, and it
+will just print the amount of damage a coder would receive. When using
+the Annotinder server, this damage will be processed silently and can be
+used to disqualify annotators.
 
 ``` r
 data = data.frame(id = c(1,2,3,4,5),
@@ -227,17 +231,15 @@ data = data.frame(id = c(1,2,3,4,5),
                     animal=c('Cat',NA,'Dog',NA, 'Neither :('),
                     animal_hint=c("Hint: look closely at those ears and paws.", NA, NA, NA,NA))
 
-units = create_units(data, 'id', 'type') |>
-  set_meta('source') |>
-  set_meta('date') |>
-  set_text('title', size=2, bold=T, align='center') |>
-  set_text('text', align='center') |>
-  set_image('image', caption='caption') |>
-  set_markdown('markdown', align='center') |>
-  set_train('animal', damage=10, message='# OH NOES!!\n\nThis was a training unit, and it seems you got it wrong!', submessage='animal_hint') |>
-  set_test('animal', damage=10)
-
-
+units = create_units(data, id='id', type='type', meta=c('date','source'),
+  set_text('title', title, text_size=2, bold=T, align='center'),
+  set_text('text', text, align='center'),
+  set_image('image', image, caption=caption),
+  set_markdown('markdown', markdown, align='center'),
+  set_train('animal', animal, message='# OH NOES!!\n\nThis was a training unit, and it seems you got it wrong!', 
+            submessage=animal_hint),
+  set_test('animal', animal, damage=10)
+)
 
 animal = question('animal', 'What animal is this?', type = 'annotinder', codes = c('Cat','Dog','Neither :('))
 codebook = create_codebook(animal)
