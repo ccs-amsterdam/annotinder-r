@@ -9,9 +9,9 @@
 #'                     A named character vector uses the labels as colors, either as HEX or a name recognized by browsers (see \url{https://www.w3schools.com/colors/colors_names.asp}).
 #'                     A data.frame must have a code column, and can use certain special columns (see details).
 #'                     For most control, codes can be a list of 'code' objects created with \code{\link{code}}.
-#' @param selection    The method for selecting codes. Can be "buttons" or "dropdown".
-#'                     "buttons" shows all codes as a button, "dropdown" gives a dropdown menu with a search bar,
-#'                     with in addition buttons for recently used codes
+#' @param relations    If specified, this becomes a 'relation' type annotation. relations can be created with
+#'                     \code{\link{relation}}. You can also specify multiple relations by providing a list
+#'                     of relations.
 #' @param only_edit    If TRUE, coders can only edit imported annotations. You can import annotations in \code{\link{create_jobs}} with the annotations argument
 #' @param only_imported If TRUE, codes can only use codes that were used at least once in a unit in the imported annotations.
 #' @param multiple     If TRUE, coder can select multiple codes for a selected piece of text before closing the popup. Note that they can always select
@@ -48,16 +48,17 @@
 #' codes_df
 #'
 #' annotation_variable("actors", "Label actors. Use the most specific label available", codes_df)
-annotation_variable <- function(name, instruction, codes=NULL, selection=c('buttons', 'dropdown'), only_edit=F, only_imported=F, multiple=F) {
+annotation_variable <- function(name, instruction, codes=NULL,  relations=NULL, only_edit=F, only_imported=F, multiple=F) {
   if (grepl('\\.', name)) stop('Variable name is not allowed to contain a "." symbol')
 
-  selection = match.arg(selection)
+  selection = "buttons"
 
   a = as.list(environment())
   l = list(codes = codes)
   for (key in names(a)) {
     if (is.null(a[[key]])) next
     if (key == 'codes') next
+    if (key == "relations") next
     if (key == 'selection') {
       if (selection == 'buttons') {
         l[['searchBox']] = jsonlite::unbox(FALSE)
@@ -71,6 +72,14 @@ annotation_variable <- function(name, instruction, codes=NULL, selection=c('butt
     }
     l[[key]] = jsonlite::unbox(a[[key]])
   }
+
+  l$type = 'span'
+  if (!is.null(relations)) {
+    if (methods::is(relations, 'codeRelation')) relations = list(relations)
+    l$relations = relations
+    l$type = 'relation'
+  }
+
 
   l$editMode = jsonlite::unbox(only_edit)
   l$onlyImported = jsonlite::unbox(only_imported)
@@ -90,6 +99,37 @@ annotation_variable <- function(name, instruction, codes=NULL, selection=c('butt
 }
 
 
+#' Create relation codes. Used inside of annotation_variable
+#'
+#' @param codes             A character vector with the code values. These need to correspond to codes
+#'                          specified in the 'codes' argument of annotation_variable
+#' @param from_variable     The name of a variable in the codebook. This specifies from which variable
+#'                          the relation starts at. (if you need multiple from variables, note that you can
+#'                          create multiple relations)
+#' @param to_variable       Like from_variable, but for specifying where the relation goes to
+#' @param from_values       Optionally, specify specific code values within the from variable. If not specified,
+#'                          all code values in the from_variable can be used
+#' @param to_values         Like from_values
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' label_var = annotation_variable("Labels", "Span annotations", codes=c('Person','Issue'))
+#' relation_var = annotation_variable("Relations", "Relation annotations",
+#'                   code = c(green='Positive stance',grey='Neutral stance',red='Negative stance'),
+#'                   relations = relation(c('Positive stance','Neutral stance','Negative stance'),
+#'                                        from_variable='Labels', from_values='Person',
+#'                                        to_variable='labels', to_values='Issue'))
+relation <- function(codes, from_variable, to_variable, from_values=NULL, to_values=NULL) {
+  l = list(codes = as.list(codes),
+       from = list(variable = from_variable),
+       to = list(variable = to_variable))
+  if (!is.null(from_values)) l$from$values = as.list(from_values)
+  if (!is.null(to_values)) l$to$values = as.list(to_values)
+  structure(l, class=c('codeRelation', class(l)))
+}
+
 #' S3 print method for codebookVariable objects
 #'
 #' @param x an codebookVariable object, created with \link{variable}
@@ -101,12 +141,33 @@ annotation_variable <- function(name, instruction, codes=NULL, selection=c('butt
 print.codebookVariable <- function(x, ...){
   for (name in names(x)) {
     if (name == 'codes') next
+    if (name == 'relations') next
     if (x[[name]] == F) next
     label = if (name == 'name') 'variable name' else name
     cat(sprintf('%s:\t%s\n', label, x[[name]]))
   }
   cat('\ncodes:\n')
   print(x$codes)
+  cat('\nrelations:\n')
+  print(x$relations)
+
+}
+
+#' S3 print method for codeRelation objects
+#'
+#' @param x a codeRelation object, created with \link{relation}
+#' @param ... not used
+#'
+#' @method print codeRelation
+#' @examples
+#' @export
+print.codeRelation <- function(x, ...){
+  str = paste0("Relations: ", paste(x$codes, collapse=' - '))
+  str = paste0(str, '\n   From: ', x$from$variable)
+  if ('values' %in% names(x$from)) str = paste0(str, ' (', paste(x$from$values, collapse=', '), ')')
+  str = paste0(str, '\n   To:   ', x$to$variable)
+  if ('values' %in% names(x$to)) str = paste0(str, ' (', paste(x$to$values, collapse=', '), ')')
+  cat(str)
 }
 
 #' S3 summary method for codebookVariable objects

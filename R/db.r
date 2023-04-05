@@ -35,10 +35,12 @@ db_create_annotations <- function(db, units) {
 
 ## GET
 
+
+
 db_get_codebook <- function(db) {
   if (!DBI::dbExistsTable(db, 'codebook')) return(NULL)
   json_df = DBI::dbReadTable(db, 'codebook')
-  codebook = jsonlite::fromJSON(json_df$json[1], simplifyDataFrame = F)
+  codebook = jsonlite::fromJSON(json_df$json[1], simplifyDataFrame = F, simplifyVector = F, simplifyMatrix = F, flatten = F)
   structure(codebook, class=c('codebook','list'))
 }
 
@@ -54,7 +56,7 @@ db_get_unit <- function(db, index) {
     return(list(index=as.numeric(n_total)))
   }
 
-  unit = jsonlite::fromJSON(json_df$json[1], simplifyDataFrame = F)
+  unit = jsonlite::fromJSON(json_df$json[1], simplifyDataFrame = F, simplifyVector = F, simplifyMatrix = F, flatten = F)
   unit$index = json_df$unit_index
   unit$id = jsonlite::unbox(json_df$id)
   unit$status = jsonlite::unbox(json_df$status)
@@ -74,7 +76,7 @@ db_get_annotation <- function(db, unit_id) {
   json_df = DBI::dbGetQuery(db, sprintf("SELECT * FROM annotations WHERE unit_id = '%s'", unit_id))
   if (nrow(json_df) != 1) return(NULL)
   if (json_df$json[1] == '') return(NULL)
-  jsonlite::fromJSON(json_df$json[1])
+  jsonlite::fromJSON(json_df$json[1], simplifyDataFrame = F, simplifyVector = F, simplifyMatrix = F, flatten = F)
 }
 
 

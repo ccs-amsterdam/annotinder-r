@@ -8,7 +8,7 @@ annotation_variable(
   name,
   instruction,
   codes = NULL,
-  selection = c("buttons", "dropdown"),
+  relations = NULL,
   only_edit = F,
   only_imported = F,
   multiple = F
@@ -25,9 +25,9 @@ A named character vector uses the labels as colors, either as HEX or a name reco
 A data.frame must have a code column, and can use certain special columns (see details).
 For most control, codes can be a list of 'code' objects created with \code{\link{code}}.}
 
-\item{selection}{The method for selecting codes. Can be "buttons" or "dropdown".
-"buttons" shows all codes as a button, "dropdown" gives a dropdown menu with a search bar,
-with in addition buttons for recently used codes}
+\item{relations}{If specified, this becomes a 'relation' type annotation. relations can be created with
+\code{\link{relation}}. You can also specify multiple relations by providing a list
+of relations.}
 
 \item{only_edit}{If TRUE, coders can only edit imported annotations. You can import annotations in \code{\link{create_jobs}} with the annotations argument}
 

@@ -88,8 +88,8 @@ create_job_db <- function(codingjob, path=getwd(), overwrite=F) {
   db = DBI::dbConnect(RSQLite::SQLite(), filename)
   db_write_codebook(db, codingjob$codebook)
   db_write_units(db, codingjob$units)
-  db_get_codebook(db)
-  db_get_unit(db, NA)
+  ##db_get_codebook(db)
+  ##db_get_unit(db, NA)
   DBI::dbDisconnect(db)
   return(filename)
 }
@@ -121,6 +121,7 @@ create_plumber_server_script <- function(db_file) {
 create_plumber_file <- function(server_script) {
   start_server_file = tempfile(fileext = '.r')
   start_server_script = sprintf("library(annotinder)\ntryCatch(plumber::pr_run(plumber::pr('%s'), docs=F, port=8000), error=function(e) NULL)", server_script)
+  start_server_script = gsub("\\\\", "\\\\\\\\", start_server_script)
   writeLines(start_server_script, start_server_file)
   start_server_file
 }
