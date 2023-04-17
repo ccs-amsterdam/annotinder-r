@@ -30,7 +30,7 @@ gimme_annotations <- function(db_file=NULL, only_done=FALSE) {
   annotations = lapply(1:nrow(annotations), function(i) {
     a = jsonlite::fromJSON(annotations$json[i])
     if (only_done && a$status != 'DONE') return(NULL)
-    dplyr::bind_cols(id = annotations$unit_id[i], unit_status=a$status, dplyr::as_tibble(a$annotation))
+    dplyr::bind_cols(id = annotations$external_id[i], unit_status=a$status, dplyr::as_tibble(a$annotation))
   })
   dplyr::bind_rows(annotations)
 }
