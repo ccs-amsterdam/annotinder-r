@@ -7,16 +7,19 @@
 style(text_size = NULL, bold = NULL, italic = NULL, align = NULL, ...)
 }
 \arguments{
-\item{text_size}{The text size as a ratio. The default 1 means use the standard size. 0.5 means half this size, 2 means twice this size, etc.}
+\item{text_size}{The text size as a ratio. The default 1 means use the
+standard size. 0.5 means half this size, 2 means twice this size, etc.}
 
 \item{bold}{If True, make text bold}
 
 \item{italic}{If True, make test italic}
 
-\item{align}{How to align the text. Can be 'justify','center','left' or 'right'}
+\item{align}{How to align the text. Can be 'justify','center','left' or
+'right'}
 
-\item{...}{Any CSS inline style element can be used. Note that some style settings might not play nicely with certain annotator features
-(such as colors in combination with span annotations)}
+\item{...}{Any CSS inline style element can be used. Note that some style
+settings might not play nicely with certain annotator features (such as
+colors in combination with span annotations)}
 }
 \value{
 A list of CSS Style properties
@@ -26,5 +29,5 @@ This function produces a list of inline CSS style properties.
 }
 \examples{
 # nice setting for titles
-style(text_size = 1.4, bold=T)
+style(text_size = 1.4, bold = TRUE)
 }

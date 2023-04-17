@@ -13,7 +13,24 @@ create_unit(id, ..., type = "code")
 
 \item{type}{The unit type. Can be 'code', 'test', 'train' or 'survey'}
 }
+\value{
+A codingjobUnits object.
+}
 \description{
-Works like \code{\link{create_units}}, but for a single unit.
-The values can then directly be provided in the set_ functions.
+Works like \code{\link{create_units}}, but for a single unit. The values can
+then directly be provided in the set_ functions.
+}
+\examples{
+create_unit(
+  "id",
+  set_text("text", "This is the unit text"),
+)
+
+## this is also a good way to create custom training units
+create_unit("id",
+  type = "train",
+  set_text("text", "This is the unit text"),
+  set_question("variable", question = "Is this a text?", codes = c("yes", "no")),
+  set_train("variable", "yes", message = "WRONG!!\n\ntry again")
+)
 }

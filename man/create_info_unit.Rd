@@ -7,14 +7,18 @@
 create_info_unit(markdown, button = "Continue")
 }
 \arguments{
-\item{markdown}{Alternatively, provide the content as a markdown string. If used, title+text are ignored.
-See \url{https://commonmark.org/help/} for help.}
+\item{markdown}{Alternatively, provide the content as a markdown string. If
+used, title+text are ignored. See \url{https://commonmark.org/help/} for
+help.}
 
 \item{button}{The text to show on the button}
 
 \item{title}{A title}
 
 \item{text}{The information text}
+}
+\value{
+An informing unit
 }
 \description{
 Create a special unit for informing coders

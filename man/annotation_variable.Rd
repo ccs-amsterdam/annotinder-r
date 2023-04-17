@@ -15,39 +15,58 @@ annotation_variable(
 )
 }
 \arguments{
-\item{name}{The name/label of the variable. The name/label of the question. Recommended to keep short. Cannot contain a "."}
+\item{name}{The name/label of the variable. The name/label of the
+question. Recommended to keep short. Cannot contain a "."}
 
-\item{instruction}{A brief (think 1 or 2 sentences) instruction to the coder.}
+\item{instruction}{A brief (think 1 or 2 sentences) instruction to the
+coder.}
 
-\item{codes}{The codes that the coder can choose from. Can be a character vector, named character vector or data.frame.
-An unnamed character vector creates simple codes.
-A named character vector uses the labels as colors, either as HEX or a name recognized by browsers (see \url{https://www.w3schools.com/colors/colors_names.asp}).
-A data.frame must have a code column, and can use certain special columns (see details).
-For most control, codes can be a list of 'code' objects created with \code{\link{code}}.}
+\item{codes}{The codes that the coder can choose from. Can be a
+character vector, named character vector or data.frame. An unnamed
+character vector creates simple codes. A named character vector uses the
+labels as colors, either as HEX or a name recognized by browsers (see
+\url{https://www.w3schools.com/colors/colors_names.asp}). A data.frame must
+have a code column, and can use certain special columns (see details). For
+most control, codes can be a list of 'code' objects created with
+\code{\link{code}}.}
 
-\item{relations}{If specified, this becomes a 'relation' type annotation. relations can be created with
-\code{\link{relation}}. You can also specify multiple relations by providing a list
-of relations.}
+\item{relations}{If specified, this becomes a 'relation' type annotation.
+relations can be created with \code{\link{relation}}. You can also specify
+multiple relations by providing a list of relations.}
 
-\item{only_edit}{If TRUE, coders can only edit imported annotations. You can import annotations in \code{\link{create_jobs}} with the annotations argument}
+\item{only_edit}{If TRUE, coders can only edit imported annotations. You
+can import annotations in \code{\link{create_jobs}} with the annotations
+argument}
 
-\item{only_imported}{If TRUE, codes can only use codes that were used at least once in a unit in the imported annotations.}
+\item{only_imported}{If TRUE, codes can only use codes that were used at
+least once in a unit in the imported annotations.}
 
-\item{multiple}{If TRUE, coder can select multiple codes for a selected piece of text before closing the popup. Note that they can always select
-multiple codes by opening the popup multiple times. The setting exists for cases where multiple codes for a selection are common (e.g. topics in a paragraph).}
+\item{multiple}{If TRUE, coder can select multiple codes for a selected
+piece of text before closing the popup. Note that they can always select
+multiple codes by opening the popup multiple times. The setting exists for
+cases where multiple codes for a selection are common (e.g. topics in a
+paragraph).}
 }
 \value{
-A variable object, to be used within the \code{\link{create_codebook}} function
+A variable object, to be used within the
+  \code{\link{create_codebook}} function
 }
 \description{
-Creates an annotation variable that can be passed as an argument to \code{\link{create_codebook}}.
+Creates an annotation variable that can be passed as an argument to
+\code{\link{create_codebook}}.
 }
 \details{
-Using a data.frame for the codes argument gives more flexibility. This data.frame should have a "code" column, and can in addition have a "color" and "parent" column
-The color should be a color name, either as HEX or a name recognized by browsers (see \url{https://www.w3schools.com/colors/colors_names.asp})
-The parent column is only relevant if you have many codes and use selection="dropdown". The dropdown menu will then show the codes with parent names,
-and parent names are included in the search string. A parent can be the name of another code, and parents can have parents,
-thus creating trees (just make sure not to create cycles). Use case would for example be an ontology with actor -> government -> president, and issue -> economy -> taxes.
+Using a data.frame for the codes argument gives more flexibility.
+This data.frame should have a "code" column, and can in addition have a
+"color" and "parent" column The color should be a color name, either as HEX
+or a name recognized by browsers (see
+\url{https://www.w3schools.com/colors/colors_names.asp}) The parent column is
+only relevant if you have many codes and use selection="dropdown". The
+dropdown menu will then show the codes with parent names, and parent names
+are included in the search string. A parent can be the name of another code,
+and parents can have parents, thus creating trees (just make sure not to
+create cycles). Use case would for example be an ontology with actor ->
+government -> president, and issue -> economy -> taxes.
 }
 \examples{
 # simple variable with simple codes

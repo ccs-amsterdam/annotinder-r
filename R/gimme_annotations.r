@@ -1,11 +1,14 @@
 
 #' Get annotation for a given job DB
 #'
-#' @param db_file   If NULL (default) looks whether an an annotation server (see \code{\link{start_annotator}}) ran (or is running) in the current session.
-#'                  If so, it retrieves the annotations from this server
-#' @param only_done If TRUE (default) only retrieve annotations with the "DONE" status. If FALSE, also retrieve annotations with the "IN_PROGRESS" status
+#' @param db_file If NULL (default) looks whether an an annotation server (see
+#'   \code{\link{start_annotator}}) ran (or is running) in the current session.
+#'   If so, it retrieves the annotations from this server
+#' @param only_done If TRUE (default) only retrieve annotations with the "DONE"
+#'   status. If FALSE, also retrieve annotations with the "IN_PROGRESS" status
 #'
-#' @return  A tibble with annotations. The id column matches with the units (as specified in the id argument in create_units)
+#' @return  A tibble with annotations. The id column matches with the units (as
+#'   specified in the id argument in create_units)
 #' @export
 #'
 #' @examples

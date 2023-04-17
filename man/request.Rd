@@ -16,17 +16,22 @@ request(
 )
 }
 \arguments{
-\item{branch}{a character vector with the names of the API resources. For example, use c('projects','articlesets') for the url host/api/v4/projects/articlesets}
+\item{branch}{a character vector with the names of the API resources. For
+example, use c('projects','articlesets') for the url
+host/api/v4/projects/articlesets}
 
-\item{param}{a named vector or list of parameters, e.g. c(project=2, articleset=3)}
+\item{param}{a named vector or list of parameters, e.g. c(project=2,
+articleset=3)}
 
-\item{json_data}{For sending (post = TRUE) data, directly provide the json body. If used, the param argument is ignored.}
+\item{json_data}{For sending (post = TRUE) data, directly provide the json
+body. If used, the param argument is ignored.}
 
 \item{post}{use HTTP POST instead of GET}
 
 \item{post_options}{a list with options for HTTP POST (if post is TRUE)}
 
-\item{read}{If TRUE, read the content from the response. Otherwise, return the response object}
+\item{read}{If TRUE, read the content from the response. Otherwise, return
+the response object}
 
 \item{conn}{an API connection}
 
@@ -36,5 +41,7 @@ request(
 the response
 }
 \description{
-Either provide the branch and param, or provide a full url with param included (ignoring param). If post is used, it is possible to provide the json_data directly (ignoring param)
+Either provide the branch and param, or provide a full url with param
+included (ignoring param). If post is used, it is possible to provide the
+json_data directly (ignoring param)
 }

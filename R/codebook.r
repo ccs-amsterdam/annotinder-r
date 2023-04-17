@@ -1,15 +1,17 @@
 
 #' Create a codebook for the CCS Annotator
 #'
-#' @param ...  Questions for "questions" mode or Variables for "annotate" mode. See \code{\link{codebook_variable}}
-#'             Cannot combine "annotate" and "question", because these are very different annotation modes.
+#' @param ...  Questions for "questions" mode or Variables for "annotate" mode.
+#'   See \code{\link{codebook_variable}} Cannot combine "annotate" and
+#'   "question", because these are very different annotation modes.
 #'
 #' @return A codebook object
 #' @export
 #'
 #' @examples
-#' variable = annotation_variable("sentiment", "Assign sentiment to words",
-#'   codes = c(Negative='red', Neutral='grey', Positive='green'))
+#' variable <- annotation_variable("sentiment", "Assign sentiment to words",
+#'   codes = c(Negative = "red", Neutral = "grey", Positive = "green")
+#' )
 #'
 #' create_codebook(variable)
 create_codebook <- function(...) {
@@ -50,7 +52,6 @@ codes_df_to_list <- function(codes_df) {
 #' @param ... not used
 #'
 #' @method print codebook
-#' @examples
 #' @export
 print.codebook <- function(x, ...){
   cat("Codebook\nmode: ", x$type, '\n\n', sep = '')

@@ -1,19 +1,27 @@
 
 #' Specify a jobset
 #'
-#' A simple codingjob has a single jobset, in which all coders have the same codebook and use the same set of units.
-#' With this function you can instead create different jobsets, that you can pass in a list to the jobsets arguments in \code{\link{upload_job}}.
+#' A simple codingjob has a single jobset, in which all coders have the same
+#' codebook and use the same set of units. With this function you can instead
+#' create different jobsets, that you can pass in a list to the jobsets
+#' arguments in \code{\link{upload_job}}.
 #'
-#' @param name              String. The name of the jobset (e.g., experiment, control, set1, set2). Has to be unique across jobsets
-#' @param codebook          A Codebook. If empty, the default codebook in the codingjob will be used.
-#' @param ids               A character vector with unit IDs. If empty, all regular (i.e. not pre or post) units in the codingjob will be used
-#' @param pre_ids           A character vector with unit IDS for pre units. If empty, all pre units will be used
-#' @param post_ids           A character vector with unit IDS for post units. If empty, all post units will be used
+#' @param name String. The name of the jobset (e.g., experiment, control, set1,
+#'   set2). Has to be unique across jobsets
+#' @param codebook A Codebook. If empty, the default codebook in the codingjob
+#'   will be used.
+#' @param ids A character vector with unit IDs. If empty, all regular (i.e. not
+#'   pre or post) units in the codingjob will be used
+#' @param pre_ids A character vector with unit IDS for pre units. If empty, all
+#'   pre units will be used
+#' @param post_ids A character vector with unit IDS for post units. If empty,
+#'   all post units will be used
 #'
-#' @details
-#' To distribute coders evenly over the sets, each new coder will be assigned to the next set. When the last set is reached,
-#' a new coder will be assigned to the first set and the cycle continues. In other words, a coders set is 'nth-coder modulus nr-of-sets'
-#' If there are 2 sets, then coder 1 gets set 1, coder 2 gets set 2, coder 3 gets set 1, etc.
+#' @details To distribute coders evenly over the sets, each new coder will be
+#' assigned to the next set. When the last set is reached, a new coder will be
+#' assigned to the first set and the cycle continues. In other words, a coders
+#' set is 'nth-coder modulus nr-of-sets' If there are 2 sets, then coder 1 gets
+#' set 1, coder 2 gets set 2, coder 3 gets set 1, etc.
 #'
 #' @return A jobset
 #' @export

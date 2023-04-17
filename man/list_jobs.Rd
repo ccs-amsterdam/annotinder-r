@@ -10,5 +10,6 @@ list_jobs()
 A data.frame with the codingjobs
 }
 \description{
-Get the codingjobs for the current host and user, logged in with \code{\link{backend_connect}}
+Get the codingjobs for the current host and user, logged in with
+\code{\link{backend_connect}}
 }

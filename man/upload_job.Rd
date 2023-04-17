@@ -19,22 +19,30 @@ upload_job(
 \arguments{
 \item{title}{A character string, for the title of the codingjob}
 
-\item{units}{A codingjobUnits object, as created with \code{\link{create_units}}}
+\item{units}{A codingjobUnits object, as created with
+\code{\link{create_units}}}
 
-\item{codebook}{A codebook object, as created with \code{\link{create_codebook}}. Can only be missing if jobsets with specific codebooks are provided (see jobsets argument)}
+\item{codebook}{A codebook object, as created with
+\code{\link{create_codebook}}. Can only be missing if jobsets with specific
+codebooks are provided (see jobsets argument)}
 
 \item{annotations}{Optionally, create the job with imported annotations.
-Should be a data.frame like returned by \code{\link{gimme_annotations}}, with the columns:
-id, field, variable, value, offset and length. The "id" column should match the id column in the units
-(based on the id argument in create_units). "field" should be a text field in units. "variable" and "value"
-should match actual variables (or questions) and codes in the codebook. "offset" and "length" are the
-character position offset and the length of the span annotation.}
+Should be a data.frame like returned by \code{\link{gimme_annotations}},
+with the columns: id, field, variable, value, offset and length. The "id"
+column should match the id column in the units (based on the id argument in
+create_units). "field" should be a text field in units. "variable" and
+"value" should match actual variables (or questions) and codes in the
+codebook. "offset" and "length" are the character position offset and the
+length of the span annotation.}
 
-\item{rules}{A rules object, as created with one of the rules_* functions (e.g., \code{\link{rules_crowdcoding}}, \code{\link{rules_fixedset}}). If left empty, the 'crowdcoding' ruleset will be used.}
+\item{rules}{A rules object, as created with one of the rules_* functions
+(e.g., \code{\link{rules_crowdcoding}}, \code{\link{rules_fixedset}}). If
+left empty, the 'crowdcoding' ruleset will be used.}
 
 \item{jobsets}{A list of jobsets, as created with \code{\link{jobset}}}
 
-\item{debrief}{At debriefing when a job is finished, such as a message and link. Create with \code{\link{debrief}}}
+\item{debrief}{At debriefing when a job is finished, such as a message and
+link. Create with \code{\link{debrief}}}
 
 \item{pre}{Like pre, but for after the codingjob.}
 }

@@ -1,35 +1,47 @@
 #' Create units for the cssAnnotator
 #'
 #' Create the basis for a units object. The content of the units can then be
-#' designed in a pipe of \code{\link{set_text}}, \code{\link{set_meta}}, \code{\link{set_image}} and \code{\link{set_markdown}} functions
+#' designed in a pipe of \code{\link{set_text}}, \code{\link{set_meta}},
+#' \code{\link{set_image}} and \code{\link{set_markdown}} functions
 #'
-#' @param data  A data.frame
-#' @param ...   Unit content is specified using the set_ functions (set_text, set_markdown, set_image, etc.).
-#'              For example, if data has a column called header, and you want to create a title using this column,
-#'              use: `set_text('title', header, bold=T, text_size=1.3)`
-#' @param id    Name of a column in data with unique values. These ids will be used to link annotation to units.
-#' @param type  Name of a column in data with types. Valid types are: "code", "train", "test" and "survey"
-#' @param subfields Selected fields (text/image/markdown) of rows with identical id's can be grouped together into a single unit.
-#'                  The subfields arguments should then be a character vector indicating which fields need to be grouped.
-#'                  Fields that are not grouped should have identical values across all rows (with the same id).
-#'                  When fields are grouped, they are enumerated as field.1, field.2, etc.
-#'                  This is particularly usefull when combined with the per_field argument in \code{\link{question}}
-#' @param variables A vector of column names in data. These column names can then be referenced from the codebook.
-#'                  For example, if there is a column "topic", you could ask the question: "is this sentence about {topic}".
-#'                  The {topic} part will then be replaced in the question with the value for this unit in the "topic" column.
-#' @param meta A vector of column names in data. These names and their values will be shown at the top of a unit.
-#'             Can also be a named vector, in which case the names will be used as the labels that coders get to see.
-#' @param grid_areas A list with character vectors to specify the grid-template-areas (see \url{https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-areas}).
-#'              Each item in the list represents a row, and each value in the character vector the column in that row.
-#'              The values need to be the names of fields (i.e. the column names). If you want a position in the grid to be empty, use a dot ".".
-#' @param grid_cols A numeric vector of the same length as the number of columns in areas. Each value indicates the relative space given to the column. So c(1,2) means that
-#'              the second column will be twice as wide as the first column.
-
+#' @param data A data.frame
+#' @param ... Unit content is specified using the set_ functions (set_text,
+#'   set_markdown, set_image, etc.). For example, if data has a column called
+#'   header, and you want to create a title using this column, use:
+#'   `set_text('title', header, bold=T, text_size=1.3)`
+#' @param id Name of a column in data with unique values. These ids will be
+#'   used to link annotation to units.
+#' @param type Name of a column in data with types. Valid types are: "code",
+#'   "train", "test" and "survey"
+#' @param subfields Selected fields (text/image/markdown) of rows with identical
+#'   id's can be grouped together into a single unit. The subfields arguments
+#'   should then be a character vector indicating which fields need to be
+#'   grouped. Fields that are not grouped should have identical values across
+#'   all rows (with the same id). When fields are grouped, they are enumerated
+#'   as field.1, field.2, etc. This is particularly usefull when combined with
+#'   the per_field argument in \code{\link{question}}
+#' @param variables A vector of column names in data. These column names can
+#'   then be referenced from the codebook. For example, if there is a column
+#'   "topic", you could ask the question: "is this sentence about {topic}". The
+#'   {topic} part will then be replaced in the question with the value for this
+#'   unit in the "topic" column.
+#' @param meta A vector of column names in data. These names and their values
+#'   will be shown at the top of a unit. Can also be a named vector, in which
+#'   case the names will be used as the labels that coders get to see.
+#' @param grid_areas A list with character vectors to specify the
+#'   grid-template-areas (see
+#'   \url{https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-areas}).
+#'   Each item in the list represents a row, and each value in the character
+#'   vector the column in that row. The values need to be the names of fields
+#'   (i.e. the column names). If you want a position in the grid to be empty,
+#'   use a dot ".".
+#' @param grid_cols A numeric vector of the same length as the number of columns
+#'   in areas. Each value indicates the relative space given to the column. So
+#'   c(1,2) means that the second column will be twice as wide as the first
+#'   column.
 #'
-#' @return
+#' @return A codingjobUnits object
 #' @export
-#'
-#' @examples
 create_units <- function(data, ..., id='id', type=NULL, subfields=NULL, variables=NULL, meta=NULL, grid_areas=NULL, grid_cols=NULL) {
   if (!id %in% colnames(data)) stop(sprintf('"%s" is not a column name in data', id))
   ids = data[[id]]
@@ -104,26 +116,28 @@ create_units <- function(data, ..., id='id', type=NULL, subfields=NULL, variable
 
 #' Create a single unit
 #'
-#' Works like \code{\link{create_units}}, but for a single unit.
-#' The values can then directly be provided in the set_ functions.
+#' Works like \code{\link{create_units}}, but for a single unit. The values can
+#' then directly be provided in the set_ functions.
 #'
 #' @param id   A unique id
 #' @param type The unit type. Can be 'code', 'test', 'train' or 'survey'
 #' @param ...
 #'
-#' @return
+#' @return A codingjobUnits object.
 #' @export
 #'
 #' @examples
-#' create_unit('id',
-#'    set_text('text','This is the unit text'),
+#' create_unit(
+#'   "id",
+#'   set_text("text", "This is the unit text"),
 #' )
 #'
 #' ## this is also a good way to create custom training units
-#' create_unit('id', type='train',
-#'    set_text('text', This is the unit text'),
-#'    set_question('variable', question = "Is this a text?", codes=c('yes','no')),
-#'    set_train('variable', 'yes', message='WRONG!!\n\ntry again')
+#' create_unit("id",
+#'   type = "train",
+#'   set_text("text", "This is the unit text"),
+#'   set_question("variable", question = "Is this a text?", codes = c("yes", "no")),
+#'   set_train("variable", "yes", message = "WRONG!!\n\ntry again")
 #' )
 create_unit <- function(id, ..., type='code') {
   d = data.frame(id=id, type=type)
@@ -179,21 +193,28 @@ process_create_unit_calls <- function(...) {
 
 #' Set text content
 #'
-#' @param name       The name of the field. Must be unique within a unit.
-#' @param value      The content of the field. Can be given as a single string, the name of a column in data (for create_units), or any expression.
-#' @param before     The text can have a context before and after the coding unit. For example, the data.frame could be a keyword in context listing with the columns "pre", "keyword" and "post" (see for instance quanteda's kwic function).
-#'                    These could then be set to the "before", "column" and "after" arguments, respectively. NOTE that if a before or after context is specified, all other text fields before or after
-#'                    the current will also be considered context.
-#' @param after      See 'before' argument
-#' @param label      An expression or character value to label the text field. Coders will then see this label where this field starts.
-#' @param ...        Style settings, passed to \code{\link{style}}
-#' @param offset     An expression (most likely a column). If the text is a part of a bigger, original text, you can include the offset for the character position where it starts. This is relevant if you want to import
-#'                   or export span annotations for which the offset refers to the original text.
+#' @param name The name of the field. Must be unique within a unit.
+#' @param value The content of the field. Can be given as a single string, the
+#'   name of a column in data (for create_units), or any expression.
+#' @param before The text can have a context before and after the coding unit.
+#'   For example, the data.frame could be a keyword in context listing with the
+#'   columns "pre", "keyword" and "post" (see for instance quanteda's kwic
+#'   function). These could then be set to the "before", "column" and "after"
+#'   arguments, respectively. NOTE that if a before or after context is
+#'   specified, all other text fields before or after the current will also be
+#'   considered context.
+#' @param after See 'before' argument
+#' @param label An expression or character value to label the text field. Coders
+#'   will then see this label where this field starts.
+#' @param ... Style settings, passed to \code{\link{style}}
+#' @param offset An expression (most likely a column). If the text is a part of
+#'   a bigger, original text, you can include the offset for the character
+#'   position where it starts. This is relevant if you want to import or export
+#'   span annotations for which the offset refers to the original text.
 #'
-#' @return Only meant to be used inside of \code{\link{create_units}} or \code{\link{create_unit}}.
+#' @return Only meant to be used inside of \code{\link{create_units}} or
+#'   \code{\link{create_unit}}.
 #' @export
-#'
-#' @examples
 set_text <- function(name, value, before=NULL, after=NULL, label=NULL, ..., offset=0) {
   list(type = 'text',
        name=name,
@@ -207,16 +228,18 @@ set_text <- function(name, value, before=NULL, after=NULL, label=NULL, ..., offs
 
 #' Set image content
 #'
-#' @param name       The name of the field. Must be unique within a unit.
-#' @param value      The filename of the image. Can be given as a single filename, the name of a column in data (for create_units) that has filenames, or an expression.
-#' @param base64     If TRUE, store the image as a base64 in the codingjob json file
-#' @param caption    The image caption. Can be a single string, or a column in data (for create_units), or an expression.
-#' @param ...        Style settings, passed to \code{\link{style}}
+#' @param name The name of the field. Must be unique within a unit.
+#' @param value The filename of the image. Can be given as a single filename,
+#'   the name of a column in data (for create_units) that has filenames, or an
+#'   expression.
+#' @param base64 If TRUE, store the image as a base64 in the codingjob json file
+#' @param caption The image caption. Can be a single string, or a column in data
+#'   (for create_units), or an expression.
+#' @param ... Style settings, passed to \code{\link{style}}
 #'
-#' @return Only meant to be used inside of \code{\link{create_units}} or \code{\link{create_unit}}.
+#' @return Only meant to be used inside of \code{\link{create_units}} or
+#'   \code{\link{create_unit}}.
 #' @export
-#'
-#' @examples
 set_image <- function(name, value, base64=FALSE, caption=NULL, ...) {
   l = list(type = 'image',
            name = name,
@@ -230,13 +253,13 @@ set_image <- function(name, value, base64=FALSE, caption=NULL, ...) {
 
 #' Set markdown content
 #'
-#' @param field      The content of the field. Can be given as a single string, the name of a column in data (for create_units), or any expression.
-#' @param ...        Style settings, passed to \code{\link{style}}
+#' @param field The content of the field. Can be given as a single string, the
+#'   name of a column in data (for create_units), or any expression.
+#' @param ... Style settings, passed to \code{\link{style}}
 #'
-#' @return Only meant to be used inside of \code{\link{create_units}} or \code{\link{create_unit}}.
+#' @return Only meant to be used inside of \code{\link{create_units}} or
+#'   \code{\link{create_unit}}.
 #' @export
-#'
-#' @examples
 set_markdown <- function(name, value, ...) {
   list(type='markdown',
        name = name,
@@ -247,20 +270,23 @@ set_markdown <- function(name, value, ...) {
 
 #' Create a unit specific codebook
 #'
-#' Codebooks can be defined at different levels: codingjob > jobset > unit. The most specific codebook will be used.
-#' This allows creating special units that have their own codebook (e.g., for survey-like questions), or using codebooks
+#' Codebooks can be defined at different levels: codingjob > jobset > unit. The
+#' most specific codebook will be used. This allows creating special units that
+#' have their own codebook (e.g., for survey-like questions), or using codebooks
 #' with dynamic codes.
 #'
-#' @param name      A character value indicating the name of the question. This will also be the variable name in annotations. Coders won't see this name.
-#' @param question_txt  The question text. Can either be a character value, or an expression (e.g., to use a column in the data)
-#' @param codes     The codes that the coder can choose from. See \code{\link{question}} for more details. Note that with set_question you can refer
-#'                  to columns in the data to create dynamic questions.
-#' @param ...       Other arguments passed to \code{\link{question}}
+#' @param name A character value indicating the name of the question. This will
+#'   also be the variable name in annotations. Coders won't see this name.
+#' @param question_txt The question text. Can either be a character value, or an
+#'   expression (e.g., to use a column in the data)
+#' @param codes The codes that the coder can choose from. See
+#'   \code{\link{question}} for more details. Note that with set_question you
+#'   can refer to columns in the data to create dynamic questions.
+#' @param ... Other arguments passed to \code{\link{question}}
 #'
-#' @return Only meant to be used inside of \code{\link{create_units}} or \code{\link{create_unit}}.
+#' @return Only meant to be used inside of \code{\link{create_units}} or
+#'   \code{\link{create_unit}}.
 #' @export
-#'
-#' @examples
 set_question <- function(name, question=NULL, codes=NULL, ...) {
   list(type = 'question',
        name = name,
@@ -271,55 +297,76 @@ set_question <- function(name, question=NULL, codes=NULL, ...) {
 
 #' Set training units
 #'
-#' Setup training units, and provide the correct answers/annotations for these units.
-#' If the answer/annotation is wrong, coders will see a message and need to retry.
-#' Note that which units are train units needs to be indicated with the 'type' argument in \code{\link{create_units}}
+#' Setup training units, and provide the correct answers/annotations for these
+#' units. If the answer/annotation is wrong, coders will see a message and need
+#' to retry. Note that which units are train units needs to be indicated with
+#' the 'type' argument in \code{\link{create_units}}
 #'
-#' @param variable  The name of the variable as used in the codebook. If not specified, the name of the column will be used.
-#' @param value     The value to which the given answer will be compared. Either a single string or the name of a column (in create_units).
-#' @param field     Optionally, the name of a field (in case of a field specific annotation).
-#' @param message     A markdown string that will be displayed when the given answer does not match value. If not given, the message will be:
-#'                    \code{"### You gave an incorrect answer.\n\nThis is a **training** unit. \nPlease have another look and select a different answer"}.
-#' @param submessage  An additional unit-specific message to display beneath the general message.
-#'                    This argument takes an expression, so you can refer to a column in the data (in create_units),
-#'                    and use other columns to create a custom message.
-#' @param damage   The amount of damage a coder should receive. Can be a number or an expression that returns a number.
-#' @param operator How should the annotation value be compared to the column value? Default is "==" (equals). Alternatives are "!=" (not equals),
-#'                 "<=", "<", ">=" or ">".
+#' @param variable The name of the variable as used in the codebook. If not
+#'   specified, the name of the column will be used.
+#' @param value The value to which the given answer will be compared. Either a
+#'   single string or the name of a column (in create_units).
+#' @param field Optionally, the name of a field (in case of a field specific
+#'   annotation).
+#' @param message A markdown string that will be displayed when the given
+#'   answer does not match value. If not given, the message will be: \code{"###
+#'   You gave an incorrect answer.\n\nThis is a **training** unit. \nPlease have
+#'   another look and select a different answer"}.
+#' @param submessage An additional unit-specific message to display beneath the
+#'   general message. This argument takes an expression, so you can refer to a
+#'   column in the data (in create_units), and use other columns to create a
+#'   custom message.
+#' @param damage The amount of damage a coder should receive. Can be a number or
+#'   an expression that returns a number.
+#' @param operator How should the annotation value be compared to the column
+#'   value? Default is "==" (equals). Alternatives are "!=" (not equals), "<=",
+#'   "<", ">=" or ">".
 #'
-#' @return
+#' @return A list of training units
 #' @export
-#'
-#' @examples
-set_train <- function(variable, value, field=NULL, message=NULL, submessage=NULL, damage=0, operator='==') {
-  if (!operator %in% c('==','<=','<','>=','>','!=')) stop("invalid operator. Has to be one of: '==','<=','<','>=','>','!='")
+set_train <- function(variable,
+                      value,
+                      field = NULL,
+                      message = NULL,
+                      submessage = NULL,
+                      damage = 0,
+                      operator = "==") {
 
-  list(type='train',
-       variable=variable, value=substitute(value), field=field, operator=operator,
-       damage=substitute(damage),
-       message=message,
-       submessage=substitute(submessage))
+  if (!operator %in% c("==", "<=", "<", ">=", ">", "!="))
+    stop("invalid operator. Has to be one of: '==','<=','<','>=','>','!='")
+
+  list(
+    type = "train",
+    variable = variable, value = substitute(value), field = field, operator = operator,
+    damage = substitute(damage),
+    message = message,
+    submessage = substitute(submessage)
+  )
 }
 
 #' Set test units
 #'
-#' Setup test units (also known as gold units).
-#' If the answer/annotation is wrong, coders receive damage.
-#' Note that which units are test units needs to be indicated with the 'type' argument in \code{\link{create_units}}
+#' Setup test units (also known as gold units). If the answer/annotation is
+#' wrong, coders receive damage. Note that which units are test units needs to
+#' be indicated with the 'type' argument in \code{\link{create_units}}.
 #'
-#' @param variable  The name of the variable as used in the codebook. If not specified, the name of the column will be used.
-#' @param value     The value to which the given answer will be compared. Either a single string or the name of a column (in create_units).
-#' @param field     Optionally, the name of a field (in case of a field specific annotation).
-#' @param damage    The amount of damage a coder should receive. Can be a number or an expression that returns a number.
-#' @param on_wrong  A markdown string that will be displayed when a coder gives an incorrect answer. If not given, no message will be displayed.
-#'                  Can also be the name of a column (in create_units) for unit specific messages.
-#' @param operator How should the annotation value be compared to the column value? Default is "==" (equals). Alternatives are "!=" (not equals),
-#'                 "<=", "<", ">=" or ">".
+#' @param variable The name of the variable as used in the codebook. If not
+#'   specified, the name of the column will be used.
+#' @param value The value to which the given answer will be compared. Either a
+#'   single string or the name of a column (in create_units).
+#' @param field Optionally, the name of a field (in case of a field specific
+#'   annotation).
+#' @param damage The amount of damage a coder should receive. Can be a number or
+#'   an expression that returns a number.
+#' @param on_wrong A markdown string that will be displayed when a coder gives
+#'   an incorrect answer. If not given, no message will be displayed. Can also
+#'   be the name of a column (in create_units) for unit specific messages.
+#' @param operator How should the annotation value be compared to the column
+#'   value? Default is "==" (equals). Alternatives are "!=" (not equals), "<=",
+#'   "<", ">=" or ">".
 #'
-#' @return
+#' @return A list of test units
 #' @export
-#'
-#' @examples
 set_test <- function(variable, value, field=NULL, damage=0, on_wrong=NULL, operator='==') {
   if (!operator %in% c('==','<=','<','>=','>','!=')) stop("invalid operator. Has to be one of: '==','<=','<','>=','>','!='")
 
@@ -333,19 +380,22 @@ set_test <- function(variable, value, field=NULL, damage=0, on_wrong=NULL, opera
 #'
 #' This function produces a list of inline CSS style properties.
 #'
-#' @param text_size   The text size as a ratio. The default 1 means use the standard size. 0.5 means half this size, 2 means twice this size, etc.
-#' @param bold        If True, make text bold
-#' @param italic      If True, make test italic
-#' @param align       How to align the text. Can be 'justify','center','left' or 'right'
-#' @param ...         Any CSS inline style element can be used. Note that some style settings might not play nicely with certain annotator features
-#'                    (such as colors in combination with span annotations)
+#' @param text_size The text size as a ratio. The default 1 means use the
+#'   standard size. 0.5 means half this size, 2 means twice this size, etc.
+#' @param bold If True, make text bold
+#' @param italic If True, make test italic
+#' @param align How to align the text. Can be 'justify','center','left' or
+#'   'right'
+#' @param ... Any CSS inline style element can be used. Note that some style
+#'   settings might not play nicely with certain annotator features (such as
+#'   colors in combination with span annotations)
 #'
 #' @return A list of CSS Style properties
 #' @export
 #'
 #' @examples
 #' # nice setting for titles
-#' style(text_size = 1.4, bold=T)
+#' style(text_size = 1.4, bold = TRUE)
 style <- function(text_size=NULL, bold=NULL, italic=NULL, align=NULL, ...) {
   s = list(textAlign = substitute(align),
            text_size=substitute(text_size),

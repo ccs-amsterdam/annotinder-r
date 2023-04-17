@@ -7,7 +7,8 @@
 \method{print}{annotatorBackendConnection}(x, ...)
 }
 \arguments{
-\item{x}{an annotatorBackendConnection connection object, created with \link{backend_connect}}
+\item{x}{an annotatorBackendConnection connection object, created with
+\link{backend_connect}}
 
 \item{...}{not used}
 }

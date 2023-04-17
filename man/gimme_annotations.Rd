@@ -7,13 +7,16 @@
 gimme_annotations(db_file = NULL, only_done = FALSE)
 }
 \arguments{
-\item{db_file}{If NULL (default) looks whether an an annotation server (see \code{\link{start_annotator}}) ran (or is running) in the current session.
+\item{db_file}{If NULL (default) looks whether an an annotation server (see
+\code{\link{start_annotator}}) ran (or is running) in the current session.
 If so, it retrieves the annotations from this server}
 
-\item{only_done}{If TRUE (default) only retrieve annotations with the "DONE" status. If FALSE, also retrieve annotations with the "IN_PROGRESS" status}
+\item{only_done}{If TRUE (default) only retrieve annotations with the "DONE"
+status. If FALSE, also retrieve annotations with the "IN_PROGRESS" status}
 }
 \value{
-A tibble with annotations. The id column matches with the units (as specified in the id argument in create_units)
+A tibble with annotations. The id column matches with the units (as
+  specified in the id argument in create_units)
 }
 \description{
 Get annotation for a given job DB

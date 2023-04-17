@@ -13,28 +13,36 @@ relation(
 )
 }
 \arguments{
-\item{codes}{A character vector with the code values. These need to correspond to codes
-specified in the 'codes' argument of annotation_variable}
+\item{codes}{A character vector with the code values. These need
+to correspond to codes specified in the 'codes' argument of
+annotation_variable}
 
-\item{from_variable}{The name of a variable in the codebook. This specifies from which variable
-the relation starts at. (if you need multiple from variables, note that you can
-create multiple relations)}
+\item{from_variable}{The name of a variable in the codebook. This
+specifies from which variable the relation starts at. (if you need multiple
+from variables, note that you can create multiple relations)}
 
-\item{to_variable}{Like from_variable, but for specifying where the relation goes to}
+\item{to_variable}{Like from_variable, but for specifying where the
+relation goes to}
 
-\item{from_values}{Optionally, specify specific code values within the from variable. If not specified,
-all code values in the from_variable can be used}
+\item{from_values}{Optionally, specify specific code values within the
+from variable. If not specified, all code values in the from_variable can
+be used}
 
 \item{to_values}{Like from_values}
+}
+\value{
+A codeRelation code object
 }
 \description{
 Create relation codes. Used inside of annotation_variable
 }
 \examples{
-label_var = annotation_variable("Labels", "Span annotations", codes=c('Person','Issue'))
-relation_var = annotation_variable("Relations", "Relation annotations",
-                  code = c(green='Positive stance',grey='Neutral stance',red='Negative stance'),
-                  relations = relation(c('Positive stance','Neutral stance','Negative stance'),
-                                       from_variable='Labels', from_values='Person',
-                                       to_variable='labels', to_values='Issue'))
+label_var <- annotation_variable("Labels", "Span annotations", codes = c("Person", "Issue"))
+relation_var <- annotation_variable("Relations", "Relation annotations",
+  code = c(green = "Positive stance", grey = "Neutral stance", red = "Negative stance"),
+  relations = relation(c("Positive stance", "Neutral stance", "Negative stance"),
+    from_variable = "Labels", from_values = "Person",
+    to_variable = "labels", to_values = "Issue"
+  )
+)
 }

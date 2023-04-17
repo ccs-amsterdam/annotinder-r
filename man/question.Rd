@@ -19,48 +19,74 @@ question(
 )
 }
 \arguments{
-\item{name}{The name/label of the question. Recommended to keep short. Cannot contain a "."}
+\item{name}{The name/label of the question. Recommended to keep short. Cannot
+contain a "."}
 
-\item{codes}{The codes that the coder can choose from. Can be a character vector, named character vector or data.frame.
-An unnamed character vector creates simple codes.
-A named character vector uses the names as colors, either as HEX or a name recognized by browsers (see \url{https://www.w3schools.com/colors/colors_names.asp}).
-A data.frame must have a code column, and can use certain special columns (see details).
-For most control, codes can be a list of 'code' objects created with \code{\link{code}}.}
+\item{codes}{The codes that the coder can choose from. Can be a character
+vector, named character vector or data.frame. An unnamed character vector
+creates simple codes. A named character vector uses the names as colors,
+either as HEX or a name recognized by browsers (see
+\url{https://www.w3schools.com/colors/colors_names.asp}). A data.frame must
+have a code column, and can use certain special columns (see details). For
+most control, codes can be a list of 'code' objects created with
+\code{\link{code}}.}
 
-\item{type}{The type of question. Can be "buttons", "dropdown", "scale", "annotinder" or "inputs".
-"buttons" shows all answers as buttons, "dropdown" gives a dropdown menu with a search bar.
-"scale" is for ordered buttons, and multiple items can be specified to answer this question for each.
-"annotinder" lets users swipe for answers, and can only be used if the number of answers is 2 (left, right) or 3 (left, right, up).
-"inputs" can create one or multiple open input fields for text and numbers.}
+\item{type}{The type of question. Can be "buttons", "dropdown", "scale",
+"annotinder" or "inputs". "buttons" shows all answers as buttons,
+"dropdown" gives a dropdown menu with a search bar. "scale" is for ordered
+buttons, and multiple items can be specified to answer this question for
+each. "annotinder" lets users swipe for answers, and can only be used if
+the number of answers is 2 (left, right) or 3 (left, right, up). "inputs"
+can create one or multiple open input fields for text and numbers.}
 
-\item{instruction}{Optionally, a markdown string with instructions for this specific question. Coders can see these instructions by clicking on the questionmark symbol before the question.}
+\item{instruction}{Optionally, a markdown string with instructions for this
+specific question. Coders can see these instructions by clicking on the
+questionmark symbol before the question.}
 
-\item{color}{If no colors are given to specific codes, this sets the default color. Color should be  HEX or a name recognized by browsers (see \url{https://www.w3schools.com/colors/colors_names.asp}).
-Can also be "random" for random colors}
+\item{color}{If no colors are given to specific codes, this sets the default
+color. Color should be  HEX or a name recognized by browsers (see
+\url{https://www.w3schools.com/colors/colors_names.asp}). Can also be
+"random" for random colors}
 
-\item{fields}{Optionally, an array of field names (i.e. the column names used in set_text, set_markdown and set_image). When the
-question is asked, these fields will then be focused on.}
+\item{fields}{Optionally, an array of field names (i.e. the column names used
+in set_text, set_markdown and set_image). When the question is asked, these
+fields will then be focused on.}
 
-\item{per_field}{If a unit has numbered fields, the question can be automatically repeated for each field. For instance, if "per_field" is "comment",
-and the unit has fields "comment.1", "comment.2", etc., then this question will be repeated for each comment. The easiest way to set this up
-is to use the "split" argument in set_text and set_markdown, which automatically split a field into numbered fields.}
+\item{per_field}{If a unit has numbered fields, the question can be
+automatically repeated for each field. For instance, if "per_field" is
+"comment", and the unit has fields "comment.1", "comment.2", etc., then
+this question will be repeated for each comment. The easiest way to set
+this up is to use the "split" argument in set_text and set_markdown, which
+automatically split a field into numbered fields.}
 
-\item{same_size}{If "buttons" selection is used, make all buttons the same size.}
+\item{same_size}{If "buttons" selection is used, make all buttons the same
+size.}
 
-\item{items}{Can be used for "scale" and "inputs" type questions. Should be a named list where the names are the item names, and value is a list with parameters.}
+\item{items}{Can be used for "scale" and "inputs" type questions. Should be a
+named list where the names are the item names, and value is a list with
+parameters.}
 
-\item{single_row}{If "buttons" selection is used, this puts all buttons on the same row (just make sure not to have too many buttons)}
+\item{single_row}{If "buttons" selection is used, this puts all buttons on
+the same row (just make sure not to have too many buttons)}
 }
 \value{
-A question object, to be used within the \code{\link{create_codebook}} function
+A question object, to be used within the
+  \code{\link{create_codebook}} function
 }
 \description{
-Creates a question that can be passed as an argument to \code{\link{create_codebook}}.
+Creates a question that can be passed as an argument to
+\code{\link{create_codebook}}.
 }
 \details{
-Using a data.frame for the codes argument gives more flexibility. This data.frame should have a "code" column, and can in addition have a "color" and "parent" column
-The color should be a color name, either as HEX or a name recognized by browsers (see \url{https://www.w3schools.com/colors/colors_names.asp})
-The parent column is only relevant if you have many codes and use selection="dropdown". The dropdown menu will then show the codes with parent names,
-and parent names are included in the search string. A parent can be the name of another code, and parents can have parents,
-thus creating trees (just make sure not to create cycles). Use case would for example be an ontology with actor -> government -> president, and issue -> economy -> taxes.
+Using a data.frame for the codes argument gives more flexibility.
+  This data.frame should have a "code" column, and can in addition have a
+  "color" and "parent" column The color should be a color name, either as HEX
+  or a name recognized by browsers (see
+  \url{https://www.w3schools.com/colors/colors_names.asp}) The parent column
+  is only relevant if you have many codes and use selection="dropdown". The
+  dropdown menu will then show the codes with parent names, and parent names
+  are included in the search string. A parent can be the name of another
+  code, and parents can have parents, thus creating trees (just make sure not
+  to create cycles). Use case would for example be an ontology with actor ->
+  government -> president, and issue -> economy -> taxes.
 }

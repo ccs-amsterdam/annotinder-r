@@ -15,26 +15,38 @@ set_train(
 )
 }
 \arguments{
-\item{variable}{The name of the variable as used in the codebook. If not specified, the name of the column will be used.}
+\item{variable}{The name of the variable as used in the codebook. If not
+specified, the name of the column will be used.}
 
-\item{value}{The value to which the given answer will be compared. Either a single string or the name of a column (in create_units).}
+\item{value}{The value to which the given answer will be compared. Either a
+single string or the name of a column (in create_units).}
 
-\item{field}{Optionally, the name of a field (in case of a field specific annotation).}
+\item{field}{Optionally, the name of a field (in case of a field specific
+annotation).}
 
-\item{message}{A markdown string that will be displayed when the given answer does not match value. If not given, the message will be:
-\code{"### You gave an incorrect answer.\n\nThis is a **training** unit. \nPlease have another look and select a different answer"}.}
+\item{message}{A markdown string that will be displayed when the given
+answer does not match value. If not given, the message will be: \code{"###
+You gave an incorrect answer.\n\nThis is a **training** unit. \nPlease have
+another look and select a different answer"}.}
 
-\item{submessage}{An additional unit-specific message to display beneath the general message.
-This argument takes an expression, so you can refer to a column in the data (in create_units),
-and use other columns to create a custom message.}
+\item{submessage}{An additional unit-specific message to display beneath the
+general message. This argument takes an expression, so you can refer to a
+column in the data (in create_units), and use other columns to create a
+custom message.}
 
-\item{damage}{The amount of damage a coder should receive. Can be a number or an expression that returns a number.}
+\item{damage}{The amount of damage a coder should receive. Can be a number or
+an expression that returns a number.}
 
-\item{operator}{How should the annotation value be compared to the column value? Default is "==" (equals). Alternatives are "!=" (not equals),
-"<=", "<", ">=" or ">".}
+\item{operator}{How should the annotation value be compared to the column
+value? Default is "==" (equals). Alternatives are "!=" (not equals), "<=",
+"<", ">=" or ">".}
+}
+\value{
+A list of training units
 }
 \description{
-Setup training units, and provide the correct answers/annotations for these units.
-If the answer/annotation is wrong, coders will see a message and need to retry.
-Note that which units are train units needs to be indicated with the 'type' argument in \code{\link{create_units}}
+Setup training units, and provide the correct answers/annotations for these
+units. If the answer/annotation is wrong, coders will see a message and need
+to retry. Note that which units are train units needs to be indicated with
+the 'type' argument in \code{\link{create_units}}
 }

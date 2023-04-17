@@ -2,12 +2,12 @@
 
 #' Get a list of codingjobs
 #'
-#' Get the codingjobs for the current host and user, logged in with \code{\link{backend_connect}}
+#' Get the codingjobs for the current host and user, logged in with
+#' \code{\link{backend_connect}}
 #'
-#' @return  A data.frame with the codingjobs
+#' @return A data.frame with the codingjobs
 #' @export
 #'
-#' @examples
 list_jobs <- function() {
   request('codingjobs')
 }
@@ -28,25 +28,32 @@ get_job <- function(job_id, annotations=T) {
 
 #' Upload a CCS Annotator codingjob to a server
 #'
-#' @param title     A character string, for the title of the codingjob
-#' @param units     A codingjobUnits object, as created with \code{\link{create_units}}
-#' @param codebook  A codebook object, as created with \code{\link{create_codebook}}. Can only be missing if jobsets with specific codebooks are provided (see jobsets argument)
+#' @param title A character string, for the title of the codingjob
+#' @param units A codingjobUnits object, as created with
+#'   \code{\link{create_units}}
+#' @param codebook A codebook object, as created with
+#'   \code{\link{create_codebook}}. Can only be missing if jobsets with specific
+#'   codebooks are provided (see jobsets argument)
 #' @param annotations Optionally, create the job with imported annotations.
-#'                    Should be a data.frame like returned by \code{\link{gimme_annotations}}, with the columns:
-#'                    id, field, variable, value, offset and length. The "id" column should match the id column in the units
-#'                    (based on the id argument in create_units). "field" should be a text field in units. "variable" and "value"
-#'                    should match actual variables (or questions) and codes in the codebook. "offset" and "length" are the
-#'                    character position offset and the length of the span annotation.
-#' @param rules     A rules object, as created with one of the rules_* functions (e.g., \code{\link{rules_crowdcoding}}, \code{\link{rules_fixedset}}). If left empty, the 'crowdcoding' ruleset will be used.
-#' @param jobsets   A list of jobsets, as created with \code{\link{jobset}}
-#' @param debrief   At debriefing when a job is finished, such as a message and link. Create with \code{\link{debrief}}
-#' @param pre       A special unit or list of special units to show before the codingjob.
-#' @param pre       Like pre, but for after the codingjob.
+#'   Should be a data.frame like returned by \code{\link{gimme_annotations}},
+#'   with the columns: id, field, variable, value, offset and length. The "id"
+#'   column should match the id column in the units (based on the id argument in
+#'   create_units). "field" should be a text field in units. "variable" and
+#'   "value" should match actual variables (or questions) and codes in the
+#'   codebook. "offset" and "length" are the character position offset and the
+#'   length of the span annotation.
+#' @param rules A rules object, as created with one of the rules_* functions
+#'   (e.g., \code{\link{rules_crowdcoding}}, \code{\link{rules_fixedset}}). If
+#'   left empty, the 'crowdcoding' ruleset will be used.
+#' @param jobsets A list of jobsets, as created with \code{\link{jobset}}
+#' @param debrief At debriefing when a job is finished, such as a message and
+#'   link. Create with \code{\link{debrief}}
+#' @param pre A special unit or list of special units to show before the
+#'   codingjob.
+#' @param pre Like pre, but for after the codingjob.
 #'
 #' @return   The id of the new codingjob on the server
 #' @export
-#'
-#' @examples
 upload_job <- function(title, units, codebook=NULL, annotations=NULL, rules = rules_fixedset(), jobsets=NULL, debrief=NULL, pre=NULL, post=NULL) {
   codingjob = create_job(title, units, codebook, annotations)
 

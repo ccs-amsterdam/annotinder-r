@@ -1,8 +1,8 @@
 request_token <- function(conn, passwd) {
-  if (is.null(passwd)) passwd = getPass::getPass(paste('Enter password for user', conn$username))
-  res = httr::POST(paste0(conn$host, '/users/me/token'), body = list(username=conn$username, password=passwd))
+  if (is.null(passwd)) passwd <- getPass::getPass(paste("Enter password for user", conn$username))
+  res <- httr::POST(paste0(conn$host, "/users/me/token"), body = list(username = conn$username, password = passwd))
   if (!res$status_code == 200) {
-    stop(paste("Could not get token for ", conn$username,"@", conn$host, " please check host, username and password"))
+    stop(paste("Could not get token for ", conn$username, "@", conn$host, " please check host, username and password"))
   }
   read_response(res)$token
 }
@@ -10,14 +10,21 @@ request_token <- function(conn, passwd) {
 
 #' call API with authentication and specified filters (GET or POST)
 #'
-#' Either provide the branch and param, or provide a full url with param included (ignoring param). If post is used, it is possible to provide the json_data directly (ignoring param)
+#' Either provide the branch and param, or provide a full url with param
+#' included (ignoring param). If post is used, it is possible to provide the
+#' json_data directly (ignoring param)
 #'
-#' @param branch a character vector with the names of the API resources. For example, use c('projects','articlesets') for the url host/api/v4/projects/articlesets
-#' @param param a named vector or list of parameters, e.g. c(project=2, articleset=3)
-#' @param json_data For sending (post = TRUE) data, directly provide the json body. If used, the param argument is ignored.
+#' @param branch a character vector with the names of the API resources. For
+#'   example, use c('projects','articlesets') for the url
+#'   host/api/v4/projects/articlesets
+#' @param param a named vector or list of parameters, e.g. c(project=2,
+#'   articleset=3)
+#' @param json_data For sending (post = TRUE) data, directly provide the json
+#'   body. If used, the param argument is ignored.
 #' @param post use HTTP POST instead of GET
 #' @param post_options a list with options for HTTP POST (if post is TRUE)
-#' @param read If TRUE, read the content from the response. Otherwise, return the response object
+#' @param read If TRUE, read the content from the response. Otherwise, return
+#'   the response object
 #' @param conn an API connection
 #' @param ... parameters (param) in name-value pairs
 #'

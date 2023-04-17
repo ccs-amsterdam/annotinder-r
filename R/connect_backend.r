@@ -1,12 +1,15 @@
 #' Connect to an annotator backend API
 #'
-#' Connect to a backend API and request or refresh an authentication token. The typical mode of use is to provide the
-#' 'host' (url) of the server and a 'username'. The password will then be requested in a separate prompt.
+#' Connect to a backend API and request or refresh an authentication token. The
+#' typical mode of use is to provide the 'host' (url) of the server and a
+#' 'username'. The password will then be requested in a separate prompt.
 #'
 #' @param host The hostname, e.g. http://localhost:5000
 #' @param username An existing username on the host server
-#' @param token An existing token to authenticate with. If given (and valid), no password has to be entered
-#' @param .password Optionally, the password can be passed as an argument, but this is not recommended.
+#' @param token An existing token to authenticate with. If given (and valid), no
+#'   password has to be entered
+#' @param .password Optionally, the password can be passed as an argument, but
+#'   this is not recommended.
 #'
 #' @return Nothing. Stores API token in env
 #' @export
@@ -50,7 +53,8 @@ conn_to_env <- function(conn) {
 
 #' Get the current connection
 #'
-#' @return an annotatorBackendConnection connection object, created with \link{backend_connect}
+#' @return an annotatorBackendConnection connection object, created with
+#'   \link{backend_connect}
 #' @export
 conn_from_env <- function(){
   backend_conn = Sys.getenv('BACKEND_CONNECTION')
@@ -61,7 +65,8 @@ conn_from_env <- function(){
 
 #' S3 print method for annotatorBackendConnection (API connection) objects
 #'
-#' @param x an annotatorBackendConnection connection object, created with \link{backend_connect}
+#' @param x an annotatorBackendConnection connection object, created with
+#'   \link{backend_connect}
 #' @param ... not used
 #'
 #' @method print annotatorBackendConnection

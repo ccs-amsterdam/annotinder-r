@@ -1,8 +1,9 @@
 #' Create a codes data.frame
 #'
-#' @param ... codes as created with \code{\link{code}}. Can also be a list of codes
+#' @param ... codes as created with \code{\link{code}}. Can also be a list of
+#'   codes
 #'
-#' @return
+#' @return a data.frame of codes
 #' @export
 #'
 #' @examples
@@ -43,12 +44,15 @@ bind_codes <- function(...) {
 #' @param code   The name of the code
 #' @param ...    Optionally, nested codes for children
 #' @param color  Optionally, the color of the code
-#' @param makes_irrelevant Optionally, a character vector of question names that become irrelevant if this code is the selected answer.
-#'                         Can also be "REMAINING" to make all questions after the current one irrelevant.
-#' @param required_for Optionally, a character vector of question names. If this code is not selected, all these questions become irrelevant.
-#'                     Can also be "REMAINING" for all questions after the current.
+#' @param makes_irrelevant Optionally, a character vector of question names that
+#'   become irrelevant if this code is the selected answer. Can also be
+#'   "REMAINING" to make all questions after the current one irrelevant.
+#' @param required_for Optionally, a character vector of question names. If this
+#'   code is not selected, all these questions become irrelevant. Can also be
+#'   "REMAINING" for all questions after the current.
 #'
-#' @return A annotatorCode object, to be used inside the \code{\link{codes}} function
+#' @return A annotatorCode object, to be used inside the \code{\link{codes}}
+#'   function
 #' @export
 #'
 #' @examples

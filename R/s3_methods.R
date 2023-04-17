@@ -4,7 +4,6 @@
 #' @param ... not used
 #'
 #' @method print codingjobUnits
-#' @examples
 #' @export
 print.codingjobUnits <- function(x, ...){
   cat('List of', length(x), 'units\n')
@@ -16,7 +15,6 @@ print.codingjobUnits <- function(x, ...){
 #' @param ... not used
 #'
 #' @method print codingjobUnit
-#' @examples
 #' @export
 print.codingjobUnit <- function(x, ...){
   cat(jsonlite::toJSON(x, pretty=T, auto_unbox=T))
@@ -50,7 +48,6 @@ combine_units <- function(...) {
 #' @param ... one or multiple codingjobUnit objects of codingjobUnits lists
 #'
 #' @method c codingjobUnit
-#' @examples
 #' @export
 c.codingjobUnit <- function(...) combine_units(...)
 
@@ -59,7 +56,6 @@ c.codingjobUnit <- function(...) combine_units(...)
 #' @param ... one or multiple codingjobUnit objects of codingjobUnits lists
 #'
 #' @method c codingjobUnits
-#' @examples
 #' @export
 c.codingjobUnits <- function(...) combine_units(...)
 

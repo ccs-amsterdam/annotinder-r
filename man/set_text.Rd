@@ -17,23 +17,32 @@ set_text(
 \arguments{
 \item{name}{The name of the field. Must be unique within a unit.}
 
-\item{value}{The content of the field. Can be given as a single string, the name of a column in data (for create_units), or any expression.}
+\item{value}{The content of the field. Can be given as a single string, the
+name of a column in data (for create_units), or any expression.}
 
-\item{before}{The text can have a context before and after the coding unit. For example, the data.frame could be a keyword in context listing with the columns "pre", "keyword" and "post" (see for instance quanteda's kwic function).
-These could then be set to the "before", "column" and "after" arguments, respectively. NOTE that if a before or after context is specified, all other text fields before or after
-the current will also be considered context.}
+\item{before}{The text can have a context before and after the coding unit.
+For example, the data.frame could be a keyword in context listing with the
+columns "pre", "keyword" and "post" (see for instance quanteda's kwic
+function). These could then be set to the "before", "column" and "after"
+arguments, respectively. NOTE that if a before or after context is
+specified, all other text fields before or after the current will also be
+considered context.}
 
 \item{after}{See 'before' argument}
 
-\item{label}{An expression or character value to label the text field. Coders will then see this label where this field starts.}
+\item{label}{An expression or character value to label the text field. Coders
+will then see this label where this field starts.}
 
 \item{...}{Style settings, passed to \code{\link{style}}}
 
-\item{offset}{An expression (most likely a column). If the text is a part of a bigger, original text, you can include the offset for the character position where it starts. This is relevant if you want to import
-or export span annotations for which the offset refers to the original text.}
+\item{offset}{An expression (most likely a column). If the text is a part of
+a bigger, original text, you can include the offset for the character
+position where it starts. This is relevant if you want to import or export
+span annotations for which the offset refers to the original text.}
 }
 \value{
-Only meant to be used inside of \code{\link{create_units}} or \code{\link{create_unit}}.
+Only meant to be used inside of \code{\link{create_units}} or
+  \code{\link{create_unit}}.
 }
 \description{
 Set text content

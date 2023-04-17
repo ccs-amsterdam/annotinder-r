@@ -14,22 +14,31 @@ set_test(
 )
 }
 \arguments{
-\item{variable}{The name of the variable as used in the codebook. If not specified, the name of the column will be used.}
+\item{variable}{The name of the variable as used in the codebook. If not
+specified, the name of the column will be used.}
 
-\item{value}{The value to which the given answer will be compared. Either a single string or the name of a column (in create_units).}
+\item{value}{The value to which the given answer will be compared. Either a
+single string or the name of a column (in create_units).}
 
-\item{field}{Optionally, the name of a field (in case of a field specific annotation).}
+\item{field}{Optionally, the name of a field (in case of a field specific
+annotation).}
 
-\item{damage}{The amount of damage a coder should receive. Can be a number or an expression that returns a number.}
+\item{damage}{The amount of damage a coder should receive. Can be a number or
+an expression that returns a number.}
 
-\item{on_wrong}{A markdown string that will be displayed when a coder gives an incorrect answer. If not given, no message will be displayed.
-Can also be the name of a column (in create_units) for unit specific messages.}
+\item{on_wrong}{A markdown string that will be displayed when a coder gives
+an incorrect answer. If not given, no message will be displayed. Can also
+be the name of a column (in create_units) for unit specific messages.}
 
-\item{operator}{How should the annotation value be compared to the column value? Default is "==" (equals). Alternatives are "!=" (not equals),
-"<=", "<", ">=" or ">".}
+\item{operator}{How should the annotation value be compared to the column
+value? Default is "==" (equals). Alternatives are "!=" (not equals), "<=",
+"<", ">=" or ">".}
+}
+\value{
+A list of test units
 }
 \description{
-Setup test units (also known as gold units).
-If the answer/annotation is wrong, coders receive damage.
-Note that which units are test units needs to be indicated with the 'type' argument in \code{\link{create_units}}
+Setup test units (also known as gold units). If the answer/annotation is
+wrong, coders receive damage. Note that which units are test units needs to
+be indicated with the 'type' argument in \code{\link{create_units}}.
 }

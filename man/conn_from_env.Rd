@@ -7,7 +7,8 @@
 conn_from_env()
 }
 \value{
-an annotatorBackendConnection connection object, created with \link{backend_connect}
+an annotatorBackendConnection connection object, created with
+  \link{backend_connect}
 }
 \description{
 Get the current connection

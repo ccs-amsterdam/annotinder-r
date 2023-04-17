@@ -1,16 +1,18 @@
 #' Create a CCS Annotator codingjob
 #'
-#' @param title     A character string, for the title of the codingjob
-#' @param units     A codingjobUnits object, as created with \code{\link{create_units}}
-#' @param codebook  A codebook object, as created with \code{\link{create_codebook}}. Can only be missing for jobs that will be uploaded
-#'                  to the AmCAT annotator backend, and for which jobsets with specific codebooks are specified.
-#' @param pre       A codingjobUnit or codingjobUnits list, created with \code{\link{create_unit}} or \code{\link{create_units}}
-#' @param post      Like pre, but shown after the codingjob.
+#' @param title A character string, for the title of the codingjob
+#' @param units A codingjobUnits object, as created with
+#'   \code{\link{create_units}}
+#' @param codebook  A codebook object, as created with
+#'   \code{\link{create_codebook}}. Can only be missing for jobs that will be
+#'   uploaded to the AmCAT annotator backend, and for which jobsets with
+#'   specific codebooks are specified.
+#' @param pre A codingjobUnit or codingjobUnits list, created with
+#'   \code{\link{create_unit}} or \code{\link{create_units}}
+#' @param post Like pre, but shown after the codingjob.
 #'
-#' @return   A codingjob object
+#' @return A codingjob object
 #' @export
-#'
-#' @examples
 create_job <- function(title, units=NULL, codebook=NULL, pre=NULL, post=NULL) {
   if (!is.null(units) && !methods::is(units, 'codingjobUnits')) stop('units has to be a codingjobUnits list')
 

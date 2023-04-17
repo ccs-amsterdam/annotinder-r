@@ -11,14 +11,17 @@ backend_connect(host, username, token = NULL, .password = NULL)
 
 \item{username}{An existing username on the host server}
 
-\item{token}{An existing token to authenticate with. If given (and valid), no password has to be entered}
+\item{token}{An existing token to authenticate with. If given (and valid), no
+password has to be entered}
 
-\item{.password}{Optionally, the password can be passed as an argument, but this is not recommended.}
+\item{.password}{Optionally, the password can be passed as an argument, but
+this is not recommended.}
 }
 \value{
 Nothing. Stores API token in env
 }
 \description{
-Connect to a backend API and request or refresh an authentication token. The typical mode of use is to provide the
-'host' (url) of the server and a 'username'. The password will then be requested in a separate prompt.
+Connect to a backend API and request or refresh an authentication token. The
+typical mode of use is to provide the 'host' (url) of the server and a
+'username'. The password will then be requested in a separate prompt.
 }

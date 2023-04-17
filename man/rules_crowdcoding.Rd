@@ -7,18 +7,22 @@
 rules_crowdcoding(can_seek_backwards = TRUE, units_per_coder = NULL)
 }
 \arguments{
-\item{can_seek_backwards}{Boolean. Should the coder be allowed to go back to previous unit and edit them?}
+\item{can_seek_backwards}{Boolean. Should the coder be allowed to go back to
+previous unit and edit them?}
 
-\item{units_per_coder}{Number. The number of units presented to an individual crowd coder}
+\item{units_per_coder}{Number. The number of units presented to an individual
+crowd coder}
 }
 \value{
 A rules object
 }
 \description{
-A ruleset that prioritizes coding the entire set as fast as possible using multiple coders.
-When a coder requests a unit, the server will prioritize units that have been coded by least other coders.
-After sorting by least coded units, the units are presented in the original order as uploaded to the server (i.e. the order used in \code{\link{create_units}}).
-Note that you can use this to specify priorities, or to randomize the order.
+A ruleset that prioritizes coding the entire set as fast as possible using
+multiple coders. When a coder requests a unit, the server will prioritize
+units that have been coded by least other coders. After sorting by least
+coded units, the units are presented in the original order as uploaded to the
+server (i.e. the order used in \code{\link{create_units}}). Note that you can
+use this to specify priorities, or to randomize the order.
 }
 \examples{
 ## to create the rules argument in create_job

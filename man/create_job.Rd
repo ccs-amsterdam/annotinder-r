@@ -9,12 +9,16 @@ create_job(title, units = NULL, codebook = NULL, pre = NULL, post = NULL)
 \arguments{
 \item{title}{A character string, for the title of the codingjob}
 
-\item{units}{A codingjobUnits object, as created with \code{\link{create_units}}}
+\item{units}{A codingjobUnits object, as created with
+\code{\link{create_units}}}
 
-\item{codebook}{A codebook object, as created with \code{\link{create_codebook}}. Can only be missing for jobs that will be uploaded
-to the AmCAT annotator backend, and for which jobsets with specific codebooks are specified.}
+\item{codebook}{A codebook object, as created with
+\code{\link{create_codebook}}. Can only be missing for jobs that will be
+uploaded to the AmCAT annotator backend, and for which jobsets with
+specific codebooks are specified.}
 
-\item{pre}{A codingjobUnit or codingjobUnits list, created with \code{\link{create_unit}} or \code{\link{create_units}}}
+\item{pre}{A codingjobUnit or codingjobUnits list, created with
+\code{\link{create_unit}} or \code{\link{create_units}}}
 
 \item{post}{Like pre, but shown after the codingjob.}
 }

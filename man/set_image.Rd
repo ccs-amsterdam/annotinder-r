@@ -9,16 +9,20 @@ set_image(name, value, base64 = FALSE, caption = NULL, ...)
 \arguments{
 \item{name}{The name of the field. Must be unique within a unit.}
 
-\item{value}{The filename of the image. Can be given as a single filename, the name of a column in data (for create_units) that has filenames, or an expression.}
+\item{value}{The filename of the image. Can be given as a single filename,
+the name of a column in data (for create_units) that has filenames, or an
+expression.}
 
 \item{base64}{If TRUE, store the image as a base64 in the codingjob json file}
 
-\item{caption}{The image caption. Can be a single string, or a column in data (for create_units), or an expression.}
+\item{caption}{The image caption. Can be a single string, or a column in data
+(for create_units), or an expression.}
 
 \item{...}{Style settings, passed to \code{\link{style}}}
 }
 \value{
-Only meant to be used inside of \code{\link{create_units}} or \code{\link{create_unit}}.
+Only meant to be used inside of \code{\link{create_units}} or
+  \code{\link{create_unit}}.
 }
 \description{
 Set image content

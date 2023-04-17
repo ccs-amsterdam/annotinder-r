@@ -19,35 +19,53 @@ create_units(
 \arguments{
 \item{data}{A data.frame}
 
-\item{...}{Unit content is specified using the set_ functions (set_text, set_markdown, set_image, etc.).
-For example, if data has a column called header, and you want to create a title using this column,
-use: `set_text('title', header, bold=T, text_size=1.3)`}
+\item{...}{Unit content is specified using the set_ functions (set_text,
+set_markdown, set_image, etc.). For example, if data has a column called
+header, and you want to create a title using this column, use:
+`set_text('title', header, bold=T, text_size=1.3)`}
 
-\item{id}{Name of a column in data with unique values. These ids will be used to link annotation to units.}
+\item{id}{Name of a column in data with unique values. These ids will be
+used to link annotation to units.}
 
-\item{type}{Name of a column in data with types. Valid types are: "code", "train", "test" and "survey"}
+\item{type}{Name of a column in data with types. Valid types are: "code",
+"train", "test" and "survey"}
 
-\item{subfields}{Selected fields (text/image/markdown) of rows with identical id's can be grouped together into a single unit.
-The subfields arguments should then be a character vector indicating which fields need to be grouped.
-Fields that are not grouped should have identical values across all rows (with the same id).
-When fields are grouped, they are enumerated as field.1, field.2, etc.
-This is particularly usefull when combined with the per_field argument in \code{\link{question}}}
+\item{subfields}{Selected fields (text/image/markdown) of rows with identical
+id's can be grouped together into a single unit. The subfields arguments
+should then be a character vector indicating which fields need to be
+grouped. Fields that are not grouped should have identical values across
+all rows (with the same id). When fields are grouped, they are enumerated
+as field.1, field.2, etc. This is particularly usefull when combined with
+the per_field argument in \code{\link{question}}}
 
-\item{variables}{A vector of column names in data. These column names can then be referenced from the codebook.
-For example, if there is a column "topic", you could ask the question: "is this sentence about {topic}".
-The {topic} part will then be replaced in the question with the value for this unit in the "topic" column.}
+\item{variables}{A vector of column names in data. These column names can
+then be referenced from the codebook. For example, if there is a column
+"topic", you could ask the question: "is this sentence about {topic}". The
+{topic} part will then be replaced in the question with the value for this
+unit in the "topic" column.}
 
-\item{meta}{A vector of column names in data. These names and their values will be shown at the top of a unit.
-Can also be a named vector, in which case the names will be used as the labels that coders get to see.}
+\item{meta}{A vector of column names in data. These names and their values
+will be shown at the top of a unit. Can also be a named vector, in which
+case the names will be used as the labels that coders get to see.}
 
-\item{grid_areas}{A list with character vectors to specify the grid-template-areas (see \url{https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-areas}).
-Each item in the list represents a row, and each value in the character vector the column in that row.
-The values need to be the names of fields (i.e. the column names). If you want a position in the grid to be empty, use a dot ".".}
+\item{grid_areas}{A list with character vectors to specify the
+grid-template-areas (see
+\url{https://developer.mozilla.org/en-US/docs/Web/CSS/grid-template-areas}).
+Each item in the list represents a row, and each value in the character
+vector the column in that row. The values need to be the names of fields
+(i.e. the column names). If you want a position in the grid to be empty,
+use a dot ".".}
 
-\item{grid_cols}{A numeric vector of the same length as the number of columns in areas. Each value indicates the relative space given to the column. So c(1,2) means that
-the second column will be twice as wide as the first column.}
+\item{grid_cols}{A numeric vector of the same length as the number of columns
+in areas. Each value indicates the relative space given to the column. So
+c(1,2) means that the second column will be twice as wide as the first
+column.}
+}
+\value{
+A codingjobUnits object
 }
 \description{
 Create the basis for a units object. The content of the units can then be
-designed in a pipe of \code{\link{set_text}}, \code{\link{set_meta}}, \code{\link{set_image}} and \code{\link{set_markdown}} functions
+designed in a pipe of \code{\link{set_text}}, \code{\link{set_meta}},
+\code{\link{set_image}} and \code{\link{set_markdown}} functions
 }

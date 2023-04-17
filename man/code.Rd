@@ -13,14 +13,17 @@ code(code, ..., color = NULL, makes_irrelevant = NULL, required_for = NULL)
 
 \item{color}{Optionally, the color of the code}
 
-\item{makes_irrelevant}{Optionally, a character vector of question names that become irrelevant if this code is the selected answer.
-Can also be "REMAINING" to make all questions after the current one irrelevant.}
+\item{makes_irrelevant}{Optionally, a character vector of question names that
+become irrelevant if this code is the selected answer. Can also be
+"REMAINING" to make all questions after the current one irrelevant.}
 
-\item{required_for}{Optionally, a character vector of question names. If this code is not selected, all these questions become irrelevant.
-Can also be "REMAINING" for all questions after the current.}
+\item{required_for}{Optionally, a character vector of question names. If this
+code is not selected, all these questions become irrelevant. Can also be
+"REMAINING" for all questions after the current.}
 }
 \value{
-A annotatorCode object, to be used inside the \code{\link{codes}} function
+A annotatorCode object, to be used inside the \code{\link{codes}}
+  function
 }
 \description{
 Create a code
