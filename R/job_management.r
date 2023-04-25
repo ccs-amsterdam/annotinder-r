@@ -1,5 +1,3 @@
-
-
 #' Get a list of codingjobs
 #'
 #' Get the codingjobs for the current host and user, logged in with
@@ -9,21 +7,21 @@
 #' @export
 #'
 list_jobs <- function() {
-  request('codingjobs')
+  request("codingjobs")
 }
 
 
-get_job <- function(job_id, annotations=T) {
-  cj = request(c('codingjob', job_id), annotations=T)
+get_job <- function(job_id, annotations = T) {
+  cj <- request(c("codingjob", job_id), annotations = T)
 
-  annotations = lapply(cj$annotations, function(a) {
-    d = dplyr::bind_rows(a$annotation)
-    dplyr::bind_cols(a[names(a) != 'annotation'], d)
+  annotations <- lapply(cj$annotations, function(a) {
+    d <- dplyr::bind_rows(a$annotation)
+    dplyr::bind_cols(a[names(a) != "annotation"], d)
   })
-  d = dplyr::bind_rows(annotations)
+  d <- dplyr::bind_rows(annotations)
 
-  units = structure(cj$units, class=c('codingjobUnits', 'list'))
-  codebook = structure(cj$codebook, class=c('codebook', 'list'))
+  units <- structure(cj$units, class = c("codingjobUnits", "list"))
+  codebook <- structure(cj$codebook, class = c("codebook", "list"))
 }
 
 #' Upload a CCS Annotator codingjob to a server
@@ -50,34 +48,44 @@ get_job <- function(job_id, annotations=T) {
 #'   link. Create with \code{\link{debrief}}
 #' @param pre A special unit or list of special units to show before the
 #'   codingjob.
-#' @param pre Like pre, but for after the codingjob.
+#' @param post Like pre, but for after the codingjob.
 #'
 #' @return   The id of the new codingjob on the server
 #' @export
-upload_job <- function(title, units, codebook=NULL, annotations=NULL, rules = rules_fixedset(), jobsets=NULL, debrief=NULL, pre=NULL, post=NULL) {
-  codingjob = create_job(title, units, codebook, annotations)
+upload_job <- function(title,
+                       units,
+                       codebook = NULL,
+                       annotations = NULL,
+                       rules = rules_fixedset(),
+                       jobsets = NULL,
+                       debrief = NULL,
+                       pre = NULL,
+                       post = NULL) {
+  codingjob <- create_job(title, units, codebook, annotations)
 
-  pre = prepare_position_unit(pre, 'pre')
-  post = prepare_position_unit(post, 'post')
-  codingjob$units = c(pre, codingjob$units, post)
+  pre <- prepare_position_unit(pre, "pre")
+  post <- prepare_position_unit(post, "post")
+  codingjob$units <- c(pre, codingjob$units, post)
 
-  codingjob$rules = rules
+  codingjob$rules <- rules
   if (!is.null(jobsets)) {
-    if (anyDuplicated(sapply(jobsets, '[[', 'name')))
+    if (anyDuplicated(sapply(jobsets, "[[", "name"))) {
       stop('jobsets must have unique "name"')
-    pre_ids = unlist(lapply(pre, '[[', 'id'))
-    post_ids = unlist(lapply(post, '[[', 'id'))
+    }
+    pre_ids <- unlist(lapply(pre, "[[", "id"))
+    post_ids <- unlist(lapply(post, "[[", "id"))
     for (i in 1:length(jobsets)) {
-      if (is.null(jobsets[[i]]$codebook)&& is.null(codingjob$codebook))
-        stop('Either codingjob needs to have a codebook, or all jobsets must have a codebook')
-      jobsets[[i]]$unit_set = c(pre_ids, jobsets[[i]]$unit_set, post_ids)
+      if (is.null(jobsets[[i]]$codebook) && is.null(codingjob$codebook)) {
+        stop("Either codingjob needs to have a codebook, or all jobsets must have a codebook")
+      }
+      jobsets[[i]]$unit_set <- c(pre_ids, jobsets[[i]]$unit_set, post_ids)
     }
   }
-  codingjob$jobsets = jobsets
+  codingjob$jobsets <- jobsets
 
-  if (!is.null(debrief)) codingjob$debriefing = debrief
+  if (!is.null(debrief)) codingjob$debriefing <- debrief
 
-  cj_data = request('codingjob', post = T, json_data = jsonlite::toJSON(codingjob, auto_unbox = T))
+  cj_data <- request("codingjob", post = T, json_data = jsonlite::toJSON(codingjob, auto_unbox = T))
   cj_data$id
 }
 
@@ -90,34 +98,34 @@ upload_job <- function(title, units, codebook=NULL, annotations=NULL, rules = ru
 #'
 #' @examples
 #' \dontrun{
-#'   download_annotations(7)
+#' download_annotations(7)
 #' }
 download_annotations <- function(job_id) {
-    cj = request(c('codingjob', job_id, 'annotations'), annotations=T)
+  cj <- request(c("codingjob", job_id, "annotations"), annotations = T)
 
-    annotations = lapply(cj, function(unit) {
-      unit$annotation = lapply(unit$annotation, function(x) {
-        ## cleanup, but this should actually not be returned by server
-        x$meta = NULL
-        x$makes_irrelevant = NULL
-        x
-      })
-      d = dplyr::bind_rows(unit$annotation)
-      dplyr::bind_cols(unit[names(unit) != 'annotation'], d)
+  annotations <- lapply(cj, function(unit) {
+    unit$annotation <- lapply(unit$annotation, function(x) {
+      ## cleanup, but this should actually not be returned by server
+      x$meta <- NULL
+      x$makes_irrelevant <- NULL
+      x
     })
+    d <- dplyr::bind_rows(unit$annotation)
+    dplyr::bind_cols(unit[names(unit) != "annotation"], d)
+  })
 
-    dplyr::bind_rows(annotations)
+  dplyr::bind_rows(annotations)
 }
 
-duplicate_questions <- function()
-
-set_special_id <- function(units, what) {
-  if (is.null(units)) return(NULL)
-  if (!is.null(units$id)) units = list(units)  ## if it has an $id, it's a single unit
-  for (i in 1:length(units)) {
-    units[[i]]$id = paste(what, i, sep='.')
+duplicate_questions <- function() {
+  set_special_id <- function(units, what) {
+    if (is.null(units)) {
+      return(NULL)
+    }
+    if (!is.null(units$id)) units <- list(units) ## if it has an $id, it's a single unit
+    for (i in 1:length(units)) {
+      units[[i]]$id <- paste(what, i, sep = ".")
+    }
+    units
   }
-  units
 }
-
-

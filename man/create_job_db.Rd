@@ -4,30 +4,37 @@
 \alias{create_job_db}
 \title{Create a codingjob database}
 \usage{
-create_job_db(codingjob, path = getwd(), overwrite = F)
+create_job_db(codingjob, db_path = getwd(), overwrite = FALSE)
 }
 \arguments{
 \item{codingjob}{A codingjob, created with \code{\link{create_job}}}
 
-\item{overwrite}{You're not allowed to create two jobs with the same title (which also becomes the DB filename).
-Or well, you're allowed to, but you have to say overwrite is TRUE so you can't blame us if you
-accidentally delete any hard-earned annotations.}
+\item{db_path}{The path where the folder with coding job DBs is stored.
+Default is working directory. If you don't want to store annotations beyond
+this session, use tempdir().}
 
-\item{db_path}{The path where the folder with coding job DBs is stored. Default is working directory.
-If you don't want to store annotations beyond this session, use tempdir().}
+\item{overwrite}{You're not allowed to create two jobs with the same title
+(which also becomes the DB filename). Or well, you're allowed to, but you
+have to say overwrite is TRUE so you can't blame us if you accidentally
+delete any hard-earned annotations.}
 }
 \value{
 The job database file, that can be used in gimme_annotation()
 }
 \description{
-Creates an RSQlite database, that can be used in \code{\link{start_annotator}}
+Creates an RSQlite database, that can be used in
+\code{\link{start_annotator}}
 }
 \examples{
-sentiment = annotation_variable('sentiment', 'assign sentiment to words',
-     codes = c(red = 'Negative', grey = 'Neutral', green = 'Positive'))
-codingjob = create_job('Sotu sentiment',
-                       create_units(mini_sotu, id='id', set_text('text',text), meta=c('name','year')),
-                       create_codebook(sentiment))
-
-job_db = create_job_db(codingjob)
+sentiment <- annotation_variable("sentiment", "assign sentiment to words",
+  codes = c(red = "Negative", grey = "Neutral", green = "Positive")
+)
+codingjob <- create_job(
+  "Sotu sentiment",
+  create_units(mini_sotu, id = "id", set_text("text", text), meta = c("name", "year")),
+  create_codebook(sentiment)
+)
+\dontrun{
+job_db <- create_job_db(codingjob)
+}
 }

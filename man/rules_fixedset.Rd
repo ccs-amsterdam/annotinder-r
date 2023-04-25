@@ -16,6 +16,8 @@ previous unit and edit them?}
 
 \item{can_seek_forwards}{Boolean. Should the coder be allowed to go forward
 beyond units that have been coded?}
+
+\item{randomize}{description}
 }
 \value{
 A rules object
@@ -29,5 +31,5 @@ jobset unit_id will then be used.
 }
 \examples{
 ## to create the rules argument in create_job
-rules = rules_fixedset()
+rules <- rules_fixedset()
 }

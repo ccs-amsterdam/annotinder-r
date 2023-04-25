@@ -13,14 +13,16 @@ question(
   color = "#7fb9eb",
   fields = NULL,
   per_field = NULL,
-  vertical = F,
-  same_size = T,
+  vertical = FALSE,
+  same_size = TRUE,
   items = NULL
 )
 }
 \arguments{
 \item{name}{The name/label of the question. Recommended to keep short. Cannot
 contain a "."}
+
+\item{question}{A short (think 1 or 2 sentences) question.}
 
 \item{codes}{The codes that the coder can choose from. Can be a character
 vector, named character vector or data.frame. An unnamed character vector
@@ -59,15 +61,15 @@ this question will be repeated for each comment. The easiest way to set
 this up is to use the "split" argument in set_text and set_markdown, which
 automatically split a field into numbered fields.}
 
+\item{vertical}{If "buttons" selection is used, this puts all buttons on
+the same row (just make sure not to have too many buttons)}
+
 \item{same_size}{If "buttons" selection is used, make all buttons the same
 size.}
 
 \item{items}{Can be used for "scale" and "inputs" type questions. Should be a
 named list where the names are the item names, and value is a list with
 parameters.}
-
-\item{single_row}{If "buttons" selection is used, this puts all buttons on
-the same row (just make sure not to have too many buttons)}
 }
 \value{
 A question object, to be used within the

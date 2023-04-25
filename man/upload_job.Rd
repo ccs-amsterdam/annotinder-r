@@ -44,7 +44,10 @@ left empty, the 'crowdcoding' ruleset will be used.}
 \item{debrief}{At debriefing when a job is finished, such as a message and
 link. Create with \code{\link{debrief}}}
 
-\item{pre}{Like pre, but for after the codingjob.}
+\item{pre}{A special unit or list of special units to show before the
+codingjob.}
+
+\item{post}{Like pre, but for after the codingjob.}
 }
 \value{
 The id of the new codingjob on the server

@@ -4,7 +4,7 @@
 \alias{start_annotator}
 \title{Start annotation server (RStudio only)}
 \usage{
-start_annotator(job_db, background = F, browse = T, port = 8000)
+start_annotator(job_db, background = FALSE, browse = TRUE, port = 8000)
 }
 \arguments{
 \item{job_db}{A codingjob database file, created with
@@ -15,6 +15,8 @@ background job. This way you can keep working in the current session}
 
 \item{browse}{If TRUE (default), automatically opens
 \code{\link{annotator_client}}}
+
+\item{port}{The port number to run the annotator on.}
 }
 \value{
 The job_db (for piping convenience)
@@ -36,15 +38,18 @@ server in the background of the current session. To use this, set background
 = TRUE.
 }
 \examples{
-sentiment = annotation_variable('sentiment', 'assign sentiment to words',
-     codes = c(red = 'Negative', grey = 'Neutral', green = 'Positive'))
-codingjob = create_job('Sotu sentiment',
-                       create_units(mini_sotu, id='id', set_text('text',text), meta=c('name','year')),
-                       create_codebook(sentiment))
-
-job_db = create_job_db(codingjob)
+sentiment <- annotation_variable("sentiment", "assign sentiment to words",
+  codes = c(red = "Negative", grey = "Neutral", green = "Positive")
+)
+codingjob <- create_job(
+  "Sotu sentiment",
+  create_units(mini_sotu, id = "id", set_text("text", text), meta = c("name", "year")),
+  create_codebook(sentiment)
+)
 
 \dontrun{
+job_db <- create_job_db(codingjob)
+
 start_annotator(job_db)
 }
 }

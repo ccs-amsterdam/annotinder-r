@@ -13,40 +13,44 @@
 #'
 #' @return A codingjob object
 #' @export
-create_job <- function(title, units=NULL, codebook=NULL, pre=NULL, post=NULL) {
-  if (!is.null(units) && !methods::is(units, 'codingjobUnits')) stop('units has to be a codingjobUnits list')
+create_job <- function(title, units = NULL, codebook = NULL, pre = NULL, post = NULL) {
+  if (!is.null(units) && !methods::is(units, "codingjobUnits")) stop("units has to be a codingjobUnits list")
 
-  codingjob = list(title=jsonlite::unbox(title),
-                   codebook=codebook,
-                   units=units)
+  codingjob <- list(
+    title = jsonlite::unbox(title),
+    codebook = codebook,
+    units = units
+  )
 
-  pre = prepare_position_unit(pre, 'pre')
-  post = prepare_position_unit(post, 'post')
-  codingjob$units = c(pre, codingjob$units, post)
+  pre <- prepare_position_unit(pre, "pre")
+  post <- prepare_position_unit(post, "post")
+  codingjob$units <- c(pre, codingjob$units, post)
 
   if (is.null(codebook)) {
-    no_codebook = sapply(codingjob$units, function(unit) is.null(unit$unit$codebook))
-    if (any(no_codebook)) stop('Job level codebook can only be missing if every unit in the job has its own codebook')
+    no_codebook <- sapply(codingjob$units, function(unit) is.null(unit$unit$codebook))
+    if (any(no_codebook)) stop("Job level codebook can only be missing if every unit in the job has its own codebook")
   }
 
-  ids = sapply(codingjob$units, function(x) x$id)
-  dupl = unique(ids[duplicated(ids)])
+  ids <- sapply(codingjob$units, function(x) x$id)
+  dupl <- unique(ids[duplicated(ids)])
   if (length(dupl) > 0) {
-    dupl_str = paste(head(dupl, 5), collapse=', ')
-    if (length(dupl) > 5) dupl_str = paste0(dupl_str, ', (', lenght(dupl)-5, ' more)')
-    sprintf('Job has duplicate unit ids: %s', dupl_str)
+    dupl_str <- paste(utils::head(dupl, 5), collapse = ", ")
+    if (length(dupl) > 5) dupl_str <- paste0(dupl_str, ", (", length(dupl) - 5, " more)")
+    sprintf("Job has duplicate unit ids: %s", dupl_str)
   }
 
-  job = structure(codingjob, class=c('codingjob', 'list'))
-  job$units = structure(job$units, class=c('codingjobUnits','list'))
+  job <- structure(codingjob, class = c("codingjob", "list"))
+  job$units <- structure(job$units, class = c("codingjobUnits", "list"))
   job
 }
 
 prepare_position_unit <- function(units, what) {
-  if (is.null(units)) return(NULL)
-  if (!is.null(units$id)) units = list(units)  ## if it has an $id, it's a single unit
+  if (is.null(units)) {
+    return(NULL)
+  }
+  if (!is.null(units$id)) units <- list(units) ## if it has an $id, it's a single unit
   for (i in 1:length(units)) {
-    units[[i]]$position = what
+    units[[i]]$position <- what
   }
   units
 }

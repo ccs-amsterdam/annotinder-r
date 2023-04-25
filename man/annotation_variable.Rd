@@ -35,7 +35,7 @@ relations can be created with \code{\link{relation}}. You can also specify
 multiple relations by providing a list of relations.}
 
 \item{only_edit}{If TRUE, coders can only edit imported annotations. You
-can import annotations in \code{\link{create_jobs}} with the annotations
+can import annotations in \code{\link{create_job}} with the annotations
 argument}
 
 \item{only_imported}{If TRUE, codes can only use codes that were used at
@@ -70,23 +70,30 @@ government -> president, and issue -> economy -> taxes.
 }
 \examples{
 # simple variable with simple codes
-codes = c("Economy","War","Health")
-annotation_variable("topic", "Assign topics to words", codes=codes)
+codes <- c("Economy", "War", "Health")
+annotation_variable("topic", "Assign topics to words", codes = codes)
 
 # quick hand for setting colors
-codes = c(Economy = 'blue', War = 'red', Health = 'green')
-annotation_variable("topic", "Assign topics to words", codes=codes)
+codes <- c(Economy = "blue", War = "red", Health = "green")
+annotation_variable("topic", "Assign topics to words", codes = codes)
 
 # get codes from a data.frame
-codes_df = data.frame(code  = c("negative","neutral","positive"),
-                      color = c("red",     "grey",   "green"))
+codes_df <- data.frame(
+  code = c("negative", "neutral", "positive"),
+  color = c("red", "grey", "green")
+)
 annotation_variable("sentiment", "Assign sentiment to words", codes_df)
 
 # codes data.frame with parents
-codes_df = data.frame(
-   parent = c('', 'actor', 'government', '', 'media', 'newspaper'),
-   code = c('actor','government','president','media','newspaper','NYT'))
+codes_df <- data.frame(
+  parent = c("", "actor", "government", "", "media", "newspaper"),
+  code = c("actor", "government", "president", "media", "newspaper", "NYT")
+)
 codes_df
 
-annotation_variable("actors", "Label actors. Use the most specific label available", codes_df)
+annotation_variable(
+  "actors",
+  "Label actors. Use the most specific label available",
+  codes_df
+)
 }

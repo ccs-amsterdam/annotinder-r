@@ -22,12 +22,12 @@ A tibble with annotations. The id column matches with the units (as
 Get annotation for a given job DB
 }
 \examples{
+\dontrun{
 # get annotation for most recent server run (or still running) in current session
 gimme_annotations()
 
-\dontrun{
 # from a job database, as returned by create_job_db (or by start_annotator)
-job_db = "path/to/job.db"
+job_db <- "path/to/job.db"
 gimme_annotations(job_db)
 }
 }

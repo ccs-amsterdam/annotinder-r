@@ -1,4 +1,3 @@
-
 #' Specify a jobset
 #'
 #' A simple codingjob has a single jobset, in which all coders have the same
@@ -28,13 +27,12 @@
 #'
 #' @examples
 #' ## to create the rules argument in create_job
-#' rules = rules_fixedset()
-jobset <- function(name, codebook=NULL, ids=NULL, pre_ids=NULL, post_ids=NULL) {
-  l = list(name = jsonlite::unbox(name))
-  if (!is.null(codebook)) l[['codebook']] = codebook
-  if (!is.null(ids)) l[['ids']] = ids
-  if (!is.null(pre_ids)) l[['pre_ids']] = pre_ids
-  if (!is.null(post_ids)) l[['post_ids']] = post_ids
-  structure(l, class = c('jobset', 'list'))
+#' rules <- rules_fixedset()
+jobset <- function(name, codebook = NULL, ids = NULL, pre_ids = NULL, post_ids = NULL) {
+  l <- list(name = jsonlite::unbox(name))
+  if (!is.null(codebook)) l[["codebook"]] <- codebook
+  if (!is.null(ids)) l[["ids"]] <- ids
+  if (!is.null(pre_ids)) l[["pre_ids"]] <- pre_ids
+  if (!is.null(post_ids)) l[["post_ids"]] <- post_ids
+  structure(l, class = c("jobset", "list"))
 }
-

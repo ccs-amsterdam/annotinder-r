@@ -7,10 +7,12 @@
 set_markdown(name, value, ...)
 }
 \arguments{
-\item{...}{Style settings, passed to \code{\link{style}}}
+\item{name}{The name of the field to be set.}
 
-\item{field}{The content of the field. Can be given as a single string, the
+\item{value}{The content of the field. Can be given as a single string, the
 name of a column in data (for create_units), or any expression.}
+
+\item{...}{Style settings, passed to \code{\link{style}}}
 }
 \value{
 Only meant to be used inside of \code{\link{create_units}} or

@@ -24,8 +24,8 @@ set_markdown, set_image, etc.). For example, if data has a column called
 header, and you want to create a title using this column, use:
 `set_text('title', header, bold=T, text_size=1.3)`}
 
-\item{id}{Name of a column in data with unique values. These ids will be
-used to link annotation to units.}
+\item{id}{Name of a column in data with unique values. These ids will be used
+to link annotation to units.}
 
 \item{type}{Name of a column in data with types. Valid types are: "code",
 "train", "test" and "survey"}
@@ -66,6 +66,6 @@ A codingjobUnits object
 }
 \description{
 Create the basis for a units object. The content of the units can then be
-designed in a pipe of \code{\link{set_text}}, \code{\link{set_meta}},
-\code{\link{set_image}} and \code{\link{set_markdown}} functions
+designed in a pipe of \code{\link{set_text}}, \code{\link{set_image}} and
+\code{\link{set_markdown}} functions
 }

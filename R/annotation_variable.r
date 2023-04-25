@@ -19,7 +19,7 @@
 #'   relations can be created with \code{\link{relation}}. You can also specify
 #'   multiple relations by providing a list of relations.
 #' @param only_edit If TRUE, coders can only edit imported annotations. You
-#'   can import annotations in \code{\link{create_jobs}} with the annotations
+#'   can import annotations in \code{\link{create_job}} with the annotations
 #'   argument
 #' @param only_imported If TRUE, codes can only use codes that were used at
 #'   least once in a unit in the imported annotations.
@@ -47,73 +47,86 @@
 #'
 #' @examples
 #' # simple variable with simple codes
-#' codes = c("Economy","War","Health")
-#' annotation_variable("topic", "Assign topics to words", codes=codes)
+#' codes <- c("Economy", "War", "Health")
+#' annotation_variable("topic", "Assign topics to words", codes = codes)
 #'
 #' # quick hand for setting colors
-#' codes = c(Economy = 'blue', War = 'red', Health = 'green')
-#' annotation_variable("topic", "Assign topics to words", codes=codes)
+#' codes <- c(Economy = "blue", War = "red", Health = "green")
+#' annotation_variable("topic", "Assign topics to words", codes = codes)
 #'
 #' # get codes from a data.frame
-#' codes_df = data.frame(code  = c("negative","neutral","positive"),
-#'                       color = c("red",     "grey",   "green"))
+#' codes_df <- data.frame(
+#'   code = c("negative", "neutral", "positive"),
+#'   color = c("red", "grey", "green")
+#' )
 #' annotation_variable("sentiment", "Assign sentiment to words", codes_df)
 #'
 #' # codes data.frame with parents
-#' codes_df = data.frame(
-#'    parent = c('', 'actor', 'government', '', 'media', 'newspaper'),
-#'    code = c('actor','government','president','media','newspaper','NYT'))
+#' codes_df <- data.frame(
+#'   parent = c("", "actor", "government", "", "media", "newspaper"),
+#'   code = c("actor", "government", "president", "media", "newspaper", "NYT")
+#' )
 #' codes_df
 #'
-#' annotation_variable("actors", "Label actors. Use the most specific label available", codes_df)
-annotation_variable <- function(name, instruction, codes=NULL,  relations=NULL, only_edit=F, only_imported=F, multiple=F) {
-  if (grepl('\\.', name)) stop('Variable name is not allowed to contain a "." symbol')
+#' annotation_variable(
+#'   "actors",
+#'   "Label actors. Use the most specific label available",
+#'   codes_df
+#' )
+annotation_variable <- function(name, instruction, codes = NULL, relations = NULL, only_edit = F, only_imported = F, multiple = F) {
+  if (grepl("\\.", name)) stop('Variable name is not allowed to contain a "." symbol')
 
-  selection = "buttons"
+  selection <- "buttons"
 
-  a = as.list(environment())
-  l = list(codes = codes)
+  a <- as.list(environment())
+  l <- list(codes = codes)
   for (key in names(a)) {
     if (is.null(a[[key]])) next
-    if (key == 'codes') next
+    if (key == "codes") next
     if (key == "relations") next
-    if (key == 'selection') {
-      if (selection == 'buttons') {
-        l[['searchBox']] = jsonlite::unbox(FALSE)
-        l[['buttonMode']] = jsonlite::unbox('all')
+    if (key == "selection") {
+      if (selection == "buttons") {
+        l[["searchBox"]] <- jsonlite::unbox(FALSE)
+        l[["buttonMode"]] <- jsonlite::unbox("all")
       }
-      if (selection == 'dropdown') {
-        l[['searchBox']] = jsonlite::unbox(TRUE)
-        l[['buttonMode']] = jsonlite::unbox('recent')
+      if (selection == "dropdown") {
+        l[["searchBox"]] <- jsonlite::unbox(TRUE)
+        l[["buttonMode"]] <- jsonlite::unbox("recent")
       }
       next
     }
-    l[[key]] = jsonlite::unbox(a[[key]])
+    l[[key]] <- jsonlite::unbox(a[[key]])
   }
 
-  l$type = 'span'
+  l$type <- "span"
   if (!is.null(relations)) {
-    if (methods::is(relations, 'codeRelation')) relations = list(relations)
-    l$relations = relations
-    l$type = 'relation'
+    if (methods::is(relations, "codeRelation")) relations <- list(relations)
+    l$relations <- relations
+    l$type <- "relation"
   }
 
 
-  l$editMode = jsonlite::unbox(only_edit)
-  l$onlyImported = jsonlite::unbox(only_imported)
+  l$editMode <- jsonlite::unbox(only_edit)
+  l$onlyImported <- jsonlite::unbox(only_imported)
 
 
-  if (methods::is(l$codes, 'character')) {
+  if (methods::is(l$codes, "character")) {
     if (!is.null(names(l$codes))) {
-      l$codes = data.frame(code = l$codes, color = names(l$codes))
-    } else l$codes = data.frame(code = l$codes)
+      l$codes <- data.frame(code = l$codes, color = names(l$codes))
+    } else {
+      l$codes <- data.frame(code = l$codes)
+    }
   }
-  if (methods::is(l$codes, 'list')) {
-    l$codes = bind_codes(codes)
+  if (methods::is(l$codes, "list")) {
+    l$codes <- bind_codes(codes)
   }
-  if (!methods::is(l$codes, 'data.frame')) stop('The codes argument has to be a character vector, data.frame, or created with the codes() function')
-  if (is.null(l$codes$code)) stop('The data.frame passed to the codes argument needs to have a column named "code"')
-  structure(l, class=c('codebookVariable', 'list'))
+  if (!methods::is(l$codes, "data.frame")) {
+    stop("The codes argument has to be a character vector, data.frame, or created with the codes() function")
+  }
+  if (is.null(l$codes$code)) {
+    stop('The data.frame passed to the codes argument needs to have a column named "code"')
+  }
+  structure(l, class = c("codebookVariable", "list"))
 }
 
 
@@ -144,33 +157,35 @@ annotation_variable <- function(name, instruction, codes=NULL,  relations=NULL, 
 #'     to_variable = "labels", to_values = "Issue"
 #'   )
 #' )
-relation <- function(codes, from_variable, to_variable, from_values=NULL, to_values=NULL) {
-  l = list(codes = as.list(codes),
-       from = list(variable = from_variable),
-       to = list(variable = to_variable))
-  if (!is.null(from_values)) l$from$values = as.list(from_values)
-  if (!is.null(to_values)) l$to$values = as.list(to_values)
-  structure(l, class=c('codeRelation', class(l)))
+relation <- function(codes, from_variable, to_variable, from_values = NULL, to_values = NULL) {
+  l <- list(
+    codes = as.list(codes),
+    from = list(variable = from_variable),
+    to = list(variable = to_variable)
+  )
+  if (!is.null(from_values)) l$from$values <- as.list(from_values)
+  if (!is.null(to_values)) l$to$values <- as.list(to_values)
+  structure(l, class = c("codeRelation", class(l)))
 }
 
 #' S3 print method for codebookVariable objects
 #'
-#' @param x an codebookVariable object, created with \link{variable}
+#' @param x an codebookVariable object, created with \link{annotation_variable}
 #' @param ... not used
 #'
 #' @method print codebookVariable
 #' @export
-print.codebookVariable <- function(x, ...){
+print.codebookVariable <- function(x, ...) {
   for (name in names(x)) {
-    if (name == 'codes') next
-    if (name == 'relations') next
+    if (name == "codes") next
+    if (name == "relations") next
     if (x[[name]] == F) next
-    label = if (name == 'name') 'variable name' else name
-    cat(sprintf('%s:\t%s\n', label, x[[name]]))
+    label <- if (name == "name") "variable name" else name
+    cat(sprintf("%s:\t%s\n", label, x[[name]]))
   }
-  cat('\ncodes:\n')
+  cat("\ncodes:\n")
   print(x$codes)
-  cat('\nrelations:\n')
+  cat("\nrelations:\n")
   print(x$relations)
 }
 
@@ -181,27 +196,27 @@ print.codebookVariable <- function(x, ...){
 #'
 #' @method print codeRelation
 #' @export
-print.codeRelation <- function(x, ...){
-  str = paste0("Relations: ", paste(x$codes, collapse=' - '))
-  str = paste0(str, '\n   From: ', x$from$variable)
-  if ('values' %in% names(x$from)) str = paste0(str, ' (', paste(x$from$values, collapse=', '), ')')
-  str = paste0(str, '\n   To:   ', x$to$variable)
-  if ('values' %in% names(x$to)) str = paste0(str, ' (', paste(x$to$values, collapse=', '), ')')
+print.codeRelation <- function(x, ...) {
+  str <- paste0("Relations: ", paste(x$codes, collapse = " - "))
+  str <- paste0(str, "\n   From: ", x$from$variable)
+  if ("values" %in% names(x$from)) str <- paste0(str, " (", paste(x$from$values, collapse = ", "), ")")
+  str <- paste0(str, "\n   To:   ", x$to$variable)
+  if ("values" %in% names(x$to)) str <- paste0(str, " (", paste(x$to$values, collapse = ", "), ")")
   cat(str)
 }
 
 #' S3 summary method for codebookVariable objects
 #'
-#' @param x an codebookVariable object, created with \link{variable}
+#' @param object an codebookVariable object, created with \link{annotation_variable}
 #' @param ... not used
 #'
 #' @method summary codebookVariable
 #' @export
-summary.codebookVariable <- function(x, ...){
-  for (name in names(x)) {
-    if (name == 'codes') next
-    if (x[[name]] == F) next
-    label = if (name == 'name') 'variable name' else name
-    cat(sprintf('%s:\t%s\n', label, x[[name]]))
+summary.codebookVariable <- function(object, ...) {
+  for (name in names(object)) {
+    if (name == "codes") next
+    if (object[[name]] == F) next
+    label <- if (name == "name") "variable name" else name
+    cat(sprintf("%s:\t%s\n", label, object[[name]]))
   }
 }

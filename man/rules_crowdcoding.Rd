@@ -26,5 +26,5 @@ use this to specify priorities, or to randomize the order.
 }
 \examples{
 ## to create the rules argument in create_job
-rules = rules_crowdcoding()
+rules <- rules_crowdcoding()
 }

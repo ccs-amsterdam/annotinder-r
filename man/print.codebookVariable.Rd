@@ -7,7 +7,7 @@
 \method{print}{codebookVariable}(x, ...)
 }
 \arguments{
-\item{x}{an codebookVariable object, created with \link{variable}}
+\item{x}{an codebookVariable object, created with \link{annotation_variable}}
 
 \item{...}{not used}
 }

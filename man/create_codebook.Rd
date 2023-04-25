@@ -8,7 +8,7 @@ create_codebook(...)
 }
 \arguments{
 \item{...}{Questions for "questions" mode or Variables for "annotate" mode.
-See \code{\link{codebook_variable}} Cannot combine "annotate" and
+Cannot combine "annotate" and
 "question", because these are very different annotation modes.}
 }
 \value{

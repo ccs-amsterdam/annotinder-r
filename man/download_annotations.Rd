@@ -17,6 +17,6 @@ Download annotation for a given job_id
 }
 \examples{
 \dontrun{
-  download_annotations(7)
+download_annotations(7)
 }
 }

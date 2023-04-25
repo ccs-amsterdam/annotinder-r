@@ -18,24 +18,26 @@ Create a codes data.frame
 }
 \examples{
 # plain list of codes
-codes('here','some','codes')
+codes <- c("here", "some", "codes")
 
 # codes with extra arguments
-codelist = list(
-   code('yes', color='green'),
-   code('no', color='red')
+codelist <- list(
+  code("yes", color = "green"),
+  code("no", color = "red")
 )
 bind_codes(codelist)
 
 # codes with children
-codelist = (
-  code('birds',
-     code('chicken'),
-     code('dove')
-   ),
-  code('mammals',
-     code('dog'),
-     code('bear')
-   )
+codelist <- c(
+  code(
+    "birds",
+    code("chicken"),
+    code("dove")
+  ),
+  code(
+    "mammals",
+    code("dog"),
+    code("bear")
+  )
 )
 }

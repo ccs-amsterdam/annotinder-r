@@ -10,14 +10,14 @@ set_question(name, question = NULL, codes = NULL, ...)
 \item{name}{A character value indicating the name of the question. This will
 also be the variable name in annotations. Coders won't see this name.}
 
+\item{question}{The question text. Can either be a character value, or an
+expression (e.g., to use a column in the data)}
+
 \item{codes}{The codes that the coder can choose from. See
 \code{\link{question}} for more details. Note that with set_question you
 can refer to columns in the data to create dynamic questions.}
 
 \item{...}{Other arguments passed to \code{\link{question}}}
-
-\item{question_txt}{The question text. Can either be a character value, or an
-expression (e.g., to use a column in the data)}
 }
 \value{
 Only meant to be used inside of \code{\link{create_units}} or

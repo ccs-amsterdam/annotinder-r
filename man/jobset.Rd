@@ -40,5 +40,5 @@ set 1, coder 2 gets set 2, coder 3 gets set 1, etc.
 }
 \examples{
 ## to create the rules argument in create_job
-rules = rules_fixedset()
+rules <- rules_fixedset()
 }

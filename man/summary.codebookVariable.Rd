@@ -4,10 +4,10 @@
 \alias{summary.codebookVariable}
 \title{S3 summary method for codebookVariable objects}
 \usage{
-\method{summary}{codebookVariable}(x, ...)
+\method{summary}{codebookVariable}(object, ...)
 }
 \arguments{
-\item{x}{an codebookVariable object, created with \link{variable}}
+\item{object}{an codebookVariable object, created with \link{annotation_variable}}
 
 \item{...}{not used}
 }

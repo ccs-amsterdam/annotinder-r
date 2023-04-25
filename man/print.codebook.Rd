@@ -7,7 +7,7 @@
 \method{print}{codebook}(x, ...)
 }
 \arguments{
-\item{x}{an codebook object, created with \link{variable}}
+\item{x}{an codebook object, created with \link{create_codebook}}
 
 \item{...}{not used}
 }

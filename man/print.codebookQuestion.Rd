@@ -7,7 +7,7 @@
 \method{print}{codebookQuestion}(x, ...)
 }
 \arguments{
-\item{x}{an codebookQuestion object, created with \link{variable}}
+\item{x}{an codebookQuestion object, created with \link{question}}
 
 \item{...}{not used}
 }

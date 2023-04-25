@@ -1,9 +1,7 @@
-
-
 ## In CCS Annotator lingo, questions are a form of annotations where the coder is
 ## presented with a specific question. This is ideal for crowd coding tasks
 ## because it requires very little instruction.
-#question <- function()
+# question <- function()
 
 
 # annotinder argument. if TRUE, can have max 3 codes, which default to left, right, up. Use NA to disable a direction.
@@ -15,7 +13,7 @@
 #'
 #' @param name The name/label of the question. Recommended to keep short. Cannot
 #'   contain a "."
-#' @param instruction A short (think 1 or 2 sentences) question.
+#' @param question A short (think 1 or 2 sentences) question.
 #' @param codes The codes that the coder can choose from. Can be a character
 #'   vector, named character vector or data.frame. An unnamed character vector
 #'   creates simple codes. A named character vector uses the names as colors,
@@ -47,7 +45,7 @@
 #'   color. Color should be  HEX or a name recognized by browsers (see
 #'   \url{https://www.w3schools.com/colors/colors_names.asp}). Can also be
 #'   "random" for random colors
-#' @param single_row If "buttons" selection is used, this puts all buttons on
+#' @param vertical If "buttons" selection is used, this puts all buttons on
 #'   the same row (just make sure not to have too many buttons)
 #' @param same_size If "buttons" selection is used, make all buttons the same
 #'   size.
@@ -71,90 +69,107 @@
 #'   \code{\link{create_codebook}} function
 #'
 #' @export
-question <- function(name, question=NULL, codes=NULL, type=c("buttons","dropdown","scale", "annotinder", "inputs", "confirm"),
-                     instruction=NULL, color='#7fb9eb', fields=NULL, per_field=NULL, vertical=F, same_size=T, items=NULL) {
+question <- function(name,
+                     question = NULL,
+                     codes = NULL,
+                     type = c("buttons", "dropdown", "scale", "annotinder", "inputs", "confirm"),
+                     instruction = NULL,
+                     color = "#7fb9eb",
+                     fields = NULL,
+                     per_field = NULL,
+                     vertical = FALSE,
+                     same_size = TRUE,
+                     items = NULL) {
+  if (grepl("\\.", name)) stop('Question name is not allowed to contain a "." symbol')
+  type <- match.arg(type)
 
-  if (grepl('\\.', name)) stop('Question name is not allowed to contain a "." symbol')
-  type = match.arg(type)
-
-  l = list(
+  l <- list(
     name = name,
     codes = codes,
-    type= jsonlite::unbox(switch(type, buttons='select code', dropdown='search code', scale='scale', annotinder='annotinder', inputs="inputs", confirm="confirm"))
+    type = jsonlite::unbox(switch(type,
+      buttons = "select code",
+      dropdown = "search code",
+      scale = "scale",
+      annotinder = "annotinder",
+      inputs = "inputs",
+      confirm = "confirm"
+    ))
   )
-  if (!is.null(question)) l$question = question
-  if (vertical) l$vertical=jsonlite::unbox(vertical)
-  if (same_size) l$same_size=jsonlite::unbox(same_size)
-  if (!is.null(fields)) l$fields=fields
-  if (!is.null(per_field)) l$perField=per_field
-  if (!is.null(instruction)) l$instruction = instruction
+  if (!is.null(question)) l$question <- question
+  if (vertical) l$vertical <- jsonlite::unbox(vertical)
+  if (same_size) l$same_size <- jsonlite::unbox(same_size)
+  if (!is.null(fields)) l$fields <- fields
+  if (!is.null(per_field)) l$perField <- per_field
+  if (!is.null(instruction)) l$instruction <- instruction
 
 
   if (!is.null(items)) {
-    l$items = lapply(1:length(items), function(i) {
-      item = if (methods::is(items[[i]], 'list')) items[[i]] else list(label = items[[i]])
-      item$name = if (!is.null(names(items)[i])) names(items)[i] else item$label
+    l$items <- lapply(1:length(items), function(i) {
+      item <- if (methods::is(items[[i]], "list")) items[[i]] else list(label = items[[i]])
+      item$name <- if (!is.null(names(items)[i])) names(items)[i] else item$label
       item
     })
   }
 
-  if (methods::is(l$codes, 'character')) {
+  if (methods::is(l$codes, "character")) {
     if (!is.null(names(l$codes))) {
-      l$codes = data.frame(code = l$codes, color = names(l$codes))
-    } else l$codes = data.frame(code = l$codes)
+      l$codes <- data.frame(code = l$codes, color = names(l$codes))
+    } else {
+      l$codes <- data.frame(code = l$codes)
+    }
   }
-  if (methods::is(l$codes, 'list')) {
-    l$codes = bind_codes(codes)
+  if (methods::is(l$codes, "list")) {
+    l$codes <- bind_codes(codes)
   }
   if (!is.null(codes)) {
-    if (!methods::is(l$codes, 'data.frame')) stop('The codes argument has to be a character vector, data.frame, or list of code() items')
+    if (!methods::is(l$codes, "data.frame")) stop("The codes argument has to be a character vector, data.frame, or list of code() items")
     if (is.null(l$codes$code) || any(is.na(l$codes$code))) stop('The data.frame passed to the codes argument needs to have a column named "code"')
     if (anyDuplicated(l$codes$code)) stop("codes have to be unique")
-    if (color != 'random') {
-      if (is.null(l$codes$color)) l$codes$color = color
-      l$codes$color[is.na(l$codes$color)] = color
+    if (color != "random") {
+      if (is.null(l$codes$color)) l$codes$color <- color
+      l$codes$color[is.na(l$codes$color)] <- color
     }
   } else {
-    l$codes = data.frame()
+    l$codes <- data.frame()
   }
 
-  structure(l, class=c('codebookQuestion', 'list'))
+  structure(l, class = c("codebookQuestion", "list"))
 }
 
 
 
 #' S3 print method for codebookQuestion objects
 #'
-#' @param x an codebookQuestion object, created with \link{variable}
+#' @param x an codebookQuestion object, created with \link{question}
 #' @param ... not used
 #'
 #' @method print codebookQuestion
 #'
 #' @export
-print.codebookQuestion <- function(x, ...){
+print.codebookQuestion <- function(x, ...) {
   for (name in names(x)) {
-    if (name == 'codes') next
+    if (name == "codes") next
     if (x[[name]] == F) next
-    label = if (name == 'name') 'variable name' else name
-    cat(sprintf('%s:\t%s\n', label, x[[name]]))
+    label <- if (name == "name") "variable name" else name
+    cat(sprintf("%s:\t%s\n", label, x[[name]]))
   }
-  cat('\ncodes:\n')
+  cat("\ncodes:\n")
   print(x$codes)
 }
 
 #' S3 summary method for codebookQuestion objects
 #'
-#' @param x an codebookQuestion object, created with \link{variable}
+#' @param object an codebookQuestion object, created with \link{question}
 #' @param ... not used
 #'
 #' @method summary codebookQuestion
 #'
 #' @export
-summary.codebookQuestion <- function(x, ...){
-  for (name in names(x)) {
-    if (name == 'codes') next
-    if (x[[name]] == F) next
-    label = if (name == 'name') 'variable name' else name
-    cat(sprintf('%s:\t%s\n', label, x[[name]]))
+summary.codebookQuestion <- function(object, ...) {
+  for (name in names(object)) {
+    if (name == "codes") next
+    if (object[[name]] == F) next
+    label <- if (name == "name") "variable name" else name
+    cat(sprintf("%s:\t%s\n", label, object[[name]]))
   }
 }

@@ -6,6 +6,8 @@ Author: Kasper Welbers
 Maintainer: Kasper Welbers <kasperwelbers@gmail.com>
 Description: Create codingjobs for AnnoTinder, interact with
     an AnnoTinder server, or run a local server to do live annotations.
+Depends: 
+    R (>= 3.5.0)
 Imports:
     jsonlite (>= 1.7.2),
     httr (>= 1.4.2),
@@ -17,6 +19,8 @@ Imports:
     methods,
     magrittr,
     rlang
+Suggests:
+    rstudioapi
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

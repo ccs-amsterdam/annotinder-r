@@ -4,10 +4,10 @@
 \alias{summary.codebookQuestion}
 \title{S3 summary method for codebookQuestion objects}
 \usage{
-\method{summary}{codebookQuestion}(x, ...)
+\method{summary}{codebookQuestion}(object, ...)
 }
 \arguments{
-\item{x}{an codebookQuestion object, created with \link{variable}}
+\item{object}{an codebookQuestion object, created with \link{question}}
 
 \item{...}{not used}
 }

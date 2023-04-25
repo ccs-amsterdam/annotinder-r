@@ -9,7 +9,7 @@ create_unit(id, ..., type = "code")
 \arguments{
 \item{id}{A unique id}
 
-\item{...}{}
+\item{...}{Additional arguments passed to \code{\link{create_units}}}
 
 \item{type}{The unit type. Can be 'code', 'test', 'train' or 'survey'}
 }
@@ -23,7 +23,7 @@ then directly be provided in the set_ functions.
 \examples{
 create_unit(
   "id",
-  set_text("text", "This is the unit text"),
+  set_text("text", "This is the unit text")
 )
 
 ## this is also a good way to create custom training units

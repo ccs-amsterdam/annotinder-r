@@ -17,7 +17,7 @@ S3 print method for annotatorBackendConnection (API connection) objects
 }
 \examples{
 \dontrun{
-conn = backend_connect('http://localhost:8000')
+conn <- backend_connect("http://localhost:8000")
 conn
 }
 }
