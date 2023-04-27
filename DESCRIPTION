@@ -20,7 +20,7 @@ Imports:
     magrittr,
     rlang
 Suggests:
-    rstudioapi
+    callr
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

@@ -1,4 +1,4 @@
-#' Start annotation server (RStudio only)
+#' Start annotation server
 #'
 #' Starts a server and directs to the CSS annotator webclient. You can either
 #' run the job in the current R session, or run it in another session. If you
@@ -10,14 +10,15 @@
 #' another R session, and run the server there. The annotations are stored in a
 #' SQLite database, and can be retrieved from any R session with the
 #' gimme_annotations(db_file) command that is printed when running this
-#' function. The other way is to use RStudio background jobs, which runs the
-#' server in the background of the current session. To use this, set background
-#' = TRUE.
+#' function. The other way is to use a \code{\link[callr]{rscript_process}}
+#' background process, which runs the server in the background of the current
+#' session until the current session is closed. To use this, set background =
+#' TRUE (the default).
 #'
 #' @param job_db A codingjob database file, created with
 #'   \code{\link{create_job_db}}
-#' @param background  (RStudio only) If TRUE, start the server as an RStudio
-#'   background job. This way you can keep working in the current session
+#' @param background  If TRUE, start the server as a background process. This
+#'   way you can keep working in the current session
 #' @param browse If TRUE (default), automatically opens
 #'   \code{\link{annotator_client}}
 #' @param port The port number to run the annotator on.
@@ -41,7 +42,7 @@
 #' start_annotator(job_db)
 #' }
 start_annotator <- function(job_db,
-                            background = FALSE,
+                            background = TRUE,
                             browse = TRUE,
                             port = 8000) {
   job_db <- normalizePath(job_db)
@@ -118,12 +119,11 @@ create_job_db <- function(codingjob,
 
 
 run_as_job <- function(server_script) {
-  rlang::is_installed("rstudioapi")
-  if (!rstudioapi::isAvailable()) stop("This function can only be run in RStudio")
+  rlang::check_installed("callr")
   pf <- create_plumber_file(server_script)
-  job <- rstudioapi::jobRunScript(pf, name = "AnnoTinder", workingDir = getwd())
-  job
+  callr::rscript_process$new(callr::rscript_process_options(script = pf))
 }
+
 
 run_in_current_session <- function(db_file, server_script) {
   tryCatch(
@@ -134,6 +134,7 @@ run_in_current_session <- function(db_file, server_script) {
     finally = "silence of the servers"
   )
 }
+
 
 create_plumber_server_script <- function(db_file) {
   server_file <- tempfile(fileext = ".r")

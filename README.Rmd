@@ -91,10 +91,10 @@ job_db
 
 As you see, job_db is simply the path to the database.
 
-We can now start the annotator by passing a job database to `start_annotator`. By default, this will turn your R session into a server, and the codingjob will open in your browser. However, if you're working in RStudio (which off course you are), you should be able to run the server as a `background job`. This way you can continue your current session, and even directly import annotations made. The annotator will then also run in your Viewer pane (though this is a bit experimental).
+We can now start the annotator by passing a job database to `start_annotator`. By default, this is run as a background process that persists until the main session is closed. This way you can continue your current session, and even directly import annotations made. The annotator will then also run in your Viewer pane (though this is a bit experimental).
 
 ```{r}
-start_annotator(job_db, background = T)
+start_annotator(job_db)
 ```
 
 You can now start annotating! If you want to retrieve the annotations from your db, simply pass the path to the database to `gimme_annotations`.
