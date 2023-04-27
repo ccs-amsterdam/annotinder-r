@@ -143,7 +143,8 @@ create_units <- function(data, ..., id = "id", type = NULL, subfields = NULL, va
 #' )
 create_unit <- function(id, ..., type = "code") {
   d <- data.frame(id = id, type = type)
-  create_units(d, type = "type", ...)[[1]]
+  unit <- create_units(d, type = "type", ...)[1]
+  structure(unit, class = c("codingjobUnits", "list"))
 }
 
 
