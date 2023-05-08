@@ -119,35 +119,46 @@ create_units <- function(data, ..., id = "id", type = NULL, subfields = NULL, va
 #' Create a single unit
 #'
 #' Works like \code{\link{create_units}}, but for a single unit. The values can
-#' then directly be provided in the set_ functions.
+#' then directly be provided in the set_ functions. The advantage of creating a
+#' single unit is that it provides more flexibility. This is especially useful
+#' for adding survey questions and units for testing or training coders.
+#'
 #'
 #' @param id   A unique id
 #' @param type The unit type. Can be 'code', 'test', 'train' or 'survey'
+#' @param codebook Optionally, provide a unit-level codebook.
 #' @param ... Additional arguments passed to \code{\link{create_units}}
 #'
 #' @return A codingjobUnits object.
 #' @export
 #'
 #' @examples
-#' create_unit(
+#' unit1 <- create_unit(
 #'   "id",
 #'   set_text("text", "This is the unit text")
 #' )
 #'
 #' ## this is also a good way to create custom training units
-#' create_unit("id",
+#' codebook <- create_codebook(
+#'   question("variable", question = "Is this a text?", codes = c("yes", "no"))
+#' )
+#'
+#' unit2 <- create_unit("id",
 #'   type = "train",
 #'   set_text("text", "This is the unit text"),
-#'   set_question("variable", question = "Is this a text?", codes = c("yes", "no")),
-#'   set_train("variable", "yes", message = "WRONG!!\n\ntry again")
+#'   set_train("variable", "yes", message = "WRONG!!\n\ntry again"),
+#'   codebook = codebook
 #' )
-create_unit <- function(id, ..., type = "code") {
+#'
+#' ## single units are returned as a codingjobUnits list of length 1. This means
+#' ## that you can combine different units (and the results of create_units)
+#' units <- c(unit1, unit2)
+create_unit <- function(id, ..., type = "code", codebook=NULL) {
   d <- data.frame(id = id, type = type)
   unit <- create_units(d, type = "type", ...)[1]
+  if (!is.null(codebook)) unit[[1]]$unit$codebook = codebook
   structure(unit, class = c("codingjobUnits", "list"))
 }
-
-
 
 process_create_unit_calls <- function(...) {
   text <- list()

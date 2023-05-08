@@ -4,7 +4,7 @@
 \alias{create_unit}
 \title{Create a single unit}
 \usage{
-create_unit(id, ..., type = "code")
+create_unit(id, ..., type = "code", codebook = NULL)
 }
 \arguments{
 \item{id}{A unique id}
@@ -12,25 +12,37 @@ create_unit(id, ..., type = "code")
 \item{...}{Additional arguments passed to \code{\link{create_units}}}
 
 \item{type}{The unit type. Can be 'code', 'test', 'train' or 'survey'}
+
+\item{codebook}{Optionally, provide a unit-level codebook.}
 }
 \value{
 A codingjobUnits object.
 }
 \description{
 Works like \code{\link{create_units}}, but for a single unit. The values can
-then directly be provided in the set_ functions.
+then directly be provided in the set_ functions. The advantage of creating a
+single unit is that it provides more flexibility. This is especially useful
+for adding survey questions and units for testing or training coders.
 }
 \examples{
-create_unit(
+unit1 <- create_unit(
   "id",
   set_text("text", "This is the unit text")
 )
 
 ## this is also a good way to create custom training units
-create_unit("id",
+codebook <- create_codebook(
+  question("variable", question = "Is this a text?", codes = c("yes", "no"))
+)
+
+unit2 <- create_unit("id",
   type = "train",
   set_text("text", "This is the unit text"),
-  set_question("variable", question = "Is this a text?", codes = c("yes", "no")),
-  set_train("variable", "yes", message = "WRONG!!\n\ntry again")
+  set_train("variable", "yes", message = "WRONG!!\n\ntry again"),
+  codebook = codebook
 )
+
+## single units are returned as a codingjobUnits list of length 1. This means
+## that you can combine different units (and the results of create_units)
+units <- c(unit1, unit2)
 }
