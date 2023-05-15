@@ -10,7 +10,7 @@ question(
   codes = NULL,
   type = c("buttons", "dropdown", "scale", "annotinder", "inputs", "confirm"),
   instruction = NULL,
-  color = "#7fb9eb",
+  color = NULL,
   fields = NULL,
   per_field = NULL,
   vertical = FALSE,
@@ -46,9 +46,9 @@ specific question. Coders can see these instructions by clicking on the
 questionmark symbol before the question.}
 
 \item{color}{If no colors are given to specific codes, this sets the default
-color. Color should be  HEX or a name recognized by browsers (see
-\url{https://www.w3schools.com/colors/colors_names.asp}). Can also be
-"random" for random colors}
+color. Color should be HEX or a name recognized by browsers (see
+\url{https://www.w3schools.com/colors/colors_names.asp}). If NULL (default)
+the annotator client decides the default color.}
 
 \item{fields}{Optionally, an array of field names (i.e. the column names used
 in set_text, set_markdown and set_image). When the question is asked, these

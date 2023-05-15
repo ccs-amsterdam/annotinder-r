@@ -42,9 +42,9 @@
 #'   this up is to use the "split" argument in set_text and set_markdown, which
 #'   automatically split a field into numbered fields.
 #' @param color If no colors are given to specific codes, this sets the default
-#'   color. Color should be  HEX or a name recognized by browsers (see
-#'   \url{https://www.w3schools.com/colors/colors_names.asp}). Can also be
-#'   "random" for random colors
+#'   color. Color should be HEX or a name recognized by browsers (see
+#'   \url{https://www.w3schools.com/colors/colors_names.asp}). If NULL (default)
+#'   the annotator client decides the default color.
 #' @param vertical If "buttons" selection is used, this puts all buttons on
 #'   the same row (just make sure not to have too many buttons)
 #' @param same_size If "buttons" selection is used, make all buttons the same
@@ -74,7 +74,7 @@ question <- function(name,
                      codes = NULL,
                      type = c("buttons", "dropdown", "scale", "annotinder", "inputs", "confirm"),
                      instruction = NULL,
-                     color = "#7fb9eb",
+                     color = NULL,
                      fields = NULL,
                      per_field = NULL,
                      vertical = FALSE,
@@ -125,7 +125,7 @@ question <- function(name,
     if (!methods::is(l$codes, "data.frame")) stop("The codes argument has to be a character vector, data.frame, or list of code() items")
     if (is.null(l$codes$code) || any(is.na(l$codes$code))) stop('The data.frame passed to the codes argument needs to have a column named "code"')
     if (anyDuplicated(l$codes$code)) stop("codes have to be unique")
-    if (color != "random") {
+    if (!is.null(color)) {
       if (is.null(l$codes$color)) l$codes$color <- color
       l$codes$color[is.na(l$codes$color)] <- color
     }
