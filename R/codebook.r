@@ -38,11 +38,8 @@ create_codebook <- function(...) {
 
 
 codes_df_to_list <- function(codes_df) {
-  rownames(codes_df) <- NULL ## (otherwise can be come an object instead of an array in json)
-  apply(codes_df, 1, function(x) {
-    codes_l <- as.list(x)
-    lapply(codes_l, jsonlite::unbox)
-  })
+  rownames(codes_df) <- NULL ## (otherwise can become an object instead of an array in json)
+  lapply(seq_along(codes_df$code), function(i) jsonlite::unbox(codes_df[i, ]))
 }
 
 #' S3 print method for codebook objects
