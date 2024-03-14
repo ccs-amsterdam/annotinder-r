@@ -51,7 +51,9 @@ start_annotator <- function(job_db,
   Sys.setenv(ANNOTATION_DB = job_db)
 
   server_running <- tryCatch(httr::GET(paste0("localhost:", port, "/users/me/login"))$status == 200, error = function(e) FALSE)
+
   if (server_running) {
+    message(sprintf('Restarting server at port %s', port))
     ## if server already running, just replace the db file and restart client
     httr::POST(paste0("localhost:", port, "/db"), body = jsonlite::toJSON(list(db_file = job_db), auto_unbox = T))
     if (browse) annotator_client(in_browser = !background) ## if not background job, rstudio can't serve it
@@ -62,9 +64,9 @@ start_annotator <- function(job_db,
   if (browse) annotator_client(in_browser = !background) ## if not background job, rstudio can't serve it
 
   if (background) {
-    run_as_job(server_script)
+    run_as_job(server_script, port)
   } else {
-    run_in_current_session(job_db, server_script)
+    run_in_current_session(job_db, server_script, port)
   }
   invisible(job_db)
 }
@@ -118,18 +120,28 @@ create_job_db <- function(codingjob,
 }
 
 
-run_as_job <- function(server_script) {
+run_as_job <- function(server_script, port) {
   rlang::check_installed("callr")
-  pf <- create_plumber_file(server_script)
-  callr::rscript_process$new(callr::rscript_process_options(script = pf))
+  pf <- create_plumber_file(server_script, port)
+  server <- callr::rscript_process$new(callr::rscript_process_options(script = pf))
+  attempts = 3
+  for (i in 1:attempts) {
+    if (server$is_alive()) {
+      message(sprintf('Starting server at port %s', port))
+      return()
+    }
+    message(sprintf('failed to start server. Trying again in 5 seconds (attempt %s of %s)', i, attempts))
+    Sys.sleep(5)
+    server <- callr::rscript_process$new(callr::rscript_process_options(script = pf))
+  }
+  stop('Could not start server :(')
 }
 
-
-run_in_current_session <- function(db_file, server_script) {
+run_in_current_session <- function(db_file, server_script, port) {
   tryCatch(
     {
       pr <- plumber::pr(server_script)
-      plumber::pr_run(pr, docs = F, port = 8000)
+      plumber::pr_run(pr, docs = F, port = port)
     },
     finally = "silence of the servers"
   )
@@ -146,9 +158,9 @@ create_plumber_server_script <- function(db_file) {
 }
 
 
-create_plumber_file <- function(server_script) {
+create_plumber_file <- function(server_script, port) {
   start_server_file <- tempfile(fileext = ".r")
-  start_server_script <- sprintf("library(annotinder)\ntryCatch(plumber::pr_run(plumber::pr('%s'), docs=F, port=8000), error=function(e) NULL)", server_script)
+  start_server_script <- sprintf("library(annotinder)\ntryCatch(plumber::pr_run(plumber::pr('%s'), docs=F, port=%s), error=function(e) NULL)", server_script, port)
   start_server_script <- gsub("\\\\", "\\\\\\\\", start_server_script)
   writeLines(start_server_script, start_server_file)
   start_server_file
